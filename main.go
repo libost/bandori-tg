@@ -9,6 +9,7 @@ import (
 	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/cards"
 	"github.com/libost/bandori-tg/characters"
+	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
 )
 
@@ -40,6 +41,7 @@ func main() {
 	})
 	updater := ext.NewUpdater(dispatcher, nil)
 
+	commands.AddHandlers(dispatcher)
 	cards.AddHandlers(dispatcher)
 
 	updater.StartPolling(b, &ext.PollingOpts{
