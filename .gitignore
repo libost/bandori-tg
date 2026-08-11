@@ -1,0 +1,4 @@
+config.yaml
+res/
+*.exe
+*.exe~
