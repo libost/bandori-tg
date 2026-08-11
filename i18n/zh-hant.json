@@ -1,0 +1,14 @@
+{
+    "lang_code": "zh-hant",
+    "lang_code_alt": "zh",
+    "lang_name": "繁體中文",
+    "callback": {
+        "setlang_success": "語言設置成功。"
+    },
+    "commands": {
+        "start_desc": "歡迎使用 Bandori Bot！使用 /query <card_id> 來查詢卡片信息。",
+        "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/query <card_id> - 根據 ID 查詢特定卡片的信息。",
+        "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
+        "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢卡片中的信息，不適用於顯示的文本。"
+    }
+}

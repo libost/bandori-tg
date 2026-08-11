@@ -7,10 +7,12 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/libost/bandori-tg/band"
+	"github.com/libost/bandori-tg/callback"
 	"github.com/libost/bandori-tg/cards"
 	"github.com/libost/bandori-tg/characters"
 	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
+	DB "github.com/libost/bandori-tg/database"
 	"github.com/libost/bandori-tg/skills"
 )
 
@@ -31,6 +33,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to initialize skill lists:", err)
 	}
+	_, err = DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
+	if err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
 	config.InitConfig()
 	token := config.AppConfig.General.Token
 	b, err := gotgbot.NewBot(token, nil)
@@ -46,6 +52,7 @@ func main() {
 	})
 	updater := ext.NewUpdater(dispatcher, nil)
 
+	callback.AddHandlers(dispatcher)
 	commands.AddHandlers(dispatcher)
 	cards.AddHandlers(dispatcher)
 

@@ -1,0 +1,14 @@
+{
+    "lang_code": "en",
+    "lang_code_alt": "en",
+    "lang_name": "English",
+    "callback": {
+        "setlang_success": "Language updated successfully."
+    },
+    "commands": {
+        "start_desc": "Welcome to the Bandori Bot! Use /query <card_id> to get card information.",
+        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/query <card_id> - Query information about a specific card by its ID.",
+        "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
+        "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot."
+    }
+}
