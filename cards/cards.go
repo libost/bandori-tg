@@ -23,7 +23,7 @@ func InitLists() error {
 			return err
 		}
 	}
-	return UnmarshalList(nil)
+	return UnmarshalList()
 }
 
 func refreshLists() error {
@@ -79,13 +79,13 @@ func (s *cardStat) UnmarshalJSON(data []byte) error {
 
 // Use cards.Cards["cardId"] to access card data, for example, cards.Cards["1"] will return the card data for the card with ID 1.
 // For `stats`, you can access the stats for a specific level using `cards.Cards["1"].Stat.Levels["1"]` for level 1 stats, or `cards.Cards["1"].Stat.Episodes[int]` for episode stats.
-func UnmarshalList(data []byte) error {
+func UnmarshalList() error {
 	file, err := os.Open(C.CardsFile)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	data, err = io.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return err
 	}

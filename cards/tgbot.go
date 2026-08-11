@@ -8,6 +8,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/characters"
+	"github.com/libost/bandori-tg/skills"
 )
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
@@ -55,28 +56,37 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for i := 0; i < card.Rarity; i++ {
 		rarity = rarity + "★"
 	}
+	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, "Error occurred while fetching skill data.", nil)
+		return nil
+	}
+	skillName := skill.SimpleDescription[0] // Temporarily using the first name in the list, i18n later.
 	caption := "Card ID: " + param + "\n" +
 		"Card Name: " + name + "\n" +
 		"Rarity: " + rarity + "\n" +
 		"Character: " + characterName + "\n" +
 		"Band: " + bandName + "\n" +
-		normalPath + "\n" + trainingPath
+		"Skill: " + skillName
 	if normalPath == "" {
 		ctx.EffectiveMessage.ReplyPhoto(b, gotgbot.InputFileByURL(trainingPath), &gotgbot.SendPhotoOpts{
-			Caption: caption,
+			Caption:   caption,
+			ParseMode: "HTML",
 		})
 		return nil
 	}
 	if trainingPath == "" {
 		ctx.EffectiveMessage.ReplyPhoto(b, gotgbot.InputFileByURL(normalPath), &gotgbot.SendPhotoOpts{
-			Caption: caption,
+			Caption:   caption,
+			ParseMode: "HTML",
 		})
 		return nil
 	}
 	media := []gotgbot.InputMedia{
 		&gotgbot.InputMediaPhoto{
-			Media:   gotgbot.InputFileByURL(normalPath),
-			Caption: caption,
+			Media:     gotgbot.InputFileByURL(normalPath),
+			Caption:   caption,
+			ParseMode: "HTML",
 		},
 		&gotgbot.InputMediaPhoto{
 			Media: gotgbot.InputFileByURL(trainingPath),

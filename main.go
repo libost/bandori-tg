@@ -11,6 +11,7 @@ import (
 	"github.com/libost/bandori-tg/characters"
 	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
+	"github.com/libost/bandori-tg/skills"
 )
 
 func main() {
@@ -25,6 +26,10 @@ func main() {
 	err = band.InitLists()
 	if err != nil {
 		log.Fatal("Failed to initialize band lists:", err)
+	}
+	err = skills.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize skill lists:", err)
 	}
 	config.InitConfig()
 	token := config.AppConfig.General.Token

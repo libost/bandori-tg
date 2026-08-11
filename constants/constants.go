@@ -5,6 +5,8 @@ const (
 	CardsFile      = "./res/cards.json"
 	CharactersFile = "./res/characters.json"
 	ConfigPath     = "./config.yaml"
+	DatabaseFile   = "./res/bandori.db"
+	SkillsFile     = "./res/skills.json"
 )
 
 type Config struct {
