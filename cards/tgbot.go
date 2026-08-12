@@ -3,10 +3,12 @@ package cards
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/characters"
 	DB "github.com/libost/bandori-tg/database"
@@ -31,6 +33,18 @@ func selectLocaleString(strings []string, index int) string {
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("query", queryHandler))
+	dispatcher.AddHandler(handlers.NewCommand("查卡", queryHandler)) // 经典传承
+	dispatcher.AddHandler(handlers.NewMessage(message.Text, textHandler))
+}
+
+func textHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	text := ctx.EffectiveMessage.Text
+	switch true {
+	case strings.HasPrefix(text, "查卡 "):
+		return queryHandler(b, ctx)
+	default:
+		return nil
+	}
 }
 
 func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
