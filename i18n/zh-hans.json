@@ -10,6 +10,12 @@
         "help_desc": "可用命令：\n/start - 启动机器人并获取欢迎消息。\n/help - 显示此帮助消息。\n/query <card_id> - 根据 ID 查询特定卡片的信息。",
         "dlanguages_desc": "设置显示语言。\n本设置仅适用于显示的文本，不适用于查询卡片中的信息。",
         "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询卡片中的信息，不适用于显示的文本。"
+    },
+    "cards": {
+        "no_card_id": "请提供要查询的卡片 ID。",
+        "card_not_found": "未找到卡片。请检查卡片 ID 是否正确。",
+        "error_occurred": "查询卡片信息时发生错误，请稍后再试。",
+        "card_info": "卡片信息：\nID: %[1]s\n名称: %[2]s\n角色: %[3]s\n乐团: %[4]s\n属性: %[5]s\n稀有度: %[6]s\n技能: %[7]s\n"
     }
 
 }

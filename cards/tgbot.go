@@ -2,6 +2,7 @@ package cards
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -13,6 +14,21 @@ import (
 	"github.com/libost/bandori-tg/skills"
 )
 
+func selectLocaleString(strings []string, index int) string {
+	var selected string
+	if strings[index] != "" && strings[index] != "null" {
+		selected = strings[index]
+	} else {
+		for _, str := range strings {
+			if str != "null" {
+				selected = str
+				break
+			}
+		}
+	}
+	return selected
+}
+
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("query", queryHandler))
 }
@@ -20,19 +36,21 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	dlangCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
-		ctx.EffectiveMessage.Reply(b, "Please provide a card ID to query.", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", dlangCode), nil)
+		log.Printf("User %d did not provide a card ID for query command.", ctx.EffectiveUser.Id)
 		return nil
 	}
 	param := ctx.Args()[1]
 	// Process the card ID and query the database
 	card, exists := Cards[param]
 	if !exists {
-		ctx.EffectiveMessage.Reply(b, "Card not found.", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
+		log.Printf("User %d queried a non-existent card with ID %s.", ctx.EffectiveUser.Id, param)
 		return nil
 	}
 	// Process the card and send the response
-	var name string
 	var index int
 	switch qlangCode {
 	case "jp":
@@ -46,52 +64,26 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	case "kr":
 		index = 4
 	}
-	if card.Prefix[index] != "" && card.Prefix[index] != "null" {
-		name = card.Prefix[index]
-	} else {
-		for _, prefix := range card.Prefix {
-			if prefix != "null" {
-				name = prefix
-				break
-			}
-		}
-	}
+	name := selectLocaleString(card.Prefix, index)
 
 	char, err := characters.GetCharacter(fmt.Sprint(card.CharacterID))
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error occurred while fetching character data.", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		log.Printf("Error fetching character data for card ID %s: %v", param, err)
 		return nil
 	}
-	var characterName string
-	if char.CharacterName[index] != "" && char.CharacterName[index] != "null" {
-		characterName = char.CharacterName[index]
-	} else {
-		for _, cname := range char.CharacterName {
-			if cname != "null" {
-				characterName = cname
-				break
-			}
-		}
-	}
+	characterName := selectLocaleString(char.CharacterName, index)
 	band, err := band.GetBand(fmt.Sprint(char.BandID))
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error occurred while fetching band data.", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		log.Printf("Error fetching band data for character ID %d: %v", card.CharacterID, err)
 		return nil
 	}
-	var bandName string
-	if band.BandName[index] != "" && band.BandName[index] != "null" {
-		bandName = band.BandName[index]
-	} else {
-		for _, bname := range band.BandName {
-			if bname != "null" {
-				bandName = bname
-				break
-			}
-		}
-	}
+	bandName := selectLocaleString(band.BandName, index)
 	normalPath, trainingPath, err := GetCard(param)
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error occurred while fetching card data.", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		log.Printf("Error fetching card data for card ID %s: %v", param, err)
 		return nil
 	}
 	rarity := ""
@@ -100,26 +92,14 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error occurred while fetching skill data.", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		log.Printf("Error fetching skill data for card ID %s: %v", param, err)
 		return nil
 	}
-	var skillName string
-	if skill.SimpleDescription[index] != "" && skill.SimpleDescription[index] != "null" {
-		skillName = skill.SimpleDescription[index]
-	} else {
-		for _, sname := range skill.SimpleDescription {
-			if sname != "null" {
-				skillName = sname
-				break
-			}
-		}
-	}
-	caption := "Card ID: " + param + "\n" +
-		"Card Name: " + name + "\n" +
-		"Rarity: " + rarity + "\n" +
-		"Character: " + characterName + "\n" +
-		"Band: " + bandName + "\n" +
-		"Skill: " + skillName
+	skillName := selectLocaleString(skill.SimpleDescription, index)
+	attribute := card.Attribute
+	caption := fmt.Sprintf(I.GetLocalisedString("cards.card_info", dlangCode), param, name, characterName, bandName, attribute, rarity, skillName)
+	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
 	if normalPath == "" {
 		ctx.EffectiveMessage.ReplyPhoto(b, gotgbot.InputFileByURL(trainingPath), &gotgbot.SendPhotoOpts{
 			Caption:   caption,

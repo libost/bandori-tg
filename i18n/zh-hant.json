@@ -10,5 +10,11 @@
         "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/query <card_id> - 根據 ID 查詢特定卡片的信息。",
         "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
         "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢卡片中的信息，不適用於顯示的文本。"
+    },
+    "cards": {
+        "no_card_id": "請提供要查詢的卡片 ID。",
+        "card_not_found": "未找到卡片。請檢查卡片 ID 是否正確。",
+        "error_occurred": "查詢卡片信息時發生錯誤，請稍後再試。",
+        "card_info": "卡片信息：\nID: %[1]s\n名稱: %[2]s\n角色: %[3]s\n樂團: %[4]s\n屬性: %[5]s\n稀有度: %[6]s\n技能: %[7]s\n"
     }
 }

@@ -10,5 +10,11 @@
         "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/query <card_id> - Query information about a specific card by its ID.",
         "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
         "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot."
+    },
+    "cards": {
+        "no_card_id": "Please provide a card ID to query.",
+        "card_not_found": "Card not found. Please check if the card ID is correct.",
+        "error_occurred": "An error occurred while querying card information. Please try again later.",
+        "card_info": "Card Information:\nID: %[1]s\nName: %[2]s\nCharacter: %[3]s\nBand: %[4]s\nAttribute: %[5]s\nRarity: %[6]s\nSkill: %[7]s\n"
     }
 }
