@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	C "github.com/libost/bandori-tg/constants"
 )
@@ -17,13 +18,21 @@ func InitLists() error {
 	if err := os.MkdirAll(filepath.Dir(C.CardsFile), 0755); err != nil {
 		return err
 	}
-	if _, err := os.Stat(C.CardsFile); os.IsNotExist(err) {
-		err := refreshLists()
-		if err != nil {
-			return err
+	timedRefresh()
+	return nil
+}
+
+func timedRefresh() {
+	go func() {
+		refreshLists()
+		UnmarshalList()
+		ticker := time.NewTicker(3 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			refreshLists()
+			UnmarshalList()
 		}
-	}
-	return UnmarshalList()
+	}()
 }
 
 func refreshLists() error {
