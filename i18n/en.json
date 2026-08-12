@@ -17,5 +17,17 @@
         "card_not_found": "Card not found. Please check if the card ID is correct.",
         "error_occurred": "An error occurred while querying card information. Please try again later.",
         "card_info": "Card Information:\nID: %[1]s\nName: %[2]s\nCharacter: %[3]s\nBand: %[4]s\nAttribute: %[5]s\nRarity: %[6]s\nSkill: %[7]s\n"
+    },
+    "events": {
+        "mission_live": "Mission Live",
+        "versus": "VS Live",
+        "live_try": "Live Goals",
+        "challenge": "Challenge Live",
+        "festival": "Team Live Festival",
+        "medley": "Medley Mode",
+        "story": "Normal",
+        "ongoing_events": "Ongoing Events",
+        "start_at": "Start Time: ",
+        "end_at": "End Time: "
     }
 }

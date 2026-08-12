@@ -17,5 +17,17 @@
         "card_not_found": "未找到卡片。請檢查卡片 ID 是否正確。",
         "error_occurred": "查詢卡片信息時發生錯誤，請稍後再試。",
         "card_info": "卡片信息：\nID: %[1]s\n名稱: %[2]s\n角色: %[3]s\n樂團: %[4]s\n屬性: %[5]s\n稀有度: %[6]s\n技能: %[7]s\n"
+    },
+    "events": {
+        "mission_live": "任務模式",
+        "versus": "競演模式",
+        "live_try": "試煉模式",
+        "challenge": "挑戰模式",
+        "festival": "團隊模式",
+        "medley": "組曲模式",
+        "story": "通常活動",
+        "ongoing_events": "當前進行中的活動",
+        "start_at": "開始時間: ",
+        "end_at": "結束時間: "
     }
 }

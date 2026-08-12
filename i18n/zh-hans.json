@@ -2,6 +2,7 @@
     "lang_code": "zh-hans",
     "lang_code_alt": "zh",
     "lang_name": "简体中文",
+    
     "callback": {
         "setlang_success": "语言设置成功。"
     },
@@ -17,6 +18,19 @@
         "card_not_found": "未找到卡片。请检查卡片 ID 是否正确。",
         "error_occurred": "查询卡片信息时发生错误，请稍后再试。",
         "card_info": "卡片信息：\nID: %[1]s\n名称: %[2]s\n角色: %[3]s\n乐团: %[4]s\n属性: %[5]s\n稀有度: %[6]s\n技能: %[7]s\n"
+    },
+    "events": {
+        "mission_live": "任务LIVE",
+        "versus": "竞演LIVE",
+        "live_try": "LIVE试炼",
+        "challenge": "挑战LIVE",
+        "festival": "团队LIVE佳节",
+        "medley": "组曲模式",
+        "story": "一般活动",
+        "ongoing_events": "当前进行中的活动",
+        "start_at": "开始时间: ",
+        "end_at": "结束时间: "
+
     }
 
 }

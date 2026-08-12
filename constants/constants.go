@@ -6,7 +6,9 @@ const (
 	CharactersFile = "./res/characters.json"
 	ConfigPath     = "./config.yaml"
 	DatabaseFile   = "./res/bandori.db"
+	EventsFile     = "./res/events.json"
 	SkillsFile     = "./res/skills.json"
+	RecentFile     = "./res/recent.json"
 )
 
 type Config struct {
@@ -83,3 +85,49 @@ type Band struct {
 }
 
 type BandData map[string]Band
+
+type Recent struct {
+	Songs      map[string]SongsData      `json:"songs"`
+	Events     map[string]EventData      `json:"events"`
+	Gacha      map[string]GachaData      `json:"gacha"`
+	LoginBonus map[string]LoginBonusData `json:"loginBonus"`
+}
+
+type SongsData struct {
+	MusicTitle  []string `json:"musicTitle"`
+	PublishedAt []string `json:"publishedAt"`
+}
+
+type EventData struct {
+	EventName []string `json:"eventName"`
+	StartAt   []string `json:"startAt"`
+	EndAt     []string `json:"endAt"`
+}
+
+type GachaData struct {
+	GachaName   []string `json:"gachaName"`
+	PublishedAt []string `json:"publishedAt"`
+	ClosedAt    []string `json:"closedAt"`
+}
+
+type LoginBonusData struct {
+	Caption     []string `json:"caption"`
+	PublishedAt []string `json:"publishedAt"`
+	ClosedAt    []string `json:"closedAt"`
+}
+
+type Events struct {
+	EventType             string   `json:"eventType"`
+	EventName             []string `json:"eventName"`
+	AssetBundleName       string   `json:"assetBundleName"`
+	BannerAssetBundleName string   `json:"bannerAssetBundleName"`
+	StartAt               []string `json:"startAt"`
+	EndAt                 []string `json:"endAt"`
+	Attribute             []any    `json:"attribute"`
+	Characters            []any    `json:"characters"`
+	Members               []any    `json:"members"`
+	LimitBreaks           []any    `json:"limitBreaks"`
+	RewardCards           []any    `json:"rewardCards"`
+}
+
+type EventsData map[string]Events
