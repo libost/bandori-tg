@@ -8,6 +8,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	DB "github.com/libost/bandori-tg/database"
 	I "github.com/libost/bandori-tg/i18n"
+	"github.com/libost/bandori-tg/version"
 )
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
@@ -15,6 +16,7 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("help", helpHandler))
 	dispatcher.AddHandler(handlers.NewCommand("dlang", dlangHandler))
 	dispatcher.AddHandler(handlers.NewCommand("qlang", qlangHandler))
+	dispatcher.AddHandler(handlers.NewCommand("about", aboutHandler))
 }
 
 func startHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -107,4 +109,12 @@ func qlangHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	})
 	return err
 
+}
+
+func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	DB.Init("create", ctx.EffectiveUser.Id, nil)
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	displayText := fmt.Sprintf(I.GetLocalisedString("commands.about_desc", langCode), version.Version, version.BuildTime, version.GitCommit, version.Branch)
+	ctx.EffectiveMessage.Reply(b, displayText, nil)
+	return nil
 }

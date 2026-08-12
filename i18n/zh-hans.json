@@ -9,7 +9,8 @@
         "start_desc": "欢迎使用 Bandori Bot！使用 /query <card_id> 来查询卡片信息。",
         "help_desc": "可用命令：\n/start - 启动机器人并获取欢迎消息。\n/help - 显示此帮助消息。\n/query <card_id> - 根据 ID 查询特定卡片的信息。",
         "dlanguages_desc": "设置显示语言。\n本设置仅适用于显示的文本，不适用于查询卡片中的信息。",
-        "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询卡片中的信息，不适用于显示的文本。"
+        "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询卡片中的信息，不适用于显示的文本。",
+        "about_desc": "Bandori Bot \n版本: %[1]s\n构建时间: %[2]s\nGit 提交: %[3]s\n分支: %[4]s"
     },
     "cards": {
         "no_card_id": "请提供要查询的卡片 ID。",

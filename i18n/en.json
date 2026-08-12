@@ -9,7 +9,8 @@
         "start_desc": "Welcome to the Bandori Bot! Use /query <card_id> to get card information.",
         "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/query <card_id> - Query information about a specific card by its ID.",
         "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
-        "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot."
+        "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot.",
+        "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s"
     },
     "cards": {
         "no_card_id": "Please provide a card ID to query.",
