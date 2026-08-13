@@ -52,6 +52,8 @@
         "event_ended": " (Ended)",
         "event_not_found": "Event not found. Please check if the event ID is correct.",
         "event_fetch_error": "An error occurred while querying event information. Please try again later",
+        "invalid_region": "Invalid server code. Please use one of the following: jp, en, tw, kr, cn.",
+        "region_no_data": "The current server (%[1]s) does not have data for this event. Displaying data from server (%[2]s) instead.",
         "remaining_time": "Remaining Time: %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
         "remaining_timeTable": "Ends in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
         "not_started": "Starts in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",

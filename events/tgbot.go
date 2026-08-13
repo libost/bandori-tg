@@ -3,6 +3,7 @@ package events
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"time"
 
@@ -74,6 +75,9 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	}
 	eventName := selectLocaleString(eventDetailed.EventName, qindex)
 	regionCode := regionCodeFromEvent(eventDetailed, qlangCode)
+	if regionCode != qlangCode {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("events.region_no_data", langCode), qlangCode, regionCode), nil)
+	}
 	var rindex int
 	var regionText string
 	switch regionCode {
@@ -585,6 +589,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	} else {
 		param := ctx.Args()[1]
-		return SendDetailedEvent(b, ctx, param, langCode, "")
+		qlangCode := ""
+		if len(ctx.Args()) > 2 {
+			if slices.Contains(C.AcceptedRegions, ctx.Args()[2]) {
+				qlangCode = ctx.Args()[2]
+			} else {
+				_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.invalid_region", langCode), nil)
+				return err
+			}
+		}
+		return SendDetailedEvent(b, ctx, param, langCode, qlangCode)
 	}
 }

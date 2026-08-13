@@ -52,6 +52,8 @@
         "event_ended": " (已结束)",
         "event_not_found": "未找到活動。請檢查活動 ID 是否正確。",
         "event_fetch_error": "查詢活動信息時發生錯誤，請稍後再試。",
+        "invalid_region": "無效的伺服器代碼。請使用以下之一: jp, en, tw, kr, cn。",
+        "region_no_data": "當前伺服器 (%[1]s) 暫無該活動數據，將顯示伺服器 (%[2]s) 的活動數據。",
         "remaining_time": "剩餘時間: %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
         "remaining_timeTable": "結束於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
         "not_started": "開始於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",

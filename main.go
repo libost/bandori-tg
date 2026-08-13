@@ -19,34 +19,7 @@ import (
 )
 
 func main() {
-	err := cards.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize card lists:", err)
-	}
-	err = characters.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize character lists:", err)
-	}
-	err = band.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize band lists:", err)
-	}
-	err = skills.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize skill lists:", err)
-	}
-	err = events.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize event lists:", err)
-	}
-	err = recent.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize recent lists:", err)
-	}
-	_, err = DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
-	if err != nil {
-		log.Fatal("Failed to initialize database:", err)
-	}
+	initAll()
 	config.InitConfig()
 	token := config.AppConfig.General.Token
 	b, err := gotgbot.NewBot(token, nil)
@@ -75,4 +48,35 @@ func main() {
 
 	updater.Idle()
 
+}
+
+func initAll() {
+	err := cards.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize card lists:", err)
+	}
+	err = characters.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize character lists:", err)
+	}
+	err = band.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize band lists:", err)
+	}
+	err = skills.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize skill lists:", err)
+	}
+	err = events.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize event lists:", err)
+	}
+	err = recent.InitLists()
+	if err != nil {
+		log.Fatal("Failed to initialize recent lists:", err)
+	}
+	_, err = DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
+	if err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
 }

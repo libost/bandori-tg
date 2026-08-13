@@ -315,3 +315,5 @@ var RarityEmoji = [...]int64{
 	6048893384041438933, // Normal
 	6048597808687095847, // After Training
 }
+
+var AcceptedRegions = []string{"jp", "en", "tw", "kr", "cn"}
