@@ -16,6 +16,24 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
 }
 
+func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt int64) gotgbot.RichTextArray {
+	return gotgbot.RichTextArray{
+		gotgbot.RichTextString(I.GetLocalisedString("events.start_at", dlangCode)),
+		gotgbot.RichTextDateTime{
+			Text:           gotgbot.RichTextString(startLabel),
+			UnixTime:       startAt,
+			DateTimeFormat: "DwT",
+		},
+		gotgbot.RichTextString("\n"),
+		gotgbot.RichTextString(I.GetLocalisedString("events.end_at", dlangCode)),
+		gotgbot.RichTextDateTime{
+			Text:           gotgbot.RichTextString(endLabel),
+			UnixTime:       endAt,
+			DateTimeFormat: "DwT",
+		},
+	}
+}
+
 func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
@@ -27,50 +45,46 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eventNameJP := Events[ongoingIDs[0]].EventName[0]
 		eventTypeJP := Events[ongoingIDs[0]].EventType
 		eventAssetsBundleJP := Events[ongoingIDs[0]].AssetBundleName
-		locJP, err := time.LoadLocation("Asia/Tokyo")
-		if err != nil {
-			return err
-		}
+		locJP, _ := time.LoadLocation("Asia/Tokyo")
 		eStartJP, _ := strconv.Atoi(Events[ongoingIDs[0]].StartAt[0])
-		eventStartJP := time.UnixMilli(int64(eStartJP)).In(locJP).Format("2006-01-02 15:04:05 MST")
+		eStartJPTime := time.Unix(int64(eStartJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
+		eventStartJP := int64(eStartJP) / 1000
 		eEndJP, _ := strconv.Atoi(Events[ongoingIDs[0]].EndAt[0])
-		eventEndJP := time.UnixMilli(int64(eEndJP)).In(locJP).Format("2006-01-02 15:04:05 MST")
+		eEndJPTime := time.Unix(int64(eEndJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
+		eventEndJP := int64(eEndJP) / 1000
 		// EN events
 		eventNameEN := Events[ongoingIDs[1]].EventName[1]
 		eventTypeEN := Events[ongoingIDs[1]].EventType
 		eventAssetsBundleEN := Events[ongoingIDs[1]].AssetBundleName
-		locEN, err := time.LoadLocation("America/New_York")
-		if err != nil {
-			return err
-		}
+		locEN, _ := time.LoadLocation("America/New_York")
 		eStartEN, _ := strconv.Atoi(Events[ongoingIDs[1]].StartAt[1])
-		eventStartEN := time.UnixMilli(int64(eStartEN)).In(locEN).Format("2006-01-02 15:04:05 MST")
+		eStartENTime := time.Unix(int64(eStartEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
+		eventStartEN := int64(eStartEN) / 1000
 		eEndEN, _ := strconv.Atoi(Events[ongoingIDs[1]].EndAt[1])
-		eventEndEN := time.UnixMilli(int64(eEndEN)).In(locEN).Format("2006-01-02 15:04:05 MST")
+		eEndENTime := time.Unix(int64(eEndEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
+		eventEndEN := int64(eEndEN) / 1000
 		// TW events
 		eventNameTW := Events[ongoingIDs[2]].EventName[2]
 		eventTypeTW := Events[ongoingIDs[2]].EventType
 		eventAssetsBundleTW := Events[ongoingIDs[2]].AssetBundleName
-		locTW, err := time.LoadLocation("Asia/Taipei")
-		if err != nil {
-			return err
-		}
+		locTW, _ := time.LoadLocation("Asia/Tokyo")
 		eStartTW, _ := strconv.Atoi(Events[ongoingIDs[2]].StartAt[2])
-		eventStartTW := time.UnixMilli(int64(eStartTW)).In(locTW).Format("2006-01-02 15:04:05 MST")
+		eStartTWTime := time.Unix(int64(eStartTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
+		eventStartTW := int64(eStartTW) / 1000
 		eEndTW, _ := strconv.Atoi(Events[ongoingIDs[2]].EndAt[2])
-		eventEndTW := time.UnixMilli(int64(eEndTW)).In(locTW).Format("2006-01-02 15:04:05 MST")
+		eEndTWTime := time.Unix(int64(eEndTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
+		eventEndTW := int64(eEndTW) / 1000
 		// CN events
 		eventNameCN := Events[ongoingIDs[3]].EventName[3]
 		eventTypeCN := Events[ongoingIDs[3]].EventType
 		eventAssetsBundleCN := Events[ongoingIDs[3]].AssetBundleName
-		locCN, err := time.LoadLocation("Asia/Shanghai")
-		if err != nil {
-			return err
-		}
+		locCN, _ := time.LoadLocation("Asia/Shanghai")
 		eStartCN, _ := strconv.Atoi(Events[ongoingIDs[3]].StartAt[3])
-		eventStartCN := time.UnixMilli(int64(eStartCN)).In(locCN).Format("2006-01-02 15:04:05 MST")
+		eStartCNTime := time.Unix(int64(eStartCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
+		eventStartCN := int64(eStartCN) / 1000
 		eEndCN, _ := strconv.Atoi(Events[ongoingIDs[3]].EndAt[3])
-		eventEndCN := time.UnixMilli(int64(eEndCN)).In(locCN).Format("2006-01-02 15:04:05 MST")
+		eEndCNTime := time.Unix(int64(eEndCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
+		eventEndCN := int64(eEndCN) / 1000
 		richMessage := gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
@@ -92,9 +106,12 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextString(
-						I.GetLocalisedString("events.start_at", langCode) + eventStartJP + "\n" +
-							I.GetLocalisedString("events.end_at", langCode) + eventEndJP,
+					Text: eventTimingParagraph(
+						eStartJPTime,
+						eEndJPTime,
+						langCode,
+						eventStartJP,
+						eventEndJP,
 					),
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -110,9 +127,12 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextString(
-						I.GetLocalisedString("events.start_at", langCode) + eventStartEN + "\n" +
-							I.GetLocalisedString("events.end_at", langCode) + eventEndEN,
+					Text: eventTimingParagraph(
+						eStartENTime,
+						eEndENTime,
+						langCode,
+						eventStartEN,
+						eventEndEN,
 					),
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -128,9 +148,12 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextString(
-						I.GetLocalisedString("events.start_at", langCode) + eventStartTW + "\n" +
-							I.GetLocalisedString("events.end_at", langCode) + eventEndTW,
+					Text: eventTimingParagraph(
+						eStartTWTime,
+						eEndTWTime,
+						langCode,
+						eventStartTW,
+						eventEndTW,
 					),
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -146,9 +169,12 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextString(
-						I.GetLocalisedString("events.start_at", langCode) + eventStartCN + "\n" +
-							I.GetLocalisedString("events.end_at", langCode) + eventEndCN,
+					Text: eventTimingParagraph(
+						eStartCNTime,
+						eEndCNTime,
+						langCode,
+						eventStartCN,
+						eventEndCN,
 					),
 				},
 			},
