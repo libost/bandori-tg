@@ -151,6 +151,63 @@ type CardDetailed struct {
 	//Stats           CardStatValue            `json:"stats"`
 }
 
+type EventDetailed struct {
+	EventType                       string            `json:"eventType"`
+	EventName                       []string          `json:"eventName"`
+	AssetBundleName                 string            `json:"assetBundleName"`
+	BannerAssetBundleName           string            `json:"bannerAssetBundleName"`
+	StartAt                         []string          `json:"startAt"`
+	EndAt                           []string          `json:"endAt"`
+	EnableFlag                      []*bool           `json:"enableFlag"`
+	PublicStartAt                   []string          `json:"publicStartAt"`
+	PublicEndAt                     []string          `json:"publicEndAt"`
+	DistributionStartAt             []string          `json:"distributionStartAt"`
+	DistributionEndAt               []string          `json:"distributionEndAt"`
+	BgmAssetBundleName              string            `json:"bgmAssetBundleName"`
+	BgmFileName                     string            `json:"bgmFileName"`
+	AggregateEndAt                  []string          `json:"aggregateEndAt"`
+	ExchangeEndAt                   []string          `json:"exchangeEndAt"`
+	PointRewards                    []any             `json:"pointRewards"`
+	RankingRewards                  []any             `json:"rankingRewards"`
+	Attributes                      []EventAttribute  `json:"attributes"`
+	Characters                      []EventCharacters `json:"characters"`
+	EventAttributeAndCharacterBonus struct {
+		EventID          int `json:"eventId"`
+		PointPercent     int `json:"pointPercent"`
+		ParameterPercent int `json:"parameterPercent"`
+	} `json:"eventAttributeAndCharacterBonus"`
+	Members     []EventMembers     `json:"members"`
+	LimitBreaks []EventLimitBreaks `json:"limitBreaks"`
+	Stories     []any              `json:"stories"`
+	RewardCards []int              `json:"rewardCards"`
+}
+
+type EventAttribute struct {
+	EventID   int    `json:"eventId"`
+	Attribute string `json:"attribute"`
+	Percent   int    `json:"percent"`
+}
+
+type EventCharacters struct {
+	EventID     int `json:"eventId"`
+	CharacterID int `json:"characterId"`
+	Percent     int `json:"percent"`
+	Seq         int `json:"seq"`
+}
+
+type EventMembers struct {
+	EventID     int `json:"eventId"`
+	SituationID int `json:"situationId"`
+	Percent     int `json:"percent"`
+	Seq         int `json:"seq"`
+}
+
+type EventLimitBreaks struct {
+	Rarity  int     `json:"rarity"`
+	Rank    int     `json:"rank"`
+	Percent float32 `json:"percent"`
+}
+
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
 var CharaEmoji = [...]int64{
 	6046130500299398386,

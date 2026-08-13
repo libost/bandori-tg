@@ -52,7 +52,30 @@
         "start_at": "开始时间: ",
         "end_at": "结束时间: ",
         "event_ended": " (已结束)",
-        "remaining_time": "剩余时间: %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒"
+        "event_not_found": "未找到活动。请检查活动 ID 是否正确。",
+        "event_fetch_error": "查询活动信息时发生错误，请稍后再试。",
+        "remaining_time": "剩余时间: %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
+        "remaining_timeTable": "结束于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
+        "not_started": "开始于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
+        "event_endedTable": "已完结",
+        "event_details": "活动详情",
+        "Title": "标题: ",
+        "Type": "种类: ",
+        "StartTime": "开始时间: ",
+        "EndTime": "结束时间: ",
+        "Countdown": "倒计时: ",
+        "EventID": "活动ID: ",
+        "StartAt": "开始日期: ",
+        "EndAt": "结束日期: ",
+        "Attribute": "属性: ",
+        "Characters": "角色: ",
+        "event_detailsClick": "点击查询活动详情",
+        "Region": "服务器: ",
+        "jp": "日服 🇯🇵",
+        "en": "国际服 🇺🇸",
+        "tw": "台服 🇹🇼",
+        "cn": "国服 🇨🇳",
+        "kr": "韩服 🇰🇷"
     }
 
 }

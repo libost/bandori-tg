@@ -50,6 +50,27 @@
         "start_at": "Start Time: ",
         "end_at": "End Time: ",
         "event_ended": " (Ended)",
-        "remaining_time": "Remaining Time: %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
+        "event_not_found": "Event not found. Please check if the event ID is correct.",
+        "event_fetch_error": "An error occurred while querying event information. Please try again later",
+        "remaining_time": "Remaining Time: %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "remaining_timeTable": "Ends in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "not_started": "Starts in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "event_endedTable": "Ended",
+        "event_details": "Event Details",
+        "Title": "Title: ",
+        "Type": "Type: ",
+        "Region": "Region: ",
+        "Countdown": "Countdown: ",
+        "StartAt": "Start At: ",
+        "EndAt": "End At: ",
+        "Attribute": "Attribute: ",
+        "Characters": "Characters: ",
+        "EventID": "Event ID: ",
+        "event_detailsClick": "Click to view event details",
+        "jp": "Japan 🇯🇵",
+        "tw": "Taiwan 🇹🇼",
+        "kr": "Korea 🇰🇷",
+        "en": "English 🇺🇸",
+        "cn": "China 🇨🇳"
     }
 }

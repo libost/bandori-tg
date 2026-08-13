@@ -50,6 +50,27 @@
         "start_at": "開始時間: ",
         "end_at": "結束時間: ",
         "event_ended": " (已结束)",
-        "remaining_time": "剩餘時間: %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒"
+        "event_not_found": "未找到活動。請檢查活動 ID 是否正確。",
+        "event_fetch_error": "查詢活動信息時發生錯誤，請稍後再試。",
+        "remaining_time": "剩餘時間: %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
+        "remaining_timeTable": "結束於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
+        "not_started": "開始於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
+        "event_endedTable": "已完結",
+        "event_details": "活動詳情",
+        "Title": "標題: ",
+        "Type": "種類: ",
+        "Region": "地區: ",
+        "Countdown": "倒數計時: ",
+        "StartAt": "開始時間: ",
+        "EndAt": "結束時間: ",
+        "Attribute": "屬性: ",
+        "Characters": "角色: ",
+        "EventID": "活動ID: ",
+        "event_detailsClick": "點擊查詢活動詳情",
+        "jp": "日服 🇯🇵",
+        "en": "国际服 🇺🇸",
+        "tw": "台服 🇹🇼",
+        "cn": "中国服 🇨🇳",
+        "kr": "韩服 🇰🇷"
     }
 }

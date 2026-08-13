@@ -2,11 +2,13 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	DB "github.com/libost/bandori-tg/database"
+	"github.com/libost/bandori-tg/events"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/version"
 )
@@ -22,6 +24,15 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 func startHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	if len(ctx.Args()) > 0 {
+		param := ctx.Args()[1]
+		if _, ok := strings.CutPrefix(param, "events_"); ok {
+			split := strings.Split(param, "_")
+			eventID := split[1]
+			qlangCode := split[2]
+			return events.SendDetailedEvent(b, ctx, eventID, langCode, qlangCode)
+		}
+	}
 	displayText := I.GetLocalisedString("commands.start_desc", langCode)
 	ctx.EffectiveMessage.Reply(b, displayText, nil)
 	return nil
