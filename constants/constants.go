@@ -244,3 +244,17 @@ var BandEmoji = [...]int64{
 	0,
 	6046202260612981011, // 45
 }
+
+// Access emoji by using AttributeEmoji[attributeIndex], for example, AttributeEmoji[0] will return the emoji for attribute "powerful".
+var AttributeEmoji = [...]int64{
+	6046234846529854324, // powerful
+	6048435136800761010, // cool
+	6046477052620578270, // happy
+	6046633359365382486, // pure
+}
+
+// Access emoji by using RarityEmoji[rarityIndex], for example, RarityEmoji[0] will return the emoji for rarity "normal".
+var RarityEmoji = [...]int64{
+	6048893384041438933, // Normal
+	6048597808687095847, // After Training
+}

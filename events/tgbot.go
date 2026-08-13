@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -34,6 +35,25 @@ func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt
 	}
 }
 
+func timeCalc(time int64) (int64, int64, int64, int64) {
+	if time >= 60 {
+		minutes := int64(time / 60)
+		seconds := time % 60
+		if minutes >= 60 {
+			hours := minutes / 60
+			minutes = int64(minutes % 60)
+			if hours >= 24 {
+				days := hours / 24
+				hours = int64(hours % 24)
+				return seconds, minutes, hours, days
+			}
+			return seconds, minutes, hours, 0
+		}
+		return seconds, minutes, 0, 0
+	}
+	return time, 0, 0, 0
+}
+
 func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
@@ -52,6 +72,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eEndJP, _ := strconv.Atoi(Events[ongoingIDs[0]].EndAt[0])
 		eEndJPTime := time.Unix(int64(eEndJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
 		eventEndJP := int64(eEndJP) / 1000
+		remainingTimeJP := eventEndJP - time.Now().Unix()
+		var remainingTimeTextJP string
+		if remainingTimeJP <= 0 {
+			remainingTimeTextJP = I.GetLocalisedString("events.event_ended", langCode)
+		} else {
+			secs, mins, hrs, days := timeCalc(remainingTimeJP)
+			remainingTimeTextJP = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
+		}
+
 		// EN events
 		eventNameEN := Events[ongoingIDs[1]].EventName[1]
 		eventTypeEN := Events[ongoingIDs[1]].EventType
@@ -63,6 +92,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eEndEN, _ := strconv.Atoi(Events[ongoingIDs[1]].EndAt[1])
 		eEndENTime := time.Unix(int64(eEndEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
 		eventEndEN := int64(eEndEN) / 1000
+		remainingTimeEN := eventEndEN - time.Now().Unix()
+		var remainingTimeTextEN string
+		if remainingTimeEN <= 0 {
+			remainingTimeTextEN = I.GetLocalisedString("events.event_ended", langCode)
+		} else {
+			secs, mins, hrs, days := timeCalc(remainingTimeEN)
+			remainingTimeTextEN = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
+		}
+
 		// TW events
 		eventNameTW := Events[ongoingIDs[2]].EventName[2]
 		eventTypeTW := Events[ongoingIDs[2]].EventType
@@ -74,6 +112,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eEndTW, _ := strconv.Atoi(Events[ongoingIDs[2]].EndAt[2])
 		eEndTWTime := time.Unix(int64(eEndTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
 		eventEndTW := int64(eEndTW) / 1000
+		remainingTimeTW := eventEndTW - time.Now().Unix()
+		var remainingTimeTextTW string
+		if remainingTimeTW <= 0 {
+			remainingTimeTextTW = I.GetLocalisedString("events.event_ended", langCode)
+		} else {
+			secs, mins, hrs, days := timeCalc(remainingTimeTW)
+			remainingTimeTextTW = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
+		}
+
 		// CN events
 		eventNameCN := Events[ongoingIDs[3]].EventName[3]
 		eventTypeCN := Events[ongoingIDs[3]].EventType
@@ -85,6 +132,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eEndCN, _ := strconv.Atoi(Events[ongoingIDs[3]].EndAt[3])
 		eEndCNTime := time.Unix(int64(eEndCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
 		eventEndCN := int64(eEndCN) / 1000
+		remainingTimeCN := eventEndCN - time.Now().Unix()
+		var remainingTimeTextCN string
+		if remainingTimeCN <= 0 {
+			remainingTimeTextCN = I.GetLocalisedString("events.event_ended", langCode)
+		} else {
+			secs, mins, hrs, days := timeCalc(remainingTimeCN)
+			remainingTimeTextCN = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
+		}
+
 		richMessage := gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
@@ -104,6 +160,9 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							eventNameJP + " (" + I.GetLocalisedString("events."+eventTypeJP, langCode) + ")" + " (JP🇯🇵)",
 						),
 					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextString(remainingTimeTextJP),
 				},
 				gotgbot.InputRichBlockParagraph{
 					Text: eventTimingParagraph(
@@ -127,6 +186,9 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextString(remainingTimeTextEN),
+				},
+				gotgbot.InputRichBlockParagraph{
 					Text: eventTimingParagraph(
 						eStartENTime,
 						eEndENTime,
@@ -148,6 +210,9 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextString(remainingTimeTextTW),
+				},
+				gotgbot.InputRichBlockParagraph{
 					Text: eventTimingParagraph(
 						eStartTWTime,
 						eEndTWTime,
@@ -167,6 +232,9 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							eventNameCN + " (" + I.GetLocalisedString("events."+eventTypeCN, langCode) + ")" + " (CN🇨🇳)",
 						),
 					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextString(remainingTimeTextCN),
 				},
 				gotgbot.InputRichBlockParagraph{
 					Text: eventTimingParagraph(

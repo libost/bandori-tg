@@ -3,7 +3,9 @@ package cards
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -109,9 +111,16 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		log.Printf("Error fetching card data for card ID %s: %v", param, err)
 		return nil
 	}
-	rarity := ""
+	rarityEmoji := fmt.Sprint(C.RarityEmoji[0])
+	if trainingPath != "" {
+		rarityEmoji = fmt.Sprint(C.RarityEmoji[1])
+	}
+	var rarityBlock gotgbot.RichTextArray
 	for i := 0; i < card.Rarity; i++ {
-		rarity = rarity + "★"
+		rarityBlock = append(rarityBlock, gotgbot.RichTextCustomEmoji{
+			CustomEmojiId:   fmt.Sprint(rarityEmoji),
+			AlternativeText: "😐",
+		})
 	}
 	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
 	if err != nil {
@@ -121,16 +130,158 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, index), "\n", "")
 	attribute := card.Attribute
-	caption_bc := fmt.Sprintf(I.GetLocalisedString("cards.card_info_before_chara", dlangCode), name, cardType, characterName)
-	caption_ac := fmt.Sprintf(I.GetLocalisedString("cards.card_info_after_chara", dlangCode), bandName)
-	caption_ab := fmt.Sprintf(I.GetLocalisedString("cards.card_info_after_band", dlangCode), attribute, rarity, skillName)
-	if gachaText != "" {
-		caption_ab += fmt.Sprintf(I.GetLocalisedString("cards.card_info_gacha_text", dlangCode), gachaText)
+	var aindex int
+	switch attribute {
+	case "powerful":
+		aindex = 0
+		attribute = "POWERFUL"
+	case "cool":
+		aindex = 1
+		attribute = "COOL"
+	case "happy":
+		aindex = 2
+		attribute = "HAPPY"
+	case "pure":
+		aindex = 3
+		attribute = "PURE"
 	}
-	caption_ab += fmt.Sprintf(I.GetLocalisedString("cards.card_info_id", dlangCode), param)
+	releasedAt := selectLocaleString(card.ReleasedAt, index)
+	releasedAtInt, _ := strconv.Atoi(releasedAt)
+	loc, _ := time.LoadLocation("UTC")
+	releasedAtTime := time.Unix(int64(releasedAtInt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
 	cemojiID := C.CharaEmoji[card.CharacterID-1]
 	bemojiID := C.BandEmoji[char.BandID-1]
+	richTable := &gotgbot.RichBlockTable{
+		Cells: [][]gotgbot.RichBlockTableCell{
+			// 1st row
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_title", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text:  gotgbot.RichTextString(name),
+					Align: "right",
+				},
+			},
+			// 2nd row
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_type", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text:  gotgbot.RichTextString(cardType),
+					Align: "right",
+				},
+			},
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_chara", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text: gotgbot.RichTextArray{
+						gotgbot.RichTextString(characterName + " "),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(cemojiID),
+							AlternativeText: "😐",
+						},
+					},
+					Align: "right",
+				},
+			},
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_band", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text: gotgbot.RichTextArray{
+						gotgbot.RichTextString(bandName + " "),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(bemojiID),
+							AlternativeText: "😐",
+						},
+					},
+					Align: "right",
+				},
+			},
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_attribute", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text: gotgbot.RichTextArray{
+						gotgbot.RichTextString(attribute + " "),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
+							AlternativeText: "😐",
+						},
+					},
+					Align: "right",
+				},
+			},
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_rarity", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text:  rarityBlock,
+					Align: "right",
+				},
+			},
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_skill", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text:  gotgbot.RichTextString(skillName),
+					Align: "right",
+				},
+			},
+		},
+	}
+	if gachaText != "" {
+		richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
+			{
+				Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_gacha_text", dlangCode)),
+				Align: "left",
+			},
+			{
+				Text:  gotgbot.RichTextString(gachaText),
+				Align: "right",
+			},
+		})
+	}
+	richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
+		{
+			Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_released_at", dlangCode)),
+			Align: "left",
+		},
+		{
+			Text: gotgbot.RichTextDateTime{
+				Text:           gotgbot.RichTextString(releasedAtTime),
+				UnixTime:       int64(releasedAtInt) / 1000,
+				DateTimeFormat: "DwT",
+			},
+			Align: "right",
+		},
+	})
+	richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
+		{
+			Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_id", dlangCode)),
+			Align: "left",
+		},
+		{
+			Text:  gotgbot.RichTextString(param),
+			Align: "right",
+		},
+	})
 	var richMessage *gotgbot.InputRichMessage
 	if normalPath == "" {
 		richMessage = &gotgbot.InputRichMessage{
@@ -147,20 +298,8 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
 					},
 				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextArray{
-						gotgbot.RichTextString(caption_bc),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(cemojiID),
-							AlternativeText: "😐",
-						},
-						gotgbot.RichTextString(caption_ac),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(bemojiID),
-							AlternativeText: "😐",
-						},
-						gotgbot.RichTextString(caption_ab),
-					},
+				gotgbot.InputRichBlockTable{
+					Cells: richTable.Cells,
 				},
 			},
 		}
@@ -179,20 +318,8 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
 					},
 				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextArray{
-						gotgbot.RichTextString(caption_bc),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(cemojiID),
-							AlternativeText: "😐",
-						},
-						gotgbot.RichTextString(caption_ac),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(bemojiID),
-							AlternativeText: "😐",
-						},
-						gotgbot.RichTextString(caption_ab),
-					},
+				gotgbot.InputRichBlockTable{
+					Cells: richTable.Cells,
 				},
 			},
 		}
@@ -219,20 +346,8 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
 					},
 				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextArray{
-						gotgbot.RichTextString(caption_bc),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(cemojiID),
-							AlternativeText: "😐",
-						},
-						gotgbot.RichTextString(caption_ac),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(bemojiID),
-							AlternativeText: "😐",
-						},
-						gotgbot.RichTextString(caption_ab),
-					},
+				gotgbot.InputRichBlockTable{
+					Cells: richTable.Cells,
 				},
 			},
 		}

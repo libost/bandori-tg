@@ -132,7 +132,7 @@ func regionCodeFromCard(card C.Card) string {
 	return "jp"
 }
 
-// saveCardsToFile saves the card image to a file and returns the file path.
+// retrieveCardsPath retrieves the path for a card image based on its region, resource set name, and stat, then returns its url.
 // regionCode: "en" for English, "jp" for Japanese, etc.
 // resourceSetName: The resource set name of the card.
 // cardStat: The card stat, e.g., "normal", "after_training".

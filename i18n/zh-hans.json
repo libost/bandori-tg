@@ -29,11 +29,16 @@
         "no_card_id": "请提供要查询的卡片 ID。",
         "card_not_found": "未找到卡片。请检查卡片 ID 是否正确。",
         "error_occurred": "查询卡片信息时发生错误，请稍后再试。",
-        "card_info_before_chara": "标题: %[1]s\n种类: %[2]s\n角色: %[3]s",
-        "card_info_after_chara": "\n乐团: %[1]s",
-        "card_info_after_band": "\n属性: %[1]s\n稀有度: %[2]s\n技能: %[3]s\n",
-        "card_info_gacha_text": "招募语: %[1]s\n",
-        "card_info_id": "ID: %[1]s\n"
+        "card_info_title": "标题:",
+        "card_info_type": "种类: ",
+        "card_info_chara": "角色: ",
+        "card_info_band": "乐团: ",
+        "card_info_attribute": "属性: ",
+        "card_info_rarity": "稀有度: ",
+        "card_info_skill": "技能: ",
+        "card_info_gacha_text": "招募语: ",
+        "card_info_released_at": "发布时间: ",
+        "card_info_id": "ID: "
     },
     "events": {
         "mission_live": "任务LIVE",
@@ -45,8 +50,9 @@
         "story": "一般活动",
         "ongoing_events": "当前进行中的活动",
         "start_at": "开始时间: ",
-        "end_at": "结束时间: "
-
+        "end_at": "结束时间: ",
+        "event_ended": " (已结束)",
+        "remaining_time": "剩余时间: %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒"
     }
 
 }

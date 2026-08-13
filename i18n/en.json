@@ -28,11 +28,15 @@
         "no_card_id": "Please provide a card ID to query.",
         "card_not_found": "Card not found. Please check if the card ID is correct.",
         "error_occurred": "An error occurred while querying card information. Please try again later.",
-        "card_info_before_chara": "Title: %[1]s\nType: %[2]s\nCharacter: %[3]s",
-        "card_info_after_chara": "\nBand: %[1]s",
-        "card_info_after_band": "\nAttribute: %[1]s\nRarity: %[2]s\nSkill: %[3]s\n",
-        "card_info_gacha_text": "Gacha Text: %[1]s\n",
-        "card_info_id": "ID: %[1]s\n"
+        "card_info_title": "Title: ",
+        "card_info_type": "Type: ",
+        "card_info_chara": "Character: ",
+        "card_info_band": "Band: ",
+        "card_info_attribute": "Attribute: ",
+        "card_info_rarity": "Rarity: ",
+        "card_info_skill": "Skill: ",
+        "card_info_gacha_text": "Gacha Text: ",
+        "card_info_id": "ID: "
     },
     "events": {
         "mission_live": "Mission Live",
@@ -44,6 +48,8 @@
         "story": "Normal",
         "ongoing_events": "Ongoing Events",
         "start_at": "Start Time: ",
-        "end_at": "End Time: "
+        "end_at": "End Time: ",
+        "event_ended": " (Ended)",
+        "remaining_time": "Remaining Time: %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
     }
 }
