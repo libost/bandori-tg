@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
@@ -16,9 +19,32 @@ import (
 	"github.com/libost/bandori-tg/events"
 	"github.com/libost/bandori-tg/recent"
 	"github.com/libost/bandori-tg/skills"
+	"github.com/libost/bandori-tg/version"
 )
 
 func main() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer signal.Stop(sigs)
+	args := os.Args
+	if len(args) > 1 {
+		switch args[1] {
+		case "version":
+			fmt.Printf("bandori-tg version: %s\n", version.Version)
+			return
+		case "help":
+			fmt.Println("Usage: bandori-tg [command]")
+			fmt.Println("Commands:")
+			fmt.Println("  help    Show this help message")
+			fmt.Println("  run     Run the bot (default)")
+			return
+		case "run":
+			// Continue to run the bot
+		default:
+			fmt.Printf("Unknown command: %s\n", args[1])
+			return
+		}
+	}
 	initAll()
 	config.InitConfig()
 	token := config.AppConfig.General.Token
@@ -44,6 +70,21 @@ func main() {
 		DropPendingUpdates: true,
 	})
 
+	go func() {
+		for sig := range sigs {
+			switch sig {
+			case syscall.SIGINT, syscall.SIGTERM:
+				if err := updater.Stop(); err != nil {
+					log.Printf("Error stopping updater: %v", err)
+				}
+				log.Println("Bot stopped gracefully.")
+				os.Exit(0)
+			case syscall.SIGHUP:
+				log.Println("Received SIGHUP, reloading configuration...")
+				config.InitConfig()
+			}
+		}
+	}()
 	fmt.Println("Bot is running. Press Ctrl+C to stop.")
 
 	updater.Idle()
