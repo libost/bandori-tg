@@ -67,7 +67,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eventNameTW := Events[ongoingIDs[2]].EventName[2]
 		eventTypeTW := Events[ongoingIDs[2]].EventType
 		eventAssetsBundleTW := Events[ongoingIDs[2]].AssetBundleName
-		locTW, _ := time.LoadLocation("Asia/Tokyo")
+		locTW, _ := time.LoadLocation("Asia/Taipei")
 		eStartTW, _ := strconv.Atoi(Events[ongoingIDs[2]].StartAt[2])
 		eStartTWTime := time.Unix(int64(eStartTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
 		eventStartTW := int64(eStartTW) / 1000
