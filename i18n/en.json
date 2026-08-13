@@ -13,10 +13,26 @@
         "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s"
     },
     "cards": {
+        "Heading": "Card Information",
+        "NormalCard": "Before Training",
+        "TrainingCard": "After Training",
+        "initial": "Initial",
+        "permanent": "Permanent",
+        "limited": "Limited",
+        "dreamfes": "Dream Festival",
+        "kirafes": "Kira Festival",
+        "birthday": "Birthday",
+        "event": "Event",
+        "campaign": "Campaign",
+        "others": "Others",
         "no_card_id": "Please provide a card ID to query.",
         "card_not_found": "Card not found. Please check if the card ID is correct.",
         "error_occurred": "An error occurred while querying card information. Please try again later.",
-        "card_info": "Card Information:\nID: %[1]s\nName: %[2]s\nCharacter: %[3]s\nBand: %[4]s\nAttribute: %[5]s\nRarity: %[6]s\nSkill: %[7]s\n"
+        "card_info_before_chara": "Title: %[1]s\nType: %[2]s\nCharacter: %[3]s",
+        "card_info_after_chara": "\nBand: %[1]s",
+        "card_info_after_band": "\nAttribute: %[1]s\nRarity: %[2]s\nSkill: %[3]s\n",
+        "card_info_gacha_text": "Gacha Text: %[1]s\n",
+        "card_info_id": "ID: %[1]s\n"
     },
     "events": {
         "mission_live": "Mission Live",

@@ -190,3 +190,36 @@ func GetCard(cardId string) (string, string, error) {
 	}
 	return normalPath, trainingPath, nil
 }
+
+func GetDetailedCard(cardId string) (C.CardDetailed, error) {
+	resp, err := http.Get("https://bestdori.com/api/cards/" + cardId + ".json")
+	if err != nil {
+		return C.CardDetailed{}, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return C.CardDetailed{}, err
+	}
+	var cardDetailed C.CardDetailed
+	err = json.Unmarshal(body, &cardDetailed)
+	if err != nil {
+		return C.CardDetailed{}, err
+	}
+	return cardDetailed, nil
+}
+
+/*
+func GetGachaVoice(resourceSetName string, cardType string, regionCode string) (string, error) {
+	switch cardType {
+	case "birthday":
+		cardType = "birthday"
+	case "permanent":
+		cardType = "operation"
+	case "limited", "dreamfes":
+		cardType = "limited"
+	}
+	url := "https://bestdori.com/assets/" + regionCode + "/gacha/voice/" + cardType + "/spin_rip/" + resourceSetName + ".mp3"
+	return url, nil
+}
+*/

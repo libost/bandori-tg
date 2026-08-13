@@ -131,3 +131,116 @@ type Events struct {
 }
 
 type EventsData map[string]Events
+
+type CardDetailed struct {
+	CharacterID     int    `json:"characterId"`
+	Rarity          int    `json:"rarity"`
+	Attribute       string `json:"attribute"`
+	LevelLimit      int    `json:"levelLimit"`
+	ResourceSetName string `json:"resourceSetName"`
+	SdResourceName  string `json:"sdResourceName"`
+	//Episodes        map[string]CardStatValue `json:"episodes"` //???
+	CostumeID  int      `json:"costumeId"`
+	GachaText  []string `json:"gachaText"`
+	Prefix     []string `json:"prefix"`
+	ReleasedAt []string `json:"releasedAt"`
+	SkillName  []string `json:"skillName"`
+	SkillID    int      `json:"skillId"`
+	Source     []any    `json:"source"`
+	Type       string   `json:"type"`
+	//Stats           CardStatValue            `json:"stats"`
+}
+
+// Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
+var CharaEmoji = [...]int64{
+	6046130500299398386,
+	6046387158955072399,
+	6046167522917490460,
+	6046585002328595828,
+	6046391398087794995,
+	6046433647681085078,
+	6046499274781369282,
+	6048742759538368517,
+	6046090015937665512,
+	6046150751070199791,
+	6046307225318728001,
+	6046552386346951203,
+	6048708541533919853,
+	6046364180880040403,
+	6048618806782205656,
+	6046638311462674031,
+	6046479015420632485,
+	6046158061104536628,
+	6046380089438904123,
+	6046340653049192832,
+	6048538409289392417,
+	6046637108871831280,
+	6046188512422665882,
+	6046526560708599605,
+	6048779756386655755,
+	6048523166450458769,
+	6046397548480962102,
+	6046232248074641192,
+	6046236272458997711,
+	6046423262450164145,
+	6046153035992801227,
+	6046161514258242737,
+	6048380341607996514,
+	6046462896408371140,
+	6046380372906746121,
+	6046297857995054199,
+	6046085957193572423,
+	6048654751363505392,
+	6046456028755664146,
+	6048780769998942834,
+}
+
+// Access emoji by using BandEmoji[bandID-1], for example, BandEmoji[0] will return the emoji for band ID 1.
+// For unknown reasons, the IDs of RAS, Morfonica and MyGO are 18, 21 and 45 respectively, so the missing IDs will be filled with 0.
+var BandEmoji = [...]int64{
+	6048882135522089606,
+	6046584078910627512,
+	6046608500094672312,
+	6046308900355973792,
+	6046508027924717838,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	6046376782314085971, // 18
+	0,
+	0,
+	6046439415822166401, // 21
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	6046202260612981011, // 45
+}

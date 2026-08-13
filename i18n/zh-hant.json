@@ -13,10 +13,26 @@
         "about_desc": "Bandori Bot \n版本: %[1]s\n構建時間: %[2]s\nGit 提交: %[3]s\n分支: %[4]s"
     },
     "cards": {
+        "Heading": "卡面信息",
+        "NormalCard": "特訓前",
+        "TrainingCard": "特訓後",
+        "initial": "初始",
+        "permanent": "無期限",
+        "limited": "期間限定",
+        "dreamfes": "夢限",
+        "kirafes": "閃限",
+        "birthday": "生日",
+        "event": "活動",
+        "campaign": "聯名合作",
+        "others": "其他",
         "no_card_id": "請提供要查詢的卡片 ID。",
         "card_not_found": "未找到卡片。請檢查卡片 ID 是否正確。",
         "error_occurred": "查詢卡片信息時發生錯誤，請稍後再試。",
-        "card_info": "卡片信息：\nID: %[1]s\n名稱: %[2]s\n角色: %[3]s\n樂團: %[4]s\n屬性: %[5]s\n稀有度: %[6]s\n技能: %[7]s\n"
+        "card_info_before_chara": "標題: %[1]s\n種類: %[2]s\n角色: %[3]s",
+        "card_info_after_chara": "\n樂團: %[1]s",
+        "card_info_after_band": "\n屬性: %[1]s\n稀有度: %[2]s\n技能: %[3]s\n",
+        "card_info_gacha_text": "招募語: %[1]s\n",
+        "card_info_id": "ID: %[1]s\n"
     },
     "events": {
         "mission_live": "任務模式",

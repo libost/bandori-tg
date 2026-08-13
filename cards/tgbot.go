@@ -11,6 +11,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/characters"
+	C "github.com/libost/bandori-tg/constants"
 	DB "github.com/libost/bandori-tg/database"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/skills"
@@ -78,6 +79,14 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	case "kr":
 		index = 4
 	}
+	cardDetailed, err := GetDetailedCard(param)
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		log.Printf("Error fetching detailed card data for card ID %s: %v", param, err)
+		return nil
+	}
+	gachaText := strings.ReplaceAll(selectLocaleString(cardDetailed.GachaText, index), "\n", "")
+	cardType := I.GetLocalisedString("cards."+card.Type, dlangCode)
 	name := selectLocaleString(card.Prefix, index)
 
 	char, err := characters.GetCharacter(fmt.Sprint(card.CharacterID))
@@ -110,34 +119,128 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		log.Printf("Error fetching skill data for card ID %s: %v", param, err)
 		return nil
 	}
-	skillName := selectLocaleString(skill.SimpleDescription, index)
+	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, index), "\n", "")
 	attribute := card.Attribute
-	caption := fmt.Sprintf(I.GetLocalisedString("cards.card_info", dlangCode), param, name, characterName, bandName, attribute, rarity, skillName)
+	caption_bc := fmt.Sprintf(I.GetLocalisedString("cards.card_info_before_chara", dlangCode), name, cardType, characterName)
+	caption_ac := fmt.Sprintf(I.GetLocalisedString("cards.card_info_after_chara", dlangCode), bandName)
+	caption_ab := fmt.Sprintf(I.GetLocalisedString("cards.card_info_after_band", dlangCode), attribute, rarity, skillName)
+	if gachaText != "" {
+		caption_ab += fmt.Sprintf(I.GetLocalisedString("cards.card_info_gacha_text", dlangCode), gachaText)
+	}
+	caption_ab += fmt.Sprintf(I.GetLocalisedString("cards.card_info_id", dlangCode), param)
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
+	cemojiID := C.CharaEmoji[card.CharacterID-1]
+	bemojiID := C.BandEmoji[char.BandID-1]
+	var richMessage *gotgbot.InputRichMessage
 	if normalPath == "" {
-		ctx.EffectiveMessage.ReplyPhoto(b, gotgbot.InputFileByURL(trainingPath), &gotgbot.SendPhotoOpts{
-			Caption:   caption,
-			ParseMode: "HTML",
-		})
-		return nil
+		richMessage = &gotgbot.InputRichMessage{
+			Blocks: []gotgbot.InputRichBlock{
+				gotgbot.InputRichBlockSectionHeading{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Size: 3,
+				},
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByURL(trainingPath),
+					},
+					Caption: &gotgbot.RichBlockCaption{
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextArray{
+						gotgbot.RichTextString(caption_bc),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(cemojiID),
+							AlternativeText: "😐",
+						},
+						gotgbot.RichTextString(caption_ac),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(bemojiID),
+							AlternativeText: "😐",
+						},
+						gotgbot.RichTextString(caption_ab),
+					},
+				},
+			},
+		}
+	} else if trainingPath == "" {
+		richMessage = &gotgbot.InputRichMessage{
+			Blocks: []gotgbot.InputRichBlock{
+				gotgbot.InputRichBlockSectionHeading{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Size: 3,
+				},
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByURL(normalPath),
+					},
+					Caption: &gotgbot.RichBlockCaption{
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextArray{
+						gotgbot.RichTextString(caption_bc),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(cemojiID),
+							AlternativeText: "😐",
+						},
+						gotgbot.RichTextString(caption_ac),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(bemojiID),
+							AlternativeText: "😐",
+						},
+						gotgbot.RichTextString(caption_ab),
+					},
+				},
+			},
+		}
+	} else {
+		richMessage = &gotgbot.InputRichMessage{
+			Blocks: []gotgbot.InputRichBlock{
+				gotgbot.InputRichBlockSectionHeading{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Size: 3,
+				},
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByURL(normalPath),
+					},
+					Caption: &gotgbot.RichBlockCaption{
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+					},
+				},
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByURL(trainingPath),
+					},
+					Caption: &gotgbot.RichBlockCaption{
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextArray{
+						gotgbot.RichTextString(caption_bc),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(cemojiID),
+							AlternativeText: "😐",
+						},
+						gotgbot.RichTextString(caption_ac),
+						gotgbot.RichTextCustomEmoji{
+							CustomEmojiId:   fmt.Sprint(bemojiID),
+							AlternativeText: "😐",
+						},
+						gotgbot.RichTextString(caption_ab),
+					},
+				},
+			},
+		}
 	}
-	if trainingPath == "" {
-		ctx.EffectiveMessage.ReplyPhoto(b, gotgbot.InputFileByURL(normalPath), &gotgbot.SendPhotoOpts{
-			Caption:   caption,
-			ParseMode: "HTML",
-		})
-		return nil
-	}
-	media := []gotgbot.InputMedia{
-		&gotgbot.InputMediaPhoto{
-			Media:     gotgbot.InputFileByURL(normalPath),
-			Caption:   caption,
-			ParseMode: "HTML",
+	_, err = b.SendRichMessage(ctx.EffectiveUser.Id, *richMessage, &gotgbot.SendRichMessageOpts{
+		ReplyParameters: &gotgbot.ReplyParameters{
+			MessageId: ctx.EffectiveMessage.MessageId,
 		},
-		&gotgbot.InputMediaPhoto{
-			Media: gotgbot.InputFileByURL(trainingPath),
-		},
-	}
-	ctx.EffectiveMessage.ReplyMediaGroup(b, media, nil)
-	return nil
+	})
+	return err
 }
