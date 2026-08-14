@@ -19,6 +19,7 @@ import (
 	DB "github.com/libost/bandori-tg/database"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/skills"
+	"github.com/libost/bandori-tg/utils"
 )
 
 func selectLocaleString(strings []string, index int) string {
@@ -74,15 +75,16 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 	param := ctx.Args()[1]
-	if len(ctx.Args()) > 2 && slices.Contains(C.AcceptedRegions, ctx.Args()[2]) {
+	if len(ctx.Args()) > 2 {
 		qlangCode = ctx.Args()[2]
 		if !slices.Contains(C.AcceptedRegions, qlangCode) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", dlangCode), nil)
 			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, qlangCode)
+			return nil
 		}
 	}
 	// Process the card ID and query the database
-	card, exists := Cards[param]
+	card, exists := utils.Cards[param]
 	if !exists {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
 		log.Printf("User %d queried a non-existent card with ID %s.", ctx.EffectiveUser.Id, param)

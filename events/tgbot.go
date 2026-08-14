@@ -13,6 +13,7 @@ import (
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/recent"
+	"github.com/libost/bandori-tg/utils"
 )
 
 func selectLocaleString(strings []string, index int) string {
@@ -43,7 +44,7 @@ func allEqualPercent[T comparable](slice []T) bool {
 }
 
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
-	_, exists := Events[eventID]
+	_, exists := utils.Events[eventID]
 	if !exists {
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
 		return err
@@ -136,7 +137,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	} else if endAtUnix > time.Now().Unix() && startAtUnix < time.Now().Unix() {
 		remainingTime := endAtUnix - time.Now().Unix()
 		secs, mins, hrs, days = timeCalc(remainingTime)
-		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_timeTable", langCode), days, hrs, mins, secs)
+		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 	} else {
 		// The event has ended
 		remainingTimeText = I.GetLocalisedString("events.event_endedTable", langCode)
@@ -158,7 +159,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	}
 	charaArray := make([]gotgbot.RichText, length)
 	if allEqual {
-		for i := 0; i < len(charaIDs); i++ {
+		for i := range charaIDs {
 			charaIDInt, _ := strconv.Atoi(charaIDs[i])
 			charaArray[i] = gotgbot.RichTextCustomEmoji{
 				CustomEmojiId:   fmt.Sprint(C.CharaEmoji[(charaIDInt - 1)]),
@@ -364,80 +365,96 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 		// JP events
-		eventNameJP := Events[ongoingIDs[0]].EventName[0]
-		eventTypeJP := Events[ongoingIDs[0]].EventType
-		eventAssetsBundleJP := Events[ongoingIDs[0]].AssetBundleName
+		eventNameJP := utils.Events[ongoingIDs[0]].EventName[0]
+		eventTypeJP := utils.Events[ongoingIDs[0]].EventType
+		eventAssetsBundleJP := utils.Events[ongoingIDs[0]].AssetBundleName
 		locJP, _ := time.LoadLocation("Asia/Tokyo")
-		eStartJP, _ := strconv.Atoi(Events[ongoingIDs[0]].StartAt[0])
+		eStartJP, _ := strconv.Atoi(utils.Events[ongoingIDs[0]].StartAt[0])
 		eStartJPTime := time.Unix(int64(eStartJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
 		eventStartJP := int64(eStartJP) / 1000
-		eEndJP, _ := strconv.Atoi(Events[ongoingIDs[0]].EndAt[0])
+		eEndJP, _ := strconv.Atoi(utils.Events[ongoingIDs[0]].EndAt[0])
 		eEndJPTime := time.Unix(int64(eEndJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
 		eventEndJP := int64(eEndJP) / 1000
 		remainingTimeJP := eventEndJP - time.Now().Unix()
+		startRemainingTimeJP := eventStartJP - time.Now().Unix()
 		var remainingTimeTextJP string
 		if remainingTimeJP <= 0 {
 			remainingTimeTextJP = I.GetLocalisedString("events.event_ended", langCode)
+		} else if startRemainingTimeJP > 0 {
+			secs, mins, hrs, days := timeCalc(startRemainingTimeJP)
+			remainingTimeTextJP = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 		} else {
 			secs, mins, hrs, days := timeCalc(remainingTimeJP)
 			remainingTimeTextJP = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 		}
 
 		// EN events
-		eventNameEN := Events[ongoingIDs[1]].EventName[1]
-		eventTypeEN := Events[ongoingIDs[1]].EventType
-		eventAssetsBundleEN := Events[ongoingIDs[1]].AssetBundleName
+		eventNameEN := utils.Events[ongoingIDs[1]].EventName[1]
+		eventTypeEN := utils.Events[ongoingIDs[1]].EventType
+		eventAssetsBundleEN := utils.Events[ongoingIDs[1]].AssetBundleName
 		locEN, _ := time.LoadLocation("America/New_York")
-		eStartEN, _ := strconv.Atoi(Events[ongoingIDs[1]].StartAt[1])
+		eStartEN, _ := strconv.Atoi(utils.Events[ongoingIDs[1]].StartAt[1])
 		eStartENTime := time.Unix(int64(eStartEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
 		eventStartEN := int64(eStartEN) / 1000
-		eEndEN, _ := strconv.Atoi(Events[ongoingIDs[1]].EndAt[1])
+		eEndEN, _ := strconv.Atoi(utils.Events[ongoingIDs[1]].EndAt[1])
 		eEndENTime := time.Unix(int64(eEndEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
 		eventEndEN := int64(eEndEN) / 1000
 		remainingTimeEN := eventEndEN - time.Now().Unix()
+		startRemainingTimeEN := eventStartEN - time.Now().Unix()
 		var remainingTimeTextEN string
 		if remainingTimeEN <= 0 {
 			remainingTimeTextEN = I.GetLocalisedString("events.event_ended", langCode)
+		} else if startRemainingTimeEN > 0 {
+			secs, mins, hrs, days := timeCalc(startRemainingTimeEN)
+			remainingTimeTextEN = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 		} else {
 			secs, mins, hrs, days := timeCalc(remainingTimeEN)
 			remainingTimeTextEN = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 		}
 
 		// TW events
-		eventNameTW := Events[ongoingIDs[2]].EventName[2]
-		eventTypeTW := Events[ongoingIDs[2]].EventType
-		eventAssetsBundleTW := Events[ongoingIDs[2]].AssetBundleName
+		eventNameTW := utils.Events[ongoingIDs[2]].EventName[2]
+		eventTypeTW := utils.Events[ongoingIDs[2]].EventType
+		eventAssetsBundleTW := utils.Events[ongoingIDs[2]].AssetBundleName
 		locTW, _ := time.LoadLocation("Asia/Taipei")
-		eStartTW, _ := strconv.Atoi(Events[ongoingIDs[2]].StartAt[2])
+		eStartTW, _ := strconv.Atoi(utils.Events[ongoingIDs[2]].StartAt[2])
 		eStartTWTime := time.Unix(int64(eStartTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
 		eventStartTW := int64(eStartTW) / 1000
-		eEndTW, _ := strconv.Atoi(Events[ongoingIDs[2]].EndAt[2])
+		eEndTW, _ := strconv.Atoi(utils.Events[ongoingIDs[2]].EndAt[2])
 		eEndTWTime := time.Unix(int64(eEndTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
 		eventEndTW := int64(eEndTW) / 1000
 		remainingTimeTW := eventEndTW - time.Now().Unix()
+		startRemainingTimeTW := eventStartTW - time.Now().Unix()
 		var remainingTimeTextTW string
 		if remainingTimeTW <= 0 {
 			remainingTimeTextTW = I.GetLocalisedString("events.event_ended", langCode)
+		} else if startRemainingTimeTW > 0 {
+			secs, mins, hrs, days := timeCalc(startRemainingTimeTW)
+			remainingTimeTextTW = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 		} else {
 			secs, mins, hrs, days := timeCalc(remainingTimeTW)
 			remainingTimeTextTW = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 		}
 
 		// CN events
-		eventNameCN := Events[ongoingIDs[3]].EventName[3]
-		eventTypeCN := Events[ongoingIDs[3]].EventType
-		eventAssetsBundleCN := Events[ongoingIDs[3]].AssetBundleName
+		eventNameCN := utils.Events[ongoingIDs[3]].EventName[3]
+		eventTypeCN := utils.Events[ongoingIDs[3]].EventType
+		eventAssetsBundleCN := utils.Events[ongoingIDs[3]].AssetBundleName
 		locCN, _ := time.LoadLocation("Asia/Shanghai")
-		eStartCN, _ := strconv.Atoi(Events[ongoingIDs[3]].StartAt[3])
+		eStartCN, _ := strconv.Atoi(utils.Events[ongoingIDs[3]].StartAt[3])
 		eStartCNTime := time.Unix(int64(eStartCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
 		eventStartCN := int64(eStartCN) / 1000
-		eEndCN, _ := strconv.Atoi(Events[ongoingIDs[3]].EndAt[3])
+		eEndCN, _ := strconv.Atoi(utils.Events[ongoingIDs[3]].EndAt[3])
 		eEndCNTime := time.Unix(int64(eEndCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
 		eventEndCN := int64(eEndCN) / 1000
 		remainingTimeCN := eventEndCN - time.Now().Unix()
+		startRemainingTimeCN := eventStartCN - time.Now().Unix()
 		var remainingTimeTextCN string
 		if remainingTimeCN <= 0 {
 			remainingTimeTextCN = I.GetLocalisedString("events.event_ended", langCode)
+		} else if startRemainingTimeCN > 0 {
+			secs, mins, hrs, days := timeCalc(startRemainingTimeCN)
+			remainingTimeTextCN = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 		} else {
 			secs, mins, hrs, days := timeCalc(remainingTimeCN)
 			remainingTimeTextCN = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
