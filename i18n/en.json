@@ -8,6 +8,9 @@
     "commands": {
         "start_desc": "Welcome to the Bandori Bot! Use /query <card_id> to get card information.",
         "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/query <card_id> - Query information about a specific card by its ID.",
+        "lang_desc": "Select the language you want to set.",
+        "lang_dlang": "Set Display Language",
+        "lang_qlang": "Set Query Language",
         "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
         "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot.",
         "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s"
@@ -36,6 +39,7 @@
         "card_info_rarity": "Rarity: ",
         "card_info_skill": "Skill: ",
         "card_info_gacha_text": "Gacha Text: ",
+        "card_info_released_at": "Released At: ",
         "card_info_id": "ID: ",
         "region": "Region: ",
         "jp": "Japan 🇯🇵",
@@ -63,8 +67,7 @@
         "event_fetch_error": "An error occurred while querying event information. Please try again later",
         "invalid_region": "Invalid server code. Please use one of the following: jp, en, tw, kr, cn.",
         "region_no_data": "The current server (%[1]s) does not have data for this event. Displaying data from server (%[2]s) instead.",
-        "remaining_time": "Remaining Time: %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
-        "remaining_timeTable": "Ends in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "remaining_time": "Ends in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
         "not_started": "Starts in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
         "event_endedTable": "Ended",
         "event_details": "Event Details",
