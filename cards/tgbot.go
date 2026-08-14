@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -33,6 +34,18 @@ func selectLocaleString(strings []string, index int) string {
 		}
 	}
 	return selected
+}
+
+func isWebPageContentErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	if tgErr, ok := errors.AsType[*gotgbot.TelegramError](err); ok {
+		if tgErr.Code == 400 && strings.Contains(tgErr.Description, "wrong type of the web page content") {
+			return true
+		}
+	}
+	return false
 }
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
@@ -335,9 +348,6 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
 					},
 				},
-				gotgbot.InputRichBlockTable{
-					Cells: richTable.Cells,
-				},
 			},
 		}
 	} else if trainingPath == "" {
@@ -354,9 +364,6 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					Caption: &gotgbot.RichBlockCaption{
 						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
 					},
-				},
-				gotgbot.InputRichBlockTable{
-					Cells: richTable.Cells,
 				},
 			},
 		}
@@ -383,16 +390,42 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
 					},
 				},
-				gotgbot.InputRichBlockTable{
-					Cells: richTable.Cells,
-				},
 			},
 		}
 	}
+	richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockTable{
+		Cells: richTable.Cells,
+	})
 	_, err = b.SendRichMessage(ctx.EffectiveUser.Id, *richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if isWebPageContentErr(err) {
+		// Handle web page content error
+		richMessageErr := &gotgbot.InputRichMessage{
+			Blocks: []gotgbot.InputRichBlock{
+				gotgbot.InputRichBlockSectionHeading{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Size: 3,
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextBold{
+						Text: gotgbot.RichTextItalic{
+							Text: gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("cards.bad_card", dlangCode), param)),
+						},
+					},
+				},
+				gotgbot.InputRichBlockTable{
+					Cells: richTable.Cells,
+				},
+			},
+		}
+		_, err = b.SendRichMessage(ctx.EffectiveUser.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
+			ReplyParameters: &gotgbot.ReplyParameters{
+				MessageId: ctx.EffectiveMessage.MessageId,
+			},
+		})
+	}
 	return err
 }

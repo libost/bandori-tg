@@ -317,3 +317,6 @@ var RarityEmoji = [...]int64{
 }
 
 var AcceptedRegions = []string{"jp", "en", "tw", "kr", "cn"}
+
+// These cards are known to have issues with their data, so they are excluded from the bot's responses.
+var BadCards = []string{"2309"}

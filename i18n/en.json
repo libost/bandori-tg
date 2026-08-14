@@ -44,7 +44,8 @@
         "cn": "China 🇨🇳",
         "kr": "Korea 🇰🇷",
         "invalid_region": "Invalid server code. Please use one of the following: jp, en, tw, cn, kr.",
-        "region_no_data": "The current server (%[1]s) does not have data for this card. Displaying data from server (%[2]s) instead."
+        "region_no_data": "The current server (%[1]s) does not have data for this card. Displaying data from server (%[2]s) instead.",
+        "bad_card": "Due to known technical issues, this card (%[1]s) cannot be displayed. We apologize for any inconvenience caused."
     },
     "events": {
         "mission_live": "Mission Live",
