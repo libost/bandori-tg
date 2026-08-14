@@ -45,21 +45,11 @@ func main() {
 		}
 	}
 	initAll()
-	go func() {
-		err := utils.InitLists()
-		if err != nil {
-			log.Fatalf("Failed to initialize lists: %v", err)
-		}
-		ticker := time.NewTicker(3 * time.Hour)
-		for range ticker.C {
-			err := utils.InitLists()
-			if err != nil {
-				log.Printf("Failed to refresh lists: %v", err)
-			} else {
-				log.Println("Successfully refreshed lists.")
-			}
-		}
-	}()
+
+	_ = utils.InitLists()
+
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger)))
 
 	config.InitConfig()
 	token := config.AppConfig.General.Token
@@ -91,6 +81,8 @@ func main() {
 				if err := updater.Stop(); err != nil {
 					log.Printf("Error stopping updater: %v", err)
 				}
+				ctx := c.Stop()
+				<-ctx.Done()
 				log.Println("Bot stopped gracefully.")
 				os.Exit(0)
 			case syscall.SIGHUP:
@@ -100,7 +92,7 @@ func main() {
 		}
 	}()
 	fmt.Println("Bot is running. Press Ctrl+C to stop.")
-	cronTasks()
+	cronTasks(c)
 
 	updater.Idle()
 
@@ -113,9 +105,7 @@ func initAll() {
 	}
 }
 
-func cronTasks() {
-	loc, _ := time.LoadLocation("Asia/Shanghai")
-	c := cron.New(cron.WithLocation(loc))
+func cronTasks(c *cron.Cron) {
 	_, err := c.AddFunc("30 8 * * *", func() {
 		if err := utils.InitLists(); err != nil {
 			log.Printf("Error refreshing lists via cron: %v", err)

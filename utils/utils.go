@@ -72,7 +72,8 @@ func InitLists() error {
 		})
 	}
 	if err := eg.Wait(); err != nil {
-		log.Fatalf("Error occurred while fetching and decoding data: %v", err)
+		log.Printf("Error occurred while fetching and decoding data: %v", err)
+		panic("Failed to initialize lists")
 	}
 	fmt.Println("All lists initialized successfully.")
 	return nil
