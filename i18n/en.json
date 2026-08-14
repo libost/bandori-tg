@@ -36,7 +36,15 @@
         "card_info_rarity": "Rarity: ",
         "card_info_skill": "Skill: ",
         "card_info_gacha_text": "Gacha Text: ",
-        "card_info_id": "ID: "
+        "card_info_id": "ID: ",
+        "region": "Region: ",
+        "jp": "Japan 🇯🇵",
+        "en": "International 🇺🇸",
+        "tw": "Taiwan 🇹🇼",
+        "cn": "China 🇨🇳",
+        "kr": "Korea 🇰🇷",
+        "invalid_region": "Invalid server code. Please use one of the following: jp, en, tw, cn, kr.",
+        "region_no_data": "The current server (%[1]s) does not have data for this card. Displaying data from server (%[2]s) instead."
     },
     "events": {
         "mission_live": "Mission Live",

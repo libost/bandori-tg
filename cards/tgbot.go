@@ -3,6 +3,7 @@ package cards
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -60,6 +61,13 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 	param := ctx.Args()[1]
+	if len(ctx.Args()) > 2 && slices.Contains(C.AcceptedRegions, ctx.Args()[2]) {
+		qlangCode = ctx.Args()[2]
+		if !slices.Contains(C.AcceptedRegions, qlangCode) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", dlangCode), nil)
+			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, qlangCode)
+		}
+	}
 	// Process the card ID and query the database
 	card, exists := Cards[param]
 	if !exists {
@@ -80,6 +88,10 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		index = 3
 	case "kr":
 		index = 4
+	}
+	regionCode := regionCodeFromCard(card, qlangCode)
+	if regionCode != qlangCode {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("cards.region_no_data", dlangCode), qlangCode, regionCode), nil)
 	}
 	cardDetailed, err := GetDetailedCard(param)
 	if err != nil {
@@ -147,7 +159,22 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	releasedAt := selectLocaleString(card.ReleasedAt, index)
 	releasedAtInt, _ := strconv.Atoi(releasedAt)
-	loc, _ := time.LoadLocation("UTC")
+	var tz string
+	switch qlangCode {
+	case "jp":
+		tz = "Asia/Tokyo"
+	case "en":
+		tz = "America/New_York"
+	case "tw":
+		tz = "Asia/Taipei"
+	case "cn":
+		tz = "Asia/Shanghai"
+	case "kr":
+		tz = "Asia/Seoul"
+	default:
+		tz = "UTC"
+	}
+	loc, _ := time.LoadLocation(tz)
 	releasedAtTime := time.Unix(int64(releasedAtInt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
 	cemojiID := C.CharaEmoji[card.CharacterID-1]
@@ -155,6 +182,16 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	richTable := &gotgbot.RichBlockTable{
 		Cells: [][]gotgbot.RichBlockTableCell{
 			// 1st row
+			{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.region", dlangCode)),
+					Align: "left",
+				},
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards."+regionCodeFromCard(card, qlangCode), dlangCode)),
+					Align: "right",
+				},
+			},
 			{
 				{
 					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_title", dlangCode)),

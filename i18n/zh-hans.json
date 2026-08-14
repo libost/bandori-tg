@@ -41,7 +41,15 @@
         "card_info_skill": "技能: ",
         "card_info_gacha_text": "招募语: ",
         "card_info_released_at": "发布时间: ",
-        "card_info_id": "ID: "
+        "card_info_id": "ID: ",
+        "region": "服务器: ",
+        "jp": "日服 🇯🇵",
+        "en": "国际服 🇺🇸",
+        "tw": "台服 🇹🇼",
+        "cn": "国服 🇨🇳",
+        "kr": "韩服 🇰🇷",
+        "invalid_region": "无效的服务器代码。请使用以下之一: jp, en, tw, cn, kr。",
+        "region_no_data": "当前服务器 (%[1]s) 暂无该卡片数据，将显示服务器 (%[2]s) 的卡片数据。"
     },
     "events": {
         "mission_live": "任务LIVE",

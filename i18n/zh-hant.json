@@ -36,7 +36,15 @@
         "card_info_rarity": "稀有度: ",
         "card_info_skill": "技能: ",
         "card_info_gacha_text": "招募語: ",
-        "card_info_id": "ID: "
+        "card_info_id": "ID: ",
+        "region": "伺服器: ",
+        "jp": "日服 🇯🇵",
+        "en": "國際服 🇺🇸",
+        "tw": "台服 🇹🇼",
+        "cn": "國服 🇨🇳",
+        "kr": "韓服 🇰🇷",
+        "invalid_region": "無效的伺服器代碼。請使用以下之一: jp, en, tw, cn, kr。",
+        "region_no_data": "當前伺服器 (%[1]s) 暫無該卡片數據，將顯示伺服器 (%[2]s) 的卡片數據。"
     },
     "events": {
         "mission_live": "任務模式",

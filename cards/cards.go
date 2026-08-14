@@ -111,7 +111,23 @@ func cardOrdinaryType(types string) bool {
 	return types == "permanent" || types == "limited" || types == "dreamfes" || types == "event"
 }
 
-func regionCodeFromCard(card C.Card) string {
+func regionCodeFromCard(card C.Card, preferCode string) string {
+	index := 0
+	switch preferCode {
+	case "jp":
+		index = 0
+	case "en":
+		index = 1
+	case "tw":
+		index = 2
+	case "cn":
+		index = 3
+	case "kr":
+		index = 4
+	}
+	if index < len(card.ReleasedAt) && card.ReleasedAt[index] != "" && card.ReleasedAt[index] != "null" {
+		return preferCode
+	}
 	for i, releasedAt := range card.ReleasedAt {
 		if releasedAt == "" || releasedAt == "null" {
 			continue
@@ -149,7 +165,7 @@ func GetCard(cardId string) (string, string, error) {
 	if !exists {
 		return "", "", nil
 	}
-	regionCode := regionCodeFromCard(card)
+	regionCode := regionCodeFromCard(card, "jp")
 	if card.Rarity < 3 || !cardOrdinaryType(card.Type) {
 		if card.Type == "campaign" {
 			if card.Rarity < 3 {
