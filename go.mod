@@ -6,6 +6,8 @@ require (
 	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.36
 	github.com/creasty/defaults v1.8.0
 	github.com/goccy/go-yaml v1.19.2
+	github.com/robfig/cron/v3 v3.0.1
+	golang.org/x/sync v0.21.0
 	modernc.org/sqlite v1.56.0
 )
 
