@@ -6,24 +6,22 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/callback"
 	"github.com/libost/bandori-tg/cards"
-	"github.com/libost/bandori-tg/characters"
 	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
 	DB "github.com/libost/bandori-tg/database"
 	"github.com/libost/bandori-tg/events"
-	"github.com/libost/bandori-tg/recent"
-	"github.com/libost/bandori-tg/skills"
+	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
-	fmt.Println("started")
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer signal.Stop(sigs)
@@ -46,9 +44,23 @@ func main() {
 			return
 		}
 	}
-	fmt.Println("before init")
 	initAll()
-	fmt.Println("before config")
+	go func() {
+		err := utils.InitLists()
+		if err != nil {
+			log.Fatalf("Failed to initialize lists: %v", err)
+		}
+		ticker := time.NewTicker(3 * time.Hour)
+		for range ticker.C {
+			err := utils.InitLists()
+			if err != nil {
+				log.Printf("Failed to refresh lists: %v", err)
+			} else {
+				log.Println("Successfully refreshed lists.")
+			}
+		}
+	}()
+
 	config.InitConfig()
 	token := config.AppConfig.General.Token
 	b, err := gotgbot.NewBot(token, nil)
@@ -88,44 +100,77 @@ func main() {
 		}
 	}()
 	fmt.Println("Bot is running. Press Ctrl+C to stop.")
+	cronTasks()
 
 	updater.Idle()
 
 }
 
 func initAll() {
-	err := cards.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize card lists:", err)
-	}
-	fmt.Println("before init characters")
-	err = characters.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize character lists:", err)
-	}
-	fmt.Println("before init band")
-	err = band.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize band lists:", err)
-	}
-	fmt.Println("before init skills")
-	err = skills.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize skill lists:", err)
-	}
-	fmt.Println("before init events")
-	err = events.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize event lists:", err)
-	}
-	fmt.Println("before init recent")
-	err = recent.InitLists()
-	if err != nil {
-		log.Fatal("Failed to initialize recent lists:", err)
-	}
-	fmt.Println("before init database")
-	_, err = DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
+	_, err := DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
+}
+
+func cronTasks() {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	c := cron.New(cron.WithLocation(loc))
+	_, err := c.AddFunc("30 8 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing lists via cron: %v", err)
+		}
+	}) // 每天 8:30 AM 更新列表 国际服活动开始前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("30 12 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing events via cron: %v", err)
+		}
+	}) // 每天 12:30 PM 更新活动 国服活动开始前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("30 13 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing lists via cron: %v", err)
+		}
+	}) // 每天 13:30 PM 更新列表 日服活动开始前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("29 14 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing lists via cron: %v", err)
+		}
+	}) // 每天 14:29 PM 更新列表 国际服活动结束前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("29 19 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing events via cron: %v", err)
+		}
+	}) // 每天 19:29 PM 更新活动 日服活动结束前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("29 20 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing lists via cron: %v", err)
+		}
+	}) // 每天 20:29 PM 更新列表 台服活动结束前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("29 22 * * *", func() {
+		if err := utils.InitLists(); err != nil {
+			log.Printf("Error refreshing events via cron: %v", err)
+		}
+	}) // 每天 22:29 PM 更新活动 国服活动结束前30分钟
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	c.Start()
 }
