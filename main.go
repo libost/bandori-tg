@@ -23,6 +23,7 @@ import (
 )
 
 func main() {
+	fmt.Println("started")
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer signal.Stop(sigs)
@@ -45,7 +46,9 @@ func main() {
 			return
 		}
 	}
+	fmt.Println("before init")
 	initAll()
+	fmt.Println("before config")
 	config.InitConfig()
 	token := config.AppConfig.General.Token
 	b, err := gotgbot.NewBot(token, nil)
@@ -69,7 +72,6 @@ func main() {
 	updater.StartPolling(b, &ext.PollingOpts{
 		DropPendingUpdates: true,
 	})
-
 	go func() {
 		for sig := range sigs {
 			switch sig {
@@ -96,26 +98,32 @@ func initAll() {
 	if err != nil {
 		log.Fatal("Failed to initialize card lists:", err)
 	}
+	fmt.Println("before init characters")
 	err = characters.InitLists()
 	if err != nil {
 		log.Fatal("Failed to initialize character lists:", err)
 	}
+	fmt.Println("before init band")
 	err = band.InitLists()
 	if err != nil {
 		log.Fatal("Failed to initialize band lists:", err)
 	}
+	fmt.Println("before init skills")
 	err = skills.InitLists()
 	if err != nil {
 		log.Fatal("Failed to initialize skill lists:", err)
 	}
+	fmt.Println("before init events")
 	err = events.InitLists()
 	if err != nil {
 		log.Fatal("Failed to initialize event lists:", err)
 	}
+	fmt.Println("before init recent")
 	err = recent.InitLists()
 	if err != nil {
 		log.Fatal("Failed to initialize recent lists:", err)
 	}
+	fmt.Println("before init database")
 	_, err = DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)

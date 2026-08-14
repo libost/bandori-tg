@@ -19,18 +19,14 @@ func InitLists() error {
 	if err := os.MkdirAll(filepath.Dir(C.SkillsFile), 0755); err != nil {
 		return err
 	}
-	if err := refreshLists(); err != nil {
-		return err
-	}
-	if err := UnmarshalList(); err != nil {
-		return err
-	}
 	timedRefresh()
 	return nil
 }
 
 func timedRefresh() {
 	go func() {
+		refreshLists()
+		UnmarshalList()
 		ticker := time.NewTicker(3 * time.Hour)
 		defer ticker.Stop()
 		for range ticker.C {
@@ -76,6 +72,7 @@ func UnmarshalList() error {
 	if err != nil {
 		log.Fatalf("解析失败: %v", err)
 	}
+	fmt.Println("Skill list loaded successfully.")
 	return nil
 }
 

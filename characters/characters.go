@@ -18,18 +18,14 @@ func InitLists() error {
 	if err := os.MkdirAll(filepath.Dir(C.CharactersFile), 0755); err != nil {
 		return err
 	}
-	if err := refreshLists(); err != nil {
-		return err
-	}
-	if err := UnmarshalList(); err != nil {
-		return err
-	}
 	timedRefresh()
 	return nil
 }
 
 func timedRefresh() {
 	go func() {
+		refreshLists()
+		UnmarshalList()
 		ticker := time.NewTicker(72 * time.Hour)
 		defer ticker.Stop()
 		for range ticker.C {
@@ -70,6 +66,7 @@ func UnmarshalList() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("Character list loaded successfully.")
 	return nil
 }
 

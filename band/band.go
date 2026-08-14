@@ -66,6 +66,7 @@ func UnmarshalList() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("Band list loaded successfully.")
 	return nil
 }
 
