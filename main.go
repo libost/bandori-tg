@@ -201,8 +201,13 @@ func startWebhookCommunication(cfg *C.Config, updater *ext.Updater, b *gotgbot.B
 
 func mustParseWebhookURL(rawURL string) *url.URL {
 	webhookURL, err := url.Parse(rawURL)
-	if err != nil || webhookURL.Scheme == "" || webhookURL.Host == "" {
-		log.Printf("invalid webhook url: %q", rawURL)
+	if err != nil {
+		log.Printf("invalid webhook url: %q: %v", rawURL, err)
+		panic(err)
+	}
+	if webhookURL.Scheme == "" || webhookURL.Host == "" {
+		err = fmt.Errorf("invalid webhook url (missing scheme or host): %q", rawURL)
+		log.Print(err)
 		panic(err)
 	}
 	if webhookURL.Path == "" || webhookURL.Path == "/" {
