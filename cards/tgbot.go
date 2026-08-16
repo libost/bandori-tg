@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -65,11 +66,33 @@ func textHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	dlangCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("User %d did not provide a card ID for query command.", ctx.EffectiveUser.Id)
 		return nil
 	}
@@ -78,6 +101,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		qlangCode = ctx.Args()[2]
 		if !slices.Contains(C.AcceptedRegions, qlangCode) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", dlangCode), nil)
+			stopActionLoop()
 			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, qlangCode)
 			return nil
 		}
@@ -86,6 +110,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	card, exists := utils.Cards[param]
 	if !exists {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("User %d queried a non-existent card with ID %s.", ctx.EffectiveUser.Id, param)
 		return nil
 	}
@@ -106,10 +131,12 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	regionCode := regionCodeFromCard(card, qlangCode)
 	if regionCode != qlangCode {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("cards.region_no_data", dlangCode), qlangCode, regionCode), nil)
+		_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
 	}
 	cardDetailed, err := GetDetailedCard(param)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("Error fetching detailed card data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -120,6 +147,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	char, err := characters.GetCharacter(fmt.Sprint(card.CharacterID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("Error fetching character data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -127,6 +155,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	band, err := band.GetBand(fmt.Sprint(char.BandID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("Error fetching band data for character ID %d: %v", card.CharacterID, err)
 		return nil
 	}
@@ -134,6 +163,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	normalPath, trainingPath, err := GetCard(param)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("Error fetching card data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -151,6 +181,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		stopActionLoop()
 		log.Printf("Error fetching skill data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -428,5 +459,6 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		})
 	}
+	stopActionLoop()
 	return err
 }

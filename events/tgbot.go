@@ -5,6 +5,7 @@ import (
 	"log"
 	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/PaulSonOfLars/gotgbot/v2"
@@ -358,6 +359,27 @@ func timeCalc(time int64) (int64, int64, int64, int64) {
 }
 
 func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
 		ongoingIDs, err := recent.GetOngoingEventsID()
@@ -370,7 +392,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					Text: gotgbot.RichTextString(
 						I.GetLocalisedString("events.ongoing_events", langCode),
 					),
-					Size: 4,
+					Size: 3,
 				},
 			},
 		}
@@ -454,7 +476,8 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
 		})
-		return nil
+		log.Printf("Sent ongoing events to user %d", ctx.EffectiveUser.Id)
+		return err
 	} else {
 		param := ctx.Args()[1]
 		qlangCode := ""
