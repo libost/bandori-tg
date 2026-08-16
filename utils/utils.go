@@ -24,6 +24,7 @@ var Characters C.CharacterData
 var Events C.EventsData
 var Recent C.Recent
 var Skills C.SkillData
+var Gacha C.GachaData
 var REventsKeys []string
 
 func InitLists() error {
@@ -52,6 +53,10 @@ func InitLists() error {
 		{
 			URL:    "https://bestdori.com/api/skills/all.10.json",
 			Target: &Skills,
+		},
+		{
+			URL:    "https://bestdori.com/api/gacha/all.5.json",
+			Target: &Gacha,
 		},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)

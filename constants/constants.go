@@ -89,7 +89,7 @@ type BandData map[string]Band
 type Recent struct {
 	Songs      map[string]SongsData      `json:"songs"`
 	Events     map[string]EventData      `json:"events"`
-	Gacha      map[string]GachaData      `json:"gacha"`
+	Gacha      map[string]RGachaData     `json:"gacha"`
 	LoginBonus map[string]LoginBonusData `json:"loginBonus"`
 }
 
@@ -104,7 +104,7 @@ type EventData struct {
 	EndAt     []string `json:"endAt"`
 }
 
-type GachaData struct {
+type RGachaData struct {
 	GachaName   []string `json:"gachaName"`
 	PublishedAt []string `json:"publishedAt"`
 	ClosedAt    []string `json:"closedAt"`
@@ -206,6 +206,53 @@ type EventLimitBreaks struct {
 	Rarity  int     `json:"rarity"`
 	Rank    int     `json:"rank"`
 	Percent float32 `json:"percent"`
+}
+
+type Gacha struct {
+	ResourceName          string   `json:"resourceName"`
+	BannerAssetBundleName string   `json:"bannerAssetBundleName"`
+	GachaName             []string `json:"gachaName"`
+	PublishedAt           []string `json:"publishedAt"`
+	ClosedAt              []string `json:"closedAt"`
+	Type                  string   `json:"type"`
+	NewCards              []int    `json:"newCards"`
+}
+
+type GachaData map[string]Gacha
+
+type GachaDetailed struct {
+	Details               []any            `json:"details"`
+	Rates                 []any            `json:"rates"`
+	PaymentMethods        []PaymentMethods `json:"paymentMethods"`
+	ResourceName          string           `json:"resourceName"`
+	BannerAssetBundleName string           `json:"bannerAssetBundleName"`
+	GachaName             []string         `json:"gachaName"`
+	PublishedAt           []string         `json:"publishedAt"`
+	ClosedAt              []string         `json:"closedAt"`
+	Description           []string         `json:"description"`
+	Annotation            []string         `json:"annotation"`
+	GachaPeriod           []string         `json:"gachaPeriod"`
+	GachaType             string           `json:"gachaType"`
+	Type                  string           `json:"type"`
+	NewCards              []int            `json:"newCards"`
+	Information           struct {
+		Description   []string `json:"description"`
+		Term          []string `json:"term"`
+		NewMemberInfo []string `json:"newMemberInfo"`
+		Notice        []string `json:"notice"`
+	} `json:"information"`
+}
+
+type PaymentMethods struct {
+	GachaID          string `json:"gachaId"`
+	PaymentMethod    string `json:"paymentMethod"`
+	Quantity         int    `json:"quantity"`
+	PaymentMethodID  int    `json:"paymentMethodId"`
+	Count            int    `json:"count"`
+	Behavior         string `json:"behavior"`
+	Pickup           bool   `json:"pickup"`
+	CostItemQuantity int    `json:"costItemQuantity"`
+	DiscountType     string `json:"discountType"`
 }
 
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.

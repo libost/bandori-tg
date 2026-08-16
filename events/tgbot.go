@@ -392,7 +392,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		eventNameEN := utils.Events[ongoingIDs[1]].EventName[1]
 		eventTypeEN := utils.Events[ongoingIDs[1]].EventType
 		eventAssetsBundleEN := utils.Events[ongoingIDs[1]].AssetBundleName
-		locEN, _ := time.LoadLocation("America/New_York")
+		locEN, _ := time.LoadLocation("UTC")
 		eStartEN, _ := strconv.Atoi(utils.Events[ongoingIDs[1]].StartAt[1])
 		eStartENTime := time.Unix(int64(eStartEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
 		eventStartEN := int64(eStartEN) / 1000
