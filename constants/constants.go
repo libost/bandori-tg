@@ -13,7 +13,8 @@ const (
 
 type Config struct {
 	General struct {
-		Token string `yaml:"token"`
+		Token      string `yaml:"token"`
+		AdminToken string `yaml:"admin_token"`
 	} `yaml:"general"`
 	Webhook struct {
 		Enabled      bool   `yaml:"enabled"`

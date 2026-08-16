@@ -99,6 +99,29 @@ func setQueryLanguageCase(id int64, langCode string, conn *sql.DB) (map[string]a
 	return map[string]any{"query_language": langCode}, nil
 }
 
+func setAdminCase(id int64, conn *sql.DB) (map[string]any, error) {
+	_, err := conn.Exec(
+		"UPDATE USERPOOL SET user_group = 'admin' WHERE user_id = ?",
+		id,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"user_group": "admin"}, nil
+}
+
+func getUserGroupCase(id int64, conn *sql.DB) (map[string]any, error) {
+	var userGroup string
+	err := conn.QueryRow(
+		"SELECT COALESCE(user_group, 'user') FROM USERPOOL WHERE user_id = ?",
+		id,
+	).Scan(&userGroup)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"user_group": userGroup}, nil
+}
+
 func Init(request string, id int64, other map[string]any) (map[string]any, error) {
 	conn, err := getDB()
 	if err != nil {
@@ -124,6 +147,10 @@ func Init(request string, id int64, other map[string]any) (map[string]any, error
 			return nil, fmt.Errorf("Invalid lang_code type")
 		}
 		return setQueryLanguageCase(id, langCode, conn)
+	case "setadmin":
+		return setAdminCase(id, conn)
+	case "get_user_group":
+		return getUserGroupCase(id, conn)
 	default:
 		return nil, fmt.Errorf("Unknown request: %s", request)
 	}
