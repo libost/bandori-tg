@@ -6,14 +6,14 @@
         "setlang_success": "語言設置成功。"
     },
     "commands": {
-        "start_desc": "歡迎使用 Bandori Bot！使用 /query <card_id> 來查詢卡片信息。",
-        "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/query <card_id> - 根據 ID 查詢特定卡片的信息。",
+        "start_desc": "歡迎使用 Bandori Bot！使用 /help 查看幫助信息。\n\n當前語言不是您的首選語言？使用 /lang 設置您喜歡的語言。\n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
+        "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/lang - 設置語言。\n/cards <card_id> - 根據 ID 查詢特定卡片的信息。\n/cards <card_id> <region> - 根據 ID 和伺服器代碼查詢特定卡片的信息。\n/events - 查詢當前進行中的活動。\n/events <event_id> - 根據 ID 查詢特定活動的信息。\n/events <event_id> <region> - 根據 ID 和伺服器代碼查詢特定活動的信息。",
         "lang_desc": "選擇你要設置的語言類型。",
         "lang_dlang": "設置顯示語言",
         "lang_qlang": "設置查詢語言",
         "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
         "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢卡片中的信息，不適用於顯示的文本。",
-        "about_desc": "Bandori Bot \n版本: %[1]s\n構建時間: %[2]s\nGit 提交: %[3]s\n分支: %[4]s"
+        "about_desc": "Bandori Bot \n版本: %[1]s\n構建時間: %[2]s\nGit 提交: %[3]s\n分支: %[4]s\n項目地址: https://github.com/libost/bandori-tg"
     },
     "cards": {
         "Heading": "卡面信息",

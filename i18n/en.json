@@ -6,14 +6,14 @@
         "setlang_success": "Language updated successfully."
     },
     "commands": {
-        "start_desc": "Welcome to the Bandori Bot! Use /query <card_id> to get card information.",
-        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/query <card_id> - Query information about a specific card by its ID.",
+        "start_desc": "Welcome to the Bandori Bot! Use /help to view the help message. \n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
+        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.",
         "lang_desc": "Select the language you want to set.",
         "lang_dlang": "Set Display Language",
         "lang_qlang": "Set Query Language",
         "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
         "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot.",
-        "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s"
+        "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s\nProject URL: https://github.com/libost/bandori-tg"
     },
     "cards": {
         "Heading": "Card Information",

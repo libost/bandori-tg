@@ -7,14 +7,14 @@
         "setlang_success": "语言设置成功。"
     },
     "commands": {
-        "start_desc": "欢迎使用 Bandori Bot！使用 /query <card_id> 来查询卡片信息。",
-        "help_desc": "可用命令：\n/start - 启动机器人并获取欢迎消息。\n/help - 显示此帮助消息。\n/query <card_id> - 根据 ID 查询特定卡片的信息。 \n/events - 查询当前进行中的活动。\n/events <event_id> - 根据 ID 查询特定活动的信息。\n/events <event_id> <region> - 根据 ID 和服务器代码查询特定活动的信息。\n/lang - 设置语言。",
+        "start_desc": "欢迎使用 Bandori Bot！使用 /help 查看帮助信息。\n\n当前语言不是您的首选语言？使用 /lang 设置您喜欢的语言。\n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
+        "help_desc": "可用命令：\n/start - 启动机器人并获取欢迎消息。\n/help - 显示此帮助消息。\n/lang - 设置语言。\n/cards <card_id> - 根据 ID 查询特定卡片的信息。\n/cards <card_id> <region> - 根据 ID 和服务器代码查询特定卡片的信息。\n/events - 查询当前进行中的活动。\n/events <event_id> - 根据 ID 查询特定活动的信息。\n/events <event_id> <region> - 根据 ID 和服务器代码查询特定活动的信息。",
         "lang_desc": "选择你要设置的语言类型。",
         "lang_dlang": "设置显示语言",
         "lang_qlang": "设置查询语言",
         "dlanguages_desc": "设置显示语言。\n本设置仅适用于显示的文本，不适用于查询卡片中的信息。",
         "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询卡片中的信息，不适用于显示的文本。",
-        "about_desc": "Bandori Bot \n版本: %[1]s\n构建时间: %[2]s\nGit 提交: %[3]s\n分支: %[4]s"
+        "about_desc": "Bandori Bot \n版本: %[1]s\n构建时间: %[2]s\nGit 提交: %[3]s\n分支: %[4]s \n项目地址: https://github.com/libost/bandori-tg"
     },
     "cards": {
         "Heading": "卡面信息",
@@ -90,5 +90,4 @@
         "cn": "国服 🇨🇳",
         "kr": "韩服 🇰🇷"
     }
-
 }

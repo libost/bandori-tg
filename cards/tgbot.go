@@ -50,8 +50,7 @@ func isWebPageContentErr(err error) bool {
 }
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
-	dispatcher.AddHandler(handlers.NewCommand("query", queryHandler))
-	dispatcher.AddHandler(handlers.NewCommand("查卡", queryHandler)) // 经典传承
+	dispatcher.AddHandler(handlers.NewCommand("cards", queryHandler))
 	dispatcher.AddHandler(handlers.NewMessage(message.Text, textHandler))
 }
 
