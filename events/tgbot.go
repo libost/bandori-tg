@@ -364,102 +364,6 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		if err != nil {
 			return err
 		}
-		// JP events
-		eventNameJP := utils.Events[ongoingIDs[0]].EventName[0]
-		eventTypeJP := utils.Events[ongoingIDs[0]].EventType
-		eventAssetsBundleJP := utils.Events[ongoingIDs[0]].AssetBundleName
-		locJP, _ := time.LoadLocation("Asia/Tokyo")
-		eStartJP, _ := strconv.Atoi(utils.Events[ongoingIDs[0]].StartAt[0])
-		eStartJPTime := time.Unix(int64(eStartJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
-		eventStartJP := int64(eStartJP) / 1000
-		eEndJP, _ := strconv.Atoi(utils.Events[ongoingIDs[0]].EndAt[0])
-		eEndJPTime := time.Unix(int64(eEndJP)/1000, 0).In(locJP).Format("2006-01-02 15:04:05 MST")
-		eventEndJP := int64(eEndJP) / 1000
-		remainingTimeJP := eventEndJP - time.Now().Unix()
-		startRemainingTimeJP := eventStartJP - time.Now().Unix()
-		var remainingTimeTextJP string
-		if remainingTimeJP <= 0 {
-			remainingTimeTextJP = I.GetLocalisedString("events.event_ended", langCode)
-		} else if startRemainingTimeJP > 0 {
-			secs, mins, hrs, days := timeCalc(startRemainingTimeJP)
-			remainingTimeTextJP = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
-		} else {
-			secs, mins, hrs, days := timeCalc(remainingTimeJP)
-			remainingTimeTextJP = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
-		}
-
-		// EN events
-		eventNameEN := utils.Events[ongoingIDs[1]].EventName[1]
-		eventTypeEN := utils.Events[ongoingIDs[1]].EventType
-		eventAssetsBundleEN := utils.Events[ongoingIDs[1]].AssetBundleName
-		locEN, _ := time.LoadLocation("UTC")
-		eStartEN, _ := strconv.Atoi(utils.Events[ongoingIDs[1]].StartAt[1])
-		eStartENTime := time.Unix(int64(eStartEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
-		eventStartEN := int64(eStartEN) / 1000
-		eEndEN, _ := strconv.Atoi(utils.Events[ongoingIDs[1]].EndAt[1])
-		eEndENTime := time.Unix(int64(eEndEN)/1000, 0).In(locEN).Format("2006-01-02 15:04:05 MST")
-		eventEndEN := int64(eEndEN) / 1000
-		remainingTimeEN := eventEndEN - time.Now().Unix()
-		startRemainingTimeEN := eventStartEN - time.Now().Unix()
-		var remainingTimeTextEN string
-		if remainingTimeEN <= 0 {
-			remainingTimeTextEN = I.GetLocalisedString("events.event_ended", langCode)
-		} else if startRemainingTimeEN > 0 {
-			secs, mins, hrs, days := timeCalc(startRemainingTimeEN)
-			remainingTimeTextEN = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
-		} else {
-			secs, mins, hrs, days := timeCalc(remainingTimeEN)
-			remainingTimeTextEN = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
-		}
-
-		// TW events
-		eventNameTW := utils.Events[ongoingIDs[2]].EventName[2]
-		eventTypeTW := utils.Events[ongoingIDs[2]].EventType
-		eventAssetsBundleTW := utils.Events[ongoingIDs[2]].AssetBundleName
-		locTW, _ := time.LoadLocation("Asia/Taipei")
-		eStartTW, _ := strconv.Atoi(utils.Events[ongoingIDs[2]].StartAt[2])
-		eStartTWTime := time.Unix(int64(eStartTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
-		eventStartTW := int64(eStartTW) / 1000
-		eEndTW, _ := strconv.Atoi(utils.Events[ongoingIDs[2]].EndAt[2])
-		eEndTWTime := time.Unix(int64(eEndTW)/1000, 0).In(locTW).Format("2006-01-02 15:04:05 MST")
-		eventEndTW := int64(eEndTW) / 1000
-		remainingTimeTW := eventEndTW - time.Now().Unix()
-		startRemainingTimeTW := eventStartTW - time.Now().Unix()
-		var remainingTimeTextTW string
-		if remainingTimeTW <= 0 {
-			remainingTimeTextTW = I.GetLocalisedString("events.event_ended", langCode)
-		} else if startRemainingTimeTW > 0 {
-			secs, mins, hrs, days := timeCalc(startRemainingTimeTW)
-			remainingTimeTextTW = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
-		} else {
-			secs, mins, hrs, days := timeCalc(remainingTimeTW)
-			remainingTimeTextTW = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
-		}
-
-		// CN events
-		eventNameCN := utils.Events[ongoingIDs[3]].EventName[3]
-		eventTypeCN := utils.Events[ongoingIDs[3]].EventType
-		eventAssetsBundleCN := utils.Events[ongoingIDs[3]].AssetBundleName
-		locCN, _ := time.LoadLocation("Asia/Shanghai")
-		eStartCN, _ := strconv.Atoi(utils.Events[ongoingIDs[3]].StartAt[3])
-		eStartCNTime := time.Unix(int64(eStartCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
-		eventStartCN := int64(eStartCN) / 1000
-		eEndCN, _ := strconv.Atoi(utils.Events[ongoingIDs[3]].EndAt[3])
-		eEndCNTime := time.Unix(int64(eEndCN)/1000, 0).In(locCN).Format("2006-01-02 15:04:05 MST")
-		eventEndCN := int64(eEndCN) / 1000
-		remainingTimeCN := eventEndCN - time.Now().Unix()
-		startRemainingTimeCN := eventStartCN - time.Now().Unix()
-		var remainingTimeTextCN string
-		if remainingTimeCN <= 0 {
-			remainingTimeTextCN = I.GetLocalisedString("events.event_ended", langCode)
-		} else if startRemainingTimeCN > 0 {
-			secs, mins, hrs, days := timeCalc(startRemainingTimeCN)
-			remainingTimeTextCN = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
-		} else {
-			secs, mins, hrs, days := timeCalc(remainingTimeCN)
-			remainingTimeTextCN = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
-		}
-
 		richMessage := gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
@@ -468,135 +372,82 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					),
 					Size: 4,
 				},
-				gotgbot.InputRichBlockPhoto{
-					Photo: gotgbot.InputMediaPhoto{
-						Media: gotgbot.InputFileByURL(
-							"https://bestdori.com/assets/jp/event/" + eventAssetsBundleJP + "/images_rip/banner.png",
-						),
-					},
-					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(
-							eventNameJP + " (" + I.GetLocalisedString("events."+eventTypeJP, langCode) + ")" + " (JP🇯🇵)",
-						),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextBold{
-						Text: gotgbot.RichTextString(remainingTimeTextJP),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: eventTimingParagraph(
-						eStartJPTime,
-						eEndJPTime,
-						langCode,
-						eventStartJP,
-						eventEndJP,
-					),
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextUrl{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
-						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_jp", b.Username, ongoingIDs[0]),
-					},
-				},
-				gotgbot.InputRichBlockPhoto{
-					Photo: gotgbot.InputMediaPhoto{
-						Media: gotgbot.InputFileByURL(
-							"https://bestdori.com/assets/en/event/" + eventAssetsBundleEN + "/images_rip/banner.png",
-						),
-					},
-					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(
-							eventNameEN + " (" + I.GetLocalisedString("events."+eventTypeEN, langCode) + ")" + " (EN🇺🇸)",
-						),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextBold{
-						Text: gotgbot.RichTextString(remainingTimeTextEN),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: eventTimingParagraph(
-						eStartENTime,
-						eEndENTime,
-						langCode,
-						eventStartEN,
-						eventEndEN,
-					),
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextUrl{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
-						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_en", b.Username, ongoingIDs[1]),
-					},
-				},
-				gotgbot.InputRichBlockPhoto{
-					Photo: gotgbot.InputMediaPhoto{
-						Media: gotgbot.InputFileByURL(
-							"https://bestdori.com/assets/tw/event/" + eventAssetsBundleTW + "/images_rip/banner.png",
-						),
-					},
-					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(
-							eventNameTW + " (" + I.GetLocalisedString("events."+eventTypeTW, langCode) + ")" + " (TW🇹🇼)",
-						),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextBold{
-						Text: gotgbot.RichTextString(remainingTimeTextTW),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: eventTimingParagraph(
-						eStartTWTime,
-						eEndTWTime,
-						langCode,
-						eventStartTW,
-						eventEndTW,
-					),
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextUrl{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
-						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_tw", b.Username, ongoingIDs[2]),
-					},
-				},
-				gotgbot.InputRichBlockPhoto{
-					Photo: gotgbot.InputMediaPhoto{
-						Media: gotgbot.InputFileByURL(
-							"https://bestdori.com/assets/cn/event/" + eventAssetsBundleCN + "/images_rip/banner.png",
-						),
-					},
-					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(
-							eventNameCN + " (" + I.GetLocalisedString("events."+eventTypeCN, langCode) + ")" + " (CN🇨🇳)",
-						),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextBold{
-						Text: gotgbot.RichTextString(remainingTimeTextCN),
-					},
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: eventTimingParagraph(
-						eStartCNTime,
-						eEndCNTime,
-						langCode,
-						eventStartCN,
-						eventEndCN,
-					),
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextUrl{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
-						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_cn", b.Username, ongoingIDs[3]),
-					},
-				},
 			},
+		}
+
+		// 地区信息：索引、名称、时区、区域代码、emoji
+		regions := []struct {
+			idx    int
+			name   string
+			region string
+			tz     string
+			emoji  string
+		}{
+			{0, "JP", "jp", "Asia/Tokyo", "🇯🇵"},
+			{1, "EN", "en", "UTC", "🇺🇸"},
+			{2, "TW", "tw", "Asia/Taipei", "🇹🇼"},
+			{3, "CN", "cn", "Asia/Shanghai", "🇨🇳"},
+		}
+
+		for _, r := range regions {
+			event := utils.Events[ongoingIDs[r.idx]]
+			loc, _ := time.LoadLocation(r.tz)
+			eStart, _ := strconv.Atoi(event.StartAt[r.idx])
+			eEnd, _ := strconv.Atoi(event.EndAt[r.idx])
+
+			eventStart := int64(eStart) / 1000
+			eventEnd := int64(eEnd) / 1000
+			remainingTime := eventEnd - time.Now().Unix()
+			startRemainingTime := eventStart - time.Now().Unix()
+
+			var remainingTimeText string
+			if remainingTime <= 0 {
+				remainingTimeText = I.GetLocalisedString("events.event_ended", langCode)
+			} else if startRemainingTime > 0 {
+				secs, mins, hrs, days := timeCalc(startRemainingTime)
+				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
+			} else {
+				secs, mins, hrs, days := timeCalc(remainingTime)
+				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
+			}
+
+			eStartTime := time.Unix(int64(eStart)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+			eEndTime := time.Unix(int64(eEnd)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+
+			richMessage.Blocks = append(richMessage.Blocks,
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByURL(
+							"https://bestdori.com/assets/" + r.region + "/event/" + event.AssetBundleName + "/images_rip/banner.png",
+						),
+					},
+					Caption: &gotgbot.RichBlockCaption{
+						Text: gotgbot.RichTextString(
+							event.EventName[r.idx] + " (" + I.GetLocalisedString("events."+event.EventType, langCode) + ")" + " (" + r.name + r.emoji + ")",
+						),
+					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextBold{
+						Text: gotgbot.RichTextString(remainingTimeText),
+					},
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: eventTimingParagraph(
+						eStartTime,
+						eEndTime,
+						langCode,
+						eventStart,
+						eventEnd,
+					),
+				},
+				gotgbot.InputRichBlockParagraph{
+					Text: gotgbot.RichTextUrl{
+						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
+						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_%s", b.Username, ongoingIDs[r.idx], r.region),
+					},
+				},
+			)
 		}
 		_, err = b.SendRichMessage(ctx.EffectiveUser.Id, richMessage, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
