@@ -40,7 +40,7 @@ func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
 	case "kr":
 		index = 4
 	}
-	if index < len(event.EndAt) && event.EndAt[index] != "" && event.EndAt[index] != "null" {
+	if index <= len(event.EndAt) && event.EndAt[index] != "" && event.EndAt[index] != "null" {
 		return preferCode
 	}
 	for i, releasedAt := range event.EndAt {

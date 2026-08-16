@@ -5,6 +5,7 @@ import (
 	"log"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -44,6 +45,40 @@ func allEqualPercent[T comparable](slice []T) bool {
 	return true
 }
 
+func indexHelper(code string) int {
+	switch code {
+	case "jp", "powerful":
+		return 0
+	case "en", "cool":
+		return 1
+	case "tw", "happy":
+		return 2
+	case "cn", "pure":
+		return 3
+	case "kr":
+		return 4
+	default:
+		return 0
+	}
+}
+
+func tzHelper(code string) string {
+	switch code {
+	case "jp":
+		return "Asia/Tokyo"
+	case "en":
+		return "UTC"
+	case "tw":
+		return "Asia/Taipei"
+	case "cn":
+		return "Asia/Shanghai"
+	case "kr":
+		return "Asia/Seoul"
+	default:
+		return "UTC"
+	}
+}
+
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
 	_, exists := utils.Events[eventID]
 	if !exists {
@@ -57,86 +92,41 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		return err
 	}
 	if qlangCode == "" {
-		qlangCode = I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+		qlangCode = I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	}
 	eventType := eventDetailed.EventType
-	var qindex int
-	switch qlangCode {
-	case "jp":
-		qindex = 0
-	case "en":
-		qindex = 1
-	case "tw":
-		qindex = 2
-	case "cn":
-		qindex = 3
-	case "kr":
-		qindex = 4
-	default:
-		qindex = 0
-	}
+	qindex := indexHelper(qlangCode)
 	eventName := selectLocaleString(eventDetailed.EventName, qindex)
 	regionCode := regionCodeFromEvent(eventDetailed, qlangCode)
 	if regionCode != qlangCode {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("events.region_no_data", langCode), qlangCode, regionCode), nil)
 	}
-	var rindex int
-	var regionText string
-	switch regionCode {
-	case "jp":
-		rindex = 0
-		regionText = I.GetLocalisedString("events.jp", langCode)
-	case "en":
-		rindex = 1
-		regionText = I.GetLocalisedString("events.en", langCode)
-	case "tw":
-		rindex = 2
-		regionText = I.GetLocalisedString("events.tw", langCode)
-	case "cn":
-		rindex = 3
-		regionText = I.GetLocalisedString("events.cn", langCode)
-	case "kr":
-		rindex = 4
-		regionText = I.GetLocalisedString("events.kr", langCode)
-	default:
-		rindex = 0
-		regionText = I.GetLocalisedString("events.jp", langCode)
-	}
+	rindex := indexHelper(regionCode)
 	bannerUrl := "https://bestdori.com/assets/" + regionCode + "/event/" + eventDetailed.AssetBundleName + "/images_rip/banner.png"
 	attribute := eventDetailed.Attributes[0].Attribute
-	var aindex int
-	switch attribute {
-	case "powerful":
-		aindex = 0
-		attribute = "POWERFUL"
-	case "cool":
-		aindex = 1
-		attribute = "COOL"
-	case "happy":
-		aindex = 2
-		attribute = "HAPPY"
-	case "pure":
-		aindex = 3
-		attribute = "PURE"
-	}
+	aindex := indexHelper(attribute)
+	attribute = strings.ToUpper(attribute)
 	startAt := eventDetailed.StartAt[rindex]
 	startAtUnix, _ := strconv.ParseInt(startAt, 10, 64)
 	startAtUnix = startAtUnix / 1000
 	endAt := eventDetailed.EndAt[rindex]
 	endAtUnix, _ := strconv.ParseInt(endAt, 10, 64)
 	endAtUnix = endAtUnix / 1000
-	loc, _ := time.LoadLocation("UTC")
+	var tz string
+	tz = tzHelper(regionCode)
+	loc, _ := time.LoadLocation(tz)
 	startAtTime := time.Unix(startAtUnix, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	endAtTime := time.Unix(endAtUnix, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	var secs, mins, hrs, days int64
 	var remainingTimeText string
-	if startAtUnix > time.Now().Unix() {
+	now := time.Now().Unix()
+	if startAtUnix > now {
 		// The event hasn't started yet
-		remainingTime := startAtUnix - time.Now().Unix()
+		remainingTime := startAtUnix - now
 		secs, mins, hrs, days = timeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
-	} else if endAtUnix > time.Now().Unix() && startAtUnix < time.Now().Unix() {
-		remainingTime := endAtUnix - time.Now().Unix()
+	} else if endAtUnix > now && startAtUnix < now {
+		remainingTime := endAtUnix - now
 		secs, mins, hrs, days = timeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 	} else {
@@ -205,7 +195,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(regionText),
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events."+regionCode, langCode)),
 							Align: "right",
 						},
 					},
