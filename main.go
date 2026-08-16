@@ -60,10 +60,13 @@ func main() {
 	}
 	initAll()
 
-	_ = utils.InitLists()
+	err = utils.InitLists()
+	if err != nil {
+		log.Fatalf("Failed to initialize lists: %v", err)
+	}
 
 	loc, _ := time.LoadLocation("Asia/Shanghai")
-	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger)))
+	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger), cron.SkipIfStillRunning(cron.DefaultLogger)))
 
 	config.InitConfig()
 	token := config.AppConfig.General.Token
@@ -125,63 +128,36 @@ func initAll() {
 }
 
 func cronTasks(c *cron.Cron) {
-	_, err := c.AddFunc("30 8 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing lists via cron: %v", err)
-		}
-	}) // 每天 8:30 AM 更新列表 国际服活动开始前30分钟
+	_, err := c.AddFunc("30 8 * * *", utils.CronInit) // 每天 8:30 AM 更新列表 国际服活动开始前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
-	_, err = c.AddFunc("30 12 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing events via cron: %v", err)
-		}
-	}) // 每天 12:30 PM 更新活动 国服活动开始前30分钟
+	_, err = c.AddFunc("30 12 * * *", utils.CronInit) // 每天 12:30 PM 更新活动 国服活动开始前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
-	_, err = c.AddFunc("30 13 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing lists via cron: %v", err)
-		}
-	}) // 每天 13:30 PM 更新列表 日服活动开始前30分钟
+	_, err = c.AddFunc("30 13 * * *", utils.CronInit) // 每天 13:30 PM 更新列表 日服活动开始前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
-	_, err = c.AddFunc("29 14 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing lists via cron: %v", err)
-		}
-	}) // 每天 14:29 PM 更新列表 国际服活动结束前30分钟
+	_, err = c.AddFunc("29 14 * * *", utils.CronInit) // 每天 14:29 PM 更新列表 国际服活动结束前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
-	_, err = c.AddFunc("29 19 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing events via cron: %v", err)
-		}
-	}) // 每天 19:29 PM 更新活动 日服活动结束前30分钟
+	_, err = c.AddFunc("29 19 * * *", utils.CronInit) // 每天 19:29 PM 更新活动 日服活动结束前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
-	_, err = c.AddFunc("29 20 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing lists via cron: %v", err)
-		}
-	}) // 每天 20:29 PM 更新列表 台服活动结束前30分钟
+	_, err = c.AddFunc("29 20 * * *", utils.CronInit) // 每天 20:29 PM 更新列表 台服活动结束前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
-	_, err = c.AddFunc("29 22 * * *", func() {
-		if err := utils.InitLists(); err != nil {
-			log.Printf("Error refreshing events via cron: %v", err)
-		}
-	}) // 每天 22:29 PM 更新活动 国服活动结束前30分钟
+	_, err = c.AddFunc("29 22 * * *", utils.CronInit) // 每天 22:29 PM 更新活动 国服活动结束前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
 	c.Start()
+	select {} // Keep the main goroutine running
 }
 
 func startWebhookCommunication(cfg *C.Config, updater *ext.Updater, b *gotgbot.Bot) {

@@ -27,38 +27,38 @@ var Skills C.SkillData
 var Gacha C.GachaData
 var REventsKeys []string
 
-func InitLists() error {
+var tasks = []fetchTask{
+	{
+		URL:    "https://bestdori.com/api/bands/main.1.json",
+		Target: &Band,
+	},
+	{
+		URL:    "https://bestdori.com/api/cards/all.5.json",
+		Target: &Cards,
+	},
+	{
+		URL:    "https://bestdori.com/api/characters/main.3.json",
+		Target: &Characters,
+	},
+	{
+		URL:    "https://bestdori.com/api/events/all.5.json",
+		Target: &Events,
+	},
+	{
+		URL:    "https://bestdori.com/api/news/dynamic/recent.json",
+		Target: &Recent,
+	},
+	{
+		URL:    "https://bestdori.com/api/skills/all.10.json",
+		Target: &Skills,
+	},
+	{
+		URL:    "https://bestdori.com/api/gacha/all.5.json",
+		Target: &Gacha,
+	},
+}
 
-	tasks := []fetchTask{
-		{
-			URL:    "https://bestdori.com/api/bands/main.1.json",
-			Target: &Band,
-		},
-		{
-			URL:    "https://bestdori.com/api/cards/all.5.json",
-			Target: &Cards,
-		},
-		{
-			URL:    "https://bestdori.com/api/characters/main.3.json",
-			Target: &Characters,
-		},
-		{
-			URL:    "https://bestdori.com/api/events/all.5.json",
-			Target: &Events,
-		},
-		{
-			URL:    "https://bestdori.com/api/news/dynamic/recent.json",
-			Target: &Recent,
-		},
-		{
-			URL:    "https://bestdori.com/api/skills/all.10.json",
-			Target: &Skills,
-		},
-		{
-			URL:    "https://bestdori.com/api/gacha/all.5.json",
-			Target: &Gacha,
-		},
-	}
+func InitLists() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	httpClient := &http.Client{
@@ -78,7 +78,7 @@ func InitLists() error {
 	}
 	if err := eg.Wait(); err != nil {
 		log.Printf("Error occurred while fetching and decoding data: %v", err)
-		panic("Failed to initialize lists")
+		return err
 	}
 	fmt.Println("All lists initialized successfully.")
 	return nil
@@ -115,4 +115,24 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 	}
 
 	return nil
+}
+
+func CronInit() {
+	maxRetries := 5
+	baseDelay := 30 * time.Second
+	log.Printf("Starting CronInit with maxRetries=%d and baseDelay=%s", maxRetries, baseDelay)
+	for i := range maxRetries {
+		err := InitLists()
+		if err == nil {
+			log.Println("InitLists completed successfully.")
+			break
+		}
+		delay := baseDelay * time.Duration(1<<i) // 指数退避
+		if i == maxRetries-1 {
+			log.Printf("InitLists failed after %d attempts: %v. No more retries.", maxRetries, err)
+		} else {
+			log.Printf("InitLists failed (attempt %d/%d): %v. Retrying in %s...", i+1, maxRetries, err, delay)
+		}
+		time.Sleep(delay)
+	}
 }
