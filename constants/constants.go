@@ -15,6 +15,18 @@ type Config struct {
 	General struct {
 		Token string `yaml:"token"`
 	} `yaml:"general"`
+	Webhook struct {
+		Enabled      bool   `yaml:"enabled"`
+		NginxEnabled bool   `yaml:"nginx_enabled"`
+		URL          string `yaml:"url"`
+		Port         int    `yaml:"port"`
+		Cert         struct {
+			SelfSigned bool   `yaml:"self_signed"`
+			CertPath   string `yaml:"cert_path"`
+			KeyPath    string `yaml:"key_path"`
+		} `yaml:"cert"`
+		Secret string `yaml:"secret"`
+	} `yaml:"webhook"`
 }
 
 type Character struct {
@@ -367,3 +379,5 @@ var AcceptedRegions = []string{"jp", "en", "tw", "kr", "cn"}
 
 // These cards are known to have issues with their data, so they are excluded from the bot's responses.
 var BadCards = []string{"2309"}
+
+var TelegramAcceptPorts = []int{80, 88, 443, 8443}
