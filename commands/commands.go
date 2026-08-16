@@ -25,7 +25,7 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 func startHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	if len(ctx.Args()) > 0 {
+	if len(ctx.Args()) > 1 {
 		param := ctx.Args()[1]
 		if _, ok := strings.CutPrefix(param, "events_"); ok {
 			split := strings.Split(param, "_")

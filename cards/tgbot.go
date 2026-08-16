@@ -90,6 +90,8 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	dlangCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	if ctx.EffectiveChat.Type != "private" {
+	}
 	if len(ctx.Args()) == 1 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", dlangCode), nil)
 		stopActionLoop()
@@ -428,7 +430,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockTable{
 		Cells: richTable.Cells,
 	})
-	_, err = b.SendRichMessage(ctx.EffectiveUser.Id, *richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, *richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
@@ -453,7 +455,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				},
 			},
 		}
-		_, err = b.SendRichMessage(ctx.EffectiveUser.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
+		_, err = b.SendRichMessage(ctx.EffectiveChat.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
