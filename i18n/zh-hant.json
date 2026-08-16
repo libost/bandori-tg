@@ -1,6 +1,6 @@
 {
     "lang_code": "zh-hant",
-    "lang_code_alt": "zh",
+    "lang_code_alt": "",
     "lang_name": "繁體中文",
     "callback": {
         "setlang_success": "語言設置成功。"
