@@ -7,6 +7,7 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/robfig/cron/v3 v3.0.1
+	golang.org/x/net v0.58.0
 	golang.org/x/sync v0.22.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	modernc.org/sqlite v1.56.0

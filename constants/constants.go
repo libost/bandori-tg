@@ -16,6 +16,14 @@ type Config struct {
 		Token      string `yaml:"token"`
 		AdminToken string `yaml:"admin_token"`
 	} `yaml:"general"`
+	Proxy struct {
+		Enabled  bool   `yaml:"enabled"`
+		Type     string `yaml:"type"`
+		Host     string `yaml:"host"`
+		Port     int    `yaml:"port"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	} `yaml:"proxy"`
 	Webhook struct {
 		Enabled      bool   `yaml:"enabled"`
 		NginxEnabled bool   `yaml:"nginx_enabled"`

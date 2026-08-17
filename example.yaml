@@ -1,2 +1,21 @@
 general:
-  token: "YOUR_BOT_TOKEN"
+  token: "YOUR_BOT_TOKEN" #填入你的Telegram Bot Token
+  admin_token: "YOUR_ADMIN_TOKEN" #填入你的管理员Token，务必保密
+proxy:
+  enabled: false #是否启用代理
+  type: "http" #代理类型，可选值为"http"或"socks5"
+  host: "" #代理服务器地址
+  port: 8080 #代理服务器端口
+  username: "" #代理用户名（如果需要）
+  password: "" #代理密码（如果需要）
+webhook:
+  enabled: false #是否启用Webhook模式
+  nginx_enabled: false #如果你使用Nginx反向代理，请设置为true
+  url: "https://yourdomain.com/path" #填入你的Webhook URL
+  port: 8443 #Webhook监听端口
+  cert: 
+    enabled: false #是否启用自定义证书
+    cert_path: "/path/to/cert.pem" #填入你的证书路径
+    key_path: "/path/to/key.pem" #填入你的证书私钥路径
+  secret: "YOUR_WEBHOOK_SECRET" #填入你的Webhook Secret，用于验证请求来源（可选）
+  

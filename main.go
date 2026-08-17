@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -23,6 +24,7 @@ import (
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
 	"github.com/robfig/cron/v3"
+	"golang.org/x/net/proxy"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -78,7 +80,12 @@ func main() {
 
 	config.InitConfig()
 	token := config.AppConfig.General.Token
-	b, err := gotgbot.NewBot(token, nil)
+	httpClient := httpClientWithProxy(config.AppConfig)
+	b, err := gotgbot.NewBot(token, &gotgbot.BotOpts{
+		BotClient: &gotgbot.BaseBotClient{
+			Client: *httpClient,
+		},
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -221,4 +228,36 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		return webhookOpts, setWebhookOpts
 	}
 	return webhookOpts, setWebhookOpts
+}
+
+func httpClientWithProxy(cfg *C.Config) *http.Client {
+	httpClient := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	if cfg.Proxy.Enabled {
+		switch cfg.Proxy.Type {
+		case "socks5":
+			dialer, _ := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", cfg.Proxy.Host, cfg.Proxy.Port), nil, proxy.Direct)
+			httpClient = &http.Client{
+				Timeout: time.Second * 10,
+				Transport: &http.Transport{
+					Dial: dialer.Dial,
+				},
+			}
+			log.Printf("using SOCKS5 proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)
+		case "http":
+			proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%d", cfg.Proxy.Host, cfg.Proxy.Port))
+			httpClient = &http.Client{
+				Timeout: time.Second * 10,
+				Transport: &http.Transport{
+					Proxy: http.ProxyURL(proxyUrl),
+				},
+			}
+			log.Printf("using HTTP proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)
+		default:
+			log.Printf("unsupported proxy type: %s", cfg.Proxy.Type)
+			panic("unsupported proxy type")
+		}
+	}
+	return httpClient
 }
