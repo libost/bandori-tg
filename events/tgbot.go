@@ -208,6 +208,86 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		}
 	}
 
+	timeStart := &gotgbot.RichTextDateTime{
+		Text:           gotgbot.RichTextString(startAtTime),
+		UnixTime:       startAtUnix,
+		DateTimeFormat: "DwT",
+	}
+
+	timeEnd := &gotgbot.RichTextDateTime{
+		Text:           gotgbot.RichTextString(endAtTime),
+		UnixTime:       endAtUnix,
+		DateTimeFormat: "DwT",
+	}
+
+	attributeText := &gotgbot.RichTextArray{
+		gotgbot.RichTextString(attribute + " "),
+		gotgbot.RichTextCustomEmoji{
+			CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
+			AlternativeText: "😐",
+		},
+		gotgbot.RichTextString("   +" + fmt.Sprint(eventDetailed.Attributes[0].Percent) + "%"),
+	}
+
+	type tableCell struct {
+		Type string
+		Str  gotgbot.RichText
+	}
+
+	table := []tableCell{
+		{
+
+			Type: I.GetLocalisedString("events.Region", langCode),
+			Str:  gotgbot.RichTextString(I.GetLocalisedString("events."+regionCode, langCode)),
+		},
+		{
+			Type: I.GetLocalisedString("events.Title", langCode),
+			Str:  gotgbot.RichTextString(eventName),
+		},
+		{
+			Type: I.GetLocalisedString("events.Type", langCode),
+			Str:  gotgbot.RichTextString(I.GetLocalisedString("events."+eventType, langCode)),
+		},
+		{
+			Type: I.GetLocalisedString("events.Countdown", langCode),
+			Str:  gotgbot.RichTextString(remainingTimeText),
+		},
+		{
+			Type: I.GetLocalisedString("events.StartAt", langCode),
+			Str:  timeStart,
+		},
+		{
+			Type: I.GetLocalisedString("events.EndAt", langCode),
+			Str:  timeEnd,
+		},
+		{
+			Type: I.GetLocalisedString("events.Attribute", langCode),
+			Str:  attributeText,
+		},
+		{
+			Type: I.GetLocalisedString("events.Characters", langCode),
+			Str:  gotgbot.RichTextArray(charaArray),
+		},
+		{
+			Type: I.GetLocalisedString("events.EventID", langCode),
+			Str:  gotgbot.RichTextString(eventID),
+		},
+	}
+
+	richCells := make([][]gotgbot.RichBlockTableCell, len(table))
+	for i, cell := range table {
+		richCells[i] = []gotgbot.RichBlockTableCell{
+			{
+				Text:  gotgbot.RichTextString(cell.Type),
+				Align: "left",
+			},
+			{
+				Text:  cell.Str,
+				Align: "right",
+			},
+		}
+	}
+
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
@@ -227,116 +307,11 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 				},
 			},
 			gotgbot.InputRichBlockTable{
-				Cells: [][]gotgbot.RichBlockTableCell{
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.Region", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events."+regionCode, langCode)),
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.Title", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextString(eventName),
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.Type", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events."+eventType, langCode)),
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.Countdown", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextString(remainingTimeText),
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.StartAt", langCode)),
-							Align: "left",
-						},
-						{
-							Text: gotgbot.RichTextDateTime{
-								Text:           gotgbot.RichTextString(startAtTime),
-								UnixTime:       startAtUnix,
-								DateTimeFormat: "DwT",
-							},
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.EndAt", langCode)),
-							Align: "left",
-						},
-						{
-							Text: gotgbot.RichTextDateTime{
-								Text:           gotgbot.RichTextString(endAtTime),
-								UnixTime:       endAtUnix,
-								DateTimeFormat: "DwT",
-							},
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.Attribute", langCode)),
-							Align: "left",
-						},
-						{
-							Text: gotgbot.RichTextArray{
-								gotgbot.RichTextString(attribute + " "),
-								gotgbot.RichTextCustomEmoji{
-									CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
-									AlternativeText: "😐",
-								},
-								gotgbot.RichTextString("   +" + fmt.Sprint(eventDetailed.Attributes[0].Percent) + "%"),
-							},
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.Characters", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextArray(charaArray),
-							Align: "right",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.EventID", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextString(eventID),
-							Align: "right",
-						},
-					},
-				},
+				Cells: richCells,
 			},
 		},
 	}
+
 	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
@@ -396,13 +371,13 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		})
 	}
 	go func() {
-		_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 		ticker := time.NewTicker(4 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 			case <-stopAction:
 				return
 			}

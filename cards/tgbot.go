@@ -38,6 +38,40 @@ func selectLocaleString(strings []string, index int) string {
 	return selected
 }
 
+func indexHelper(code string) int {
+	switch code {
+	case "jp", "powerful":
+		return 0
+	case "en", "cool":
+		return 1
+	case "tw", "happy":
+		return 2
+	case "cn", "pure":
+		return 3
+	case "kr":
+		return 4
+	default:
+		return 0
+	}
+}
+
+func tzHelper(code string) string {
+	switch code {
+	case "jp":
+		return "Asia/Tokyo"
+	case "en":
+		return "UTC"
+	case "tw":
+		return "Asia/Taipei"
+	case "cn":
+		return "Asia/Shanghai"
+	case "kr":
+		return "Asia/Seoul"
+	default:
+		return "UTC"
+	}
+}
+
 func isWebPageContentErr(err error) bool {
 	if err == nil {
 		return false
@@ -74,13 +108,13 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		})
 	}
 	go func() {
-		_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 		ticker := time.NewTicker(4 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
-				_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 			case <-stopAction:
 				return
 			}
@@ -118,23 +152,11 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 	// Process the card and send the response
-	var index int
-	switch qlangCode {
-	case "jp":
-		index = 0
-	case "en":
-		index = 1
-	case "tw":
-		index = 2
-	case "cn":
-		index = 3
-	case "kr":
-		index = 4
-	}
+	index := indexHelper(qlangCode)
 	regionCode := regionCodeFromCard(card, qlangCode)
 	if regionCode != qlangCode {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("cards.region_no_data", dlangCode), qlangCode, regionCode), nil)
-		_, _ = b.SendChatAction(ctx.EffectiveUser.Id, "typing", nil)
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 	}
 	cardDetailed, err := GetDetailedCard(param)
 	if err != nil {
@@ -190,38 +212,11 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, index), "\n", "")
 	attribute := card.Attribute
-	var aindex int
-	switch attribute {
-	case "powerful":
-		aindex = 0
-		attribute = "POWERFUL"
-	case "cool":
-		aindex = 1
-		attribute = "COOL"
-	case "happy":
-		aindex = 2
-		attribute = "HAPPY"
-	case "pure":
-		aindex = 3
-		attribute = "PURE"
-	}
+	aindex := indexHelper(attribute)
+	attribute = strings.ToUpper(attribute)
 	releasedAt := selectLocaleString(card.ReleasedAt, index)
 	releasedAtInt, _ := strconv.Atoi(releasedAt)
-	var tz string
-	switch qlangCode {
-	case "jp":
-		tz = "Asia/Tokyo"
-	case "en":
-		tz = "America/New_York"
-	case "tw":
-		tz = "Asia/Taipei"
-	case "cn":
-		tz = "Asia/Shanghai"
-	case "kr":
-		tz = "Asia/Seoul"
-	default:
-		tz = "UTC"
-	}
+	tz := tzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
 	releasedAtTime := time.Unix(int64(releasedAtInt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)

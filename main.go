@@ -23,6 +23,7 @@ import (
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
 	"github.com/robfig/cron/v3"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func main() {
@@ -33,7 +34,14 @@ func main() {
 		log.Fatalf("Failed to open log file: %v", err)
 	}
 	defer logFile.Close()
-	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	logWriter := &lumberjack.Logger{
+		Filename:   "./logs/app.log",
+		MaxSize:    10, // megabytes
+		MaxBackups: 5,
+		MaxAge:     28, // days
+		Compress:   true,
+	}
+	multiWriter := io.MultiWriter(os.Stdout, logWriter)
 	log.SetOutput(multiWriter)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	sigs := make(chan os.Signal, 1)
