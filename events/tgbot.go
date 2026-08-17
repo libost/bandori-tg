@@ -1,7 +1,9 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -117,7 +119,27 @@ func tzHelper(code string) string {
 	}
 }
 
+func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *time.Location) (int64, string) {
+	if field == "start" {
+		timeR := eventDetailed.StartAt[index]
+		timeInt, _ := strconv.ParseInt(timeR, 10, 64)
+		timeInt = timeInt / 1000
+		timeStr := time.Unix(timeInt, 0).In(tz).Format("2006-01-02 15:04:05 MST")
+		return timeInt, timeStr
+	}
+	if field == "end" {
+		timeR := eventDetailed.EndAt[index]
+		timeInt, _ := strconv.ParseInt(timeR, 10, 64)
+		timeInt = timeInt / 1000
+		timeStr := time.Unix(timeInt, 0).In(tz).Format("2006-01-02 15:04:05 MST")
+		return timeInt, timeStr
+	}
+	return 0, ""
+}
+
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	eventMap := utils.ReadEvents()
 	_, exists := eventMap[eventID]
 	if !exists {
@@ -145,17 +167,13 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	attribute := eventDetailed.Attributes[0].Attribute
 	aindex := indexHelper(attribute)
 	attribute = strings.ToUpper(attribute)
-	startAt := eventDetailed.StartAt[rindex]
-	startAtUnix, _ := strconv.ParseInt(startAt, 10, 64)
-	startAtUnix = startAtUnix / 1000
-	endAt := eventDetailed.EndAt[rindex]
-	endAtUnix, _ := strconv.ParseInt(endAt, 10, 64)
-	endAtUnix = endAtUnix / 1000
+
 	var tz string
 	tz = tzHelper(regionCode)
 	loc, _ := time.LoadLocation(tz)
-	startAtTime := time.Unix(startAtUnix, 0).In(loc).Format("2006-01-02 15:04:05 MST")
-	endAtTime := time.Unix(endAtUnix, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	startAtUnix, startAtTime := getTimeHelper(eventDetailed, "start", rindex, loc)
+	endAtUnix, endAtTime := getTimeHelper(eventDetailed, "end", rindex, loc)
+
 	var secs, mins, hrs, days int64
 	var remainingTimeText string
 	now := time.Now().Unix()
@@ -172,12 +190,11 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		// The event has ended
 		remainingTimeText = I.GetLocalisedString("events.event_endedTable", langCode)
 	}
+
 	charaIDs := make([]string, len(eventDetailed.Characters))
-	for i, chara := range eventDetailed.Characters {
-		charaIDs[i] = normalizeCharacterID(chara.CharacterID)
-	}
 	percents := make([]int, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
+		charaIDs[i] = normalizeCharacterID(chara.CharacterID)
 		percents[i] = chara.Percent
 	}
 	allEqual := allEqualPercent(percents)
@@ -208,27 +225,6 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		}
 	}
 
-	timeStart := &gotgbot.RichTextDateTime{
-		Text:           gotgbot.RichTextString(startAtTime),
-		UnixTime:       startAtUnix,
-		DateTimeFormat: "DwT",
-	}
-
-	timeEnd := &gotgbot.RichTextDateTime{
-		Text:           gotgbot.RichTextString(endAtTime),
-		UnixTime:       endAtUnix,
-		DateTimeFormat: "DwT",
-	}
-
-	attributeText := &gotgbot.RichTextArray{
-		gotgbot.RichTextString(attribute + " "),
-		gotgbot.RichTextCustomEmoji{
-			CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
-			AlternativeText: "😐",
-		},
-		gotgbot.RichTextString("   +" + fmt.Sprint(eventDetailed.Attributes[0].Percent) + "%"),
-	}
-
 	type tableCell struct {
 		Type string
 		Str  gotgbot.RichText
@@ -254,15 +250,30 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		},
 		{
 			Type: I.GetLocalisedString("events.StartAt", langCode),
-			Str:  timeStart,
+			Str: &gotgbot.RichTextDateTime{
+				Text:           gotgbot.RichTextString(startAtTime),
+				UnixTime:       startAtUnix,
+				DateTimeFormat: "DwT",
+			},
 		},
 		{
 			Type: I.GetLocalisedString("events.EndAt", langCode),
-			Str:  timeEnd,
+			Str: &gotgbot.RichTextDateTime{
+				Text:           gotgbot.RichTextString(endAtTime),
+				UnixTime:       endAtUnix,
+				DateTimeFormat: "DwT",
+			},
 		},
 		{
 			Type: I.GetLocalisedString("events.Attribute", langCode),
-			Str:  attributeText,
+			Str: &gotgbot.RichTextArray{
+				gotgbot.RichTextString(attribute + " "),
+				gotgbot.RichTextCustomEmoji{
+					CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
+					AlternativeText: "😐",
+				},
+				gotgbot.RichTextString("   +" + fmt.Sprint(eventDetailed.Attributes[0].Percent) + "%"),
+			},
 		},
 		{
 			Type: I.GetLocalisedString("events.Characters", langCode),
@@ -312,11 +323,15 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		},
 	}
 
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil && errors.Is(err, context.DeadlineExceeded) {
+		log.Printf("Request timed out while sending event details to user %d", ctx.EffectiveUser.Id)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
+	}
 	return err
 
 }
@@ -386,6 +401,8 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 		ongoingIDs, err := recent.GetOngoingEventsID()
 		if err != nil {
 			return err
@@ -476,12 +493,16 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				},
 			)
 		}
-		_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+		_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
 		})
 		log.Printf("Sent ongoing events to user %d", ctx.EffectiveUser.Id)
+		if err != nil && errors.Is(err, context.DeadlineExceeded) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
+			log.Printf("Request timed out while sending ongoing events to user %d", ctx.EffectiveUser.Id)
+		}
 		return err
 	} else {
 		param := ctx.Args()[1]

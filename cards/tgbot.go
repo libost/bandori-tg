@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -100,6 +101,8 @@ func textHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	stopAction := make(chan struct{})
 	var stopActionOnce sync.Once
 	stopActionLoop := func() {
@@ -222,109 +225,79 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
 	cemojiID := C.CharaEmoji[card.CharacterID-1]
 	bemojiID := C.BandEmoji[char.BandID-1]
-	richTable := &gotgbot.RichBlockTable{
-		Cells: [][]gotgbot.RichBlockTableCell{
-			// 1st row
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.region", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards."+regionCodeFromCard(card, qlangCode), dlangCode)),
-					Align: "right",
-				},
-			},
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_title", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text:  gotgbot.RichTextString(name),
-					Align: "right",
-				},
-			},
-			// 2nd row
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_type", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text:  gotgbot.RichTextString(cardType),
-					Align: "right",
-				},
-			},
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_chara", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text: gotgbot.RichTextArray{
-						gotgbot.RichTextString(characterName + " "),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(cemojiID),
-							AlternativeText: "😐",
-						},
-					},
-					Align: "right",
-				},
-			},
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_band", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text: gotgbot.RichTextArray{
-						gotgbot.RichTextString(bandName + " "),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(bemojiID),
-							AlternativeText: "😐",
-						},
-					},
-					Align: "right",
-				},
-			},
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_attribute", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text: gotgbot.RichTextArray{
-						gotgbot.RichTextString(attribute + " "),
-						gotgbot.RichTextCustomEmoji{
-							CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
-							AlternativeText: "😐",
-						},
-					},
-					Align: "right",
-				},
-			},
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_rarity", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text:  rarityBlock,
-					Align: "right",
-				},
-			},
-			{
-				{
-					Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_skill", dlangCode)),
-					Align: "left",
-				},
-				{
-					Text:  gotgbot.RichTextString(skillName),
-					Align: "right",
+
+	type tableCell struct {
+		Type string
+		Str  gotgbot.RichText
+	}
+	cells := []tableCell{
+		{
+			Type: "region",
+			Str:  gotgbot.RichTextString(I.GetLocalisedString(fmt.Sprintf("cards.%s", regionCode), dlangCode)),
+		},
+		{
+			Type: "card_info_title",
+			Str:  gotgbot.RichTextString(name),
+		},
+		{
+			Type: "card_info_type",
+			Str:  gotgbot.RichTextString(cardType),
+		},
+		{
+			Type: "card_info_chara",
+			Str: gotgbot.RichTextArray{
+				gotgbot.RichTextString(characterName + " "),
+				gotgbot.RichTextCustomEmoji{
+					CustomEmojiId:   fmt.Sprint(cemojiID),
+					AlternativeText: "😐",
 				},
 			},
 		},
+		{
+			Type: "card_info_band",
+			Str: gotgbot.RichTextArray{
+				gotgbot.RichTextString(bandName + " "),
+				gotgbot.RichTextCustomEmoji{
+					CustomEmojiId:   fmt.Sprint(bemojiID),
+					AlternativeText: "😐",
+				},
+			},
+		},
+		{
+			Type: "card_info_attribute",
+			Str: gotgbot.RichTextArray{
+				gotgbot.RichTextString(attribute + " "),
+				gotgbot.RichTextCustomEmoji{
+					CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
+					AlternativeText: "😐",
+				},
+			},
+		},
+		{
+			Type: "card_info_rarity",
+			Str:  rarityBlock,
+		},
+		{
+			Type: "card_info_skill",
+			Str:  gotgbot.RichTextString(skillName),
+		},
+	}
+	richCell := make([][]gotgbot.RichBlockTableCell, len(cells))
+	for i, cell := range cells {
+		richCell[i] = []gotgbot.RichBlockTableCell{
+			{
+				Text:  gotgbot.RichTextString(I.GetLocalisedString("cards."+cell.Type, dlangCode)),
+				Align: "left",
+			},
+			{
+				Text:  cell.Str,
+				Align: "right",
+			},
+		}
+	}
+
+	richTable := &gotgbot.RichBlockTable{
+		Cells: richCell,
 	}
 	if gachaText != "" {
 		richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
@@ -426,7 +399,7 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockTable{
 		Cells: richTable.Cells,
 	})
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, *richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, *richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
@@ -451,11 +424,15 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				},
 			},
 		}
-		_, err = b.SendRichMessage(ctx.EffectiveChat.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
+		_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
 		})
+	}
+	if err != nil && errors.Is(err, context.DeadlineExceeded) {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.request_timeout", dlangCode), nil)
+		log.Printf("Request timed out while sending card details to user %d", ctx.EffectiveUser.Id)
 	}
 	stopActionLoop()
 	return err
