@@ -1,6 +1,7 @@
 package events
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"slices"
@@ -43,6 +44,43 @@ func allEqualPercent[T comparable](slice []T) bool {
 		}
 	}
 	return true
+}
+
+func normalizeCharacterID(value any) string {
+	switch v := value.(type) {
+	case nil:
+		return ""
+	case string:
+		return v
+	case int:
+		return strconv.Itoa(v)
+	case int8:
+		return strconv.FormatInt(int64(v), 10)
+	case int16:
+		return strconv.FormatInt(int64(v), 10)
+	case int32:
+		return strconv.FormatInt(int64(v), 10)
+	case int64:
+		return strconv.FormatInt(v, 10)
+	case uint:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint8:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint16:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint32:
+		return strconv.FormatUint(uint64(v), 10)
+	case uint64:
+		return strconv.FormatUint(v, 10)
+	case float32:
+		return strconv.FormatFloat(float64(v), 'f', -1, 32)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case json.Number:
+		return v.String()
+	default:
+		return fmt.Sprint(v)
+	}
 }
 
 func indexHelper(code string) int {
@@ -136,12 +174,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	}
 	charaIDs := make([]string, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
-		switch v := chara.CharacterID.(type) {
-		case int:
-			charaIDs[i] = strconv.Itoa(v)
-		case string:
-			charaIDs[i] = v
-		}
+		charaIDs[i] = normalizeCharacterID(chara.CharacterID)
 	}
 	percents := make([]int, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
