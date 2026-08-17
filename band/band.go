@@ -8,7 +8,8 @@ import (
 )
 
 func GetBand(bandId string) (C.Band, error) {
-	band, exists := utils.Band[bandId]
+	bandMap := utils.ReadBand()
+	band, exists := bandMap[bandId]
 	if !exists {
 		return C.Band{}, fmt.Errorf("band with ID %s not found", bandId)
 	}

@@ -8,7 +8,8 @@ import (
 )
 
 func GetSkill(skillID string) (C.Skill, error) {
-	skill, exists := utils.Skills[skillID]
+	skillMap := utils.ReadSkills()
+	skill, exists := skillMap[skillID]
 	if !exists {
 		return C.Skill{}, fmt.Errorf("Skill with ID %s not found", skillID)
 	}

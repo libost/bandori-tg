@@ -8,7 +8,8 @@ import (
 )
 
 func GetCharacter(characterId string) (C.Character, error) {
-	character, exists := utils.Characters[characterId]
+	characterMap := utils.ReadCharacters()
+	character, exists := characterMap[characterId]
 	if !exists {
 		return C.Character{}, fmt.Errorf("character not found")
 	}

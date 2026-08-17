@@ -109,7 +109,8 @@ func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 	// Process the card ID and query the database
-	card, exists := utils.Cards[param]
+	cardMap := utils.ReadCards()
+	card, exists := cardMap[param]
 	if !exists {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
 		stopActionLoop()

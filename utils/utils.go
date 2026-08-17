@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"sync"
 	"time"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -18,6 +19,8 @@ type fetchTask struct {
 	Target any
 }
 
+var dataMu sync.RWMutex
+
 var Band C.BandData
 var Cards C.CardData
 var Characters C.CharacterData
@@ -27,51 +30,105 @@ var Skills C.SkillData
 var Gacha C.GachaData
 var REventsKeys []string
 
-var tasks = []fetchTask{
-	{
-		URL:    "https://bestdori.com/api/bands/main.1.json",
-		Target: &Band,
-	},
-	{
-		URL:    "https://bestdori.com/api/cards/all.5.json",
-		Target: &Cards,
-	},
-	{
-		URL:    "https://bestdori.com/api/characters/main.3.json",
-		Target: &Characters,
-	},
-	{
-		URL:    "https://bestdori.com/api/events/all.5.json",
-		Target: &Events,
-	},
-	{
-		URL:    "https://bestdori.com/api/news/dynamic/recent.json",
-		Target: &Recent,
-	},
-	{
-		URL:    "https://bestdori.com/api/skills/all.10.json",
-		Target: &Skills,
-	},
-	{
-		URL:    "https://bestdori.com/api/gacha/all.5.json",
-		Target: &Gacha,
-	},
+func ReadBand() C.BandData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Band
+}
+
+func ReadCards() C.CardData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Cards
+}
+
+func ReadCharacters() C.CharacterData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Characters
+}
+
+func ReadEvents() C.EventsData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Events
+}
+
+func ReadRecent() C.Recent {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Recent
+}
+
+func ReadSkills() C.SkillData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Skills
+}
+
+func ReadGacha() C.GachaData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Gacha
+}
+
+func ReadREventsKeys() []string {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return append([]string(nil), REventsKeys...)
+}
+
+func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData) {
+	dataMu.Lock()
+	defer dataMu.Unlock()
+
+	Band = snapshotBand
+	Cards = snapshotCards
+	Characters = snapshotCharacters
+	Events = snapshotEvents
+	Recent = snapshotRecent
+	Skills = snapshotSkills
+	Gacha = snapshotGacha
+
+	REventsKeys = make([]string, 0, len(Recent.Events))
+	for k := range Recent.Events {
+		REventsKeys = append(REventsKeys, k)
+	}
+	sort.Strings(REventsKeys)
 }
 
 func InitLists() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+
 	httpClient := &http.Client{
 		Timeout: 5 * time.Second,
 		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 10, // 提升并发复用效率
+			MaxIdleConnsPerHost: 10,
 		},
 	}
-	eg, gCtx := errgroup.WithContext(ctx)
-	for _, task := range tasks {
-		// 注意 Go 1.22 以前需要闭包变量捕获：t := task
-		t := task
 
+	var snapshotBand C.BandData
+	var snapshotCards C.CardData
+	var snapshotCharacters C.CharacterData
+	var snapshotEvents C.EventsData
+	var snapshotRecent C.Recent
+	var snapshotSkills C.SkillData
+	var snapshotGacha C.GachaData
+
+	data := []fetchTask{
+		{URL: "https://bestdori.com/api/bands/main.1.json", Target: &snapshotBand},
+		{URL: "https://bestdori.com/api/cards/all.5.json", Target: &snapshotCards},
+		{URL: "https://bestdori.com/api/characters/main.3.json", Target: &snapshotCharacters},
+		{URL: "https://bestdori.com/api/events/all.5.json", Target: &snapshotEvents},
+		{URL: "https://bestdori.com/api/news/dynamic/recent.json", Target: &snapshotRecent},
+		{URL: "https://bestdori.com/api/skills/all.10.json", Target: &snapshotSkills},
+		{URL: "https://bestdori.com/api/gacha/all.5.json", Target: &snapshotGacha},
+	}
+
+	eg, gCtx := errgroup.WithContext(ctx)
+	for _, task := range data {
+		t := task
 		eg.Go(func() error {
 			return fetchAndDecode(gCtx, httpClient, t.URL, t.Target)
 		})
@@ -80,12 +137,13 @@ func InitLists() error {
 		log.Printf("Error occurred while fetching and decoding data: %v", err)
 		return err
 	}
+
+	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha)
 	fmt.Println("All lists initialized successfully.")
 	return nil
 }
 
 func fetchAndDecode(ctx context.Context, client *http.Client, url string, target any) error {
-	// 创建带 Context 的 Request，支持中途取消或超时
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("Failed to create request [%s]: %w", url, err)
@@ -97,21 +155,12 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 	}
 	defer resp.Body.Close()
 
-	// 校验 HTTP 状态码
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
 	}
 
-	// 使用 json.NewDecoder 直接从 Response Body 流式解码，高效省内存
 	if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
 		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
-	}
-	if target == &Recent {
-		REventsKeys = make([]string, 0, len(Recent.Events))
-		for k := range Recent.Events {
-			REventsKeys = append(REventsKeys, k)
-		}
-		sort.Strings(REventsKeys)
 	}
 
 	return nil
@@ -127,12 +176,12 @@ func CronInit() {
 			log.Println("InitLists completed successfully.")
 			break
 		}
-		delay := baseDelay * time.Duration(1<<i) // 指数退避
+		delay := baseDelay * time.Duration(1<<i)
 		if i == maxRetries-1 {
 			log.Printf("InitLists failed after %d attempts: %v. No more retries.", maxRetries, err)
 		} else {
 			log.Printf("InitLists failed (attempt %d/%d): %v. Retrying in %s...", i+1, maxRetries, err, delay)
+			time.Sleep(delay)
 		}
-		time.Sleep(delay)
 	}
 }
