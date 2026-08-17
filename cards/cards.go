@@ -63,7 +63,8 @@ func retrieveCardsPath(regionCode string, resourceSetName string, cardStat strin
 }
 
 func GetCard(cardId string) (string, string, error) {
-	card, exists := utils.Cards[cardId]
+	cardMap := utils.ReadCards()
+	card, exists := cardMap[cardId]
 	if !exists {
 		return "", "", nil
 	}

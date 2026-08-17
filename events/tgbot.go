@@ -80,7 +80,8 @@ func tzHelper(code string) string {
 }
 
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
-	_, exists := utils.Events[eventID]
+	eventMap := utils.ReadEvents()
+	_, exists := eventMap[eventID]
 	if !exists {
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
 		return err
@@ -401,8 +402,9 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			{3, "CN", "cn", "Asia/Shanghai", "🇨🇳"},
 		}
 
+		eventMap := utils.ReadEvents()
 		for _, r := range regions {
-			event := utils.Events[ongoingIDs[r.idx]]
+			event := eventMap[ongoingIDs[r.idx]]
 			loc, _ := time.LoadLocation(r.tz)
 			eStart, _ := strconv.Atoi(event.StartAt[r.idx])
 			eEnd, _ := strconv.Atoi(event.EndAt[r.idx])

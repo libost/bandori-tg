@@ -19,9 +19,11 @@ func GetOngoingEventsID() ([]string, error) {
 }
 
 func findLatestOngoingEvent(region int) (string, bool) {
+	recentData := utils.ReadRecent()
+	keys := utils.ReadREventsKeys()
 	var candidates []string
-	for _, key := range utils.REventsKeys {
-		endAt := utils.Recent.Events[key].EndAt
+	for _, key := range keys {
+		endAt := recentData.Events[key].EndAt
 		if region >= len(endAt) {
 			continue
 		}
@@ -36,13 +38,13 @@ func findLatestOngoingEvent(region int) (string, bool) {
 	}
 
 	latest := candidates[0]
-	latestValue, err := strconv.ParseInt(utils.Recent.Events[latest].EndAt[region], 10, 64)
+	latestValue, err := strconv.ParseInt(recentData.Events[latest].EndAt[region], 10, 64)
 	if err != nil {
 		return "", false
 	}
 
 	for _, key := range candidates[1:] {
-		value, err := strconv.ParseInt(utils.Recent.Events[key].EndAt[region], 10, 64)
+		value, err := strconv.ParseInt(recentData.Events[key].EndAt[region], 10, 64)
 		if err != nil {
 			continue
 		}

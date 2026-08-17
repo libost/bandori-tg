@@ -10,7 +10,8 @@ import (
 )
 
 func GetGacha(gachaId string) (C.Gacha, error) {
-	gacha, exists := utils.Gacha[gachaId]
+	gachaMap := utils.ReadGacha()
+	gacha, exists := gachaMap[gachaId]
 	if !exists {
 		return C.Gacha{}, fmt.Errorf("gacha with ID %s not found", gachaId)
 	}
@@ -18,7 +19,8 @@ func GetGacha(gachaId string) (C.Gacha, error) {
 }
 
 func GetGachaDetails(gachaId string) (C.GachaDetailed, error) {
-	_, exists := utils.Gacha[gachaId]
+	gachaMap := utils.ReadGacha()
+	_, exists := gachaMap[gachaId]
 	if !exists {
 		return C.GachaDetailed{}, fmt.Errorf("gacha with ID %s not found", gachaId)
 	}
