@@ -143,7 +143,11 @@ func initAll() {
 }
 
 func cronTasks(c *cron.Cron) {
-	_, err := c.AddFunc("30 8 * * *", utils.CronInit) // 每天 8:30 AM 更新列表 国际服活动开始前30分钟
+	_, err := c.AddFunc("0 4 * * *", utils.CronInit) // 每天 04:00 AM 更新列表 间隔太大了，多少加一次
+	if err != nil {
+		log.Printf("Error adding cron job: %v", err)
+	}
+	_, err = c.AddFunc("30 8 * * *", utils.CronInit) // 每天 8:30 AM 更新列表 国际服活动开始前30分钟
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
