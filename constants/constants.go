@@ -203,7 +203,7 @@ type EventAttribute struct {
 
 type EventCharacters struct {
 	EventID     int `json:"eventId"`
-	CharacterID int `json:"characterId"`
+	CharacterID any `json:"characterId"`
 	Percent     int `json:"percent"`
 	Seq         int `json:"seq"`
 }

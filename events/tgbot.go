@@ -135,7 +135,12 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	}
 	charaIDs := make([]string, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
-		charaIDs[i] = strconv.Itoa(chara.CharacterID)
+		switch v := chara.CharacterID.(type) {
+		case int:
+			charaIDs[i] = strconv.Itoa(v)
+		case string:
+			charaIDs[i] = v
+		}
 	}
 	percents := make([]int, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
