@@ -2,8 +2,10 @@ package cards
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
@@ -128,6 +130,35 @@ func GetDetailedCard(cardId string) (C.CardDetailed, error) {
 		return C.CardDetailed{}, err
 	}
 	return cardDetailed, nil
+}
+
+func GetThumbCard(cardId string) (string, error) {
+	cardMap := utils.ReadCards()
+	card, exists := cardMap[cardId]
+	if !exists {
+		return "", nil
+	}
+	regionCode := regionCodeFromCard(card, "jp")
+	cardIDint, _ := strconv.Atoi(cardId)
+	// 每50张卡片为一组，计算出卡片所在的组号，并格式化为5位数的字符串
+	cardPack := fmt.Sprintf("%05d", cardIDint/50)
+	normalPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_normal.png"
+	afterTrainingPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_after_training.png"
+	if card.Rarity < 3 || !cardOrdinaryType(card.Type) {
+		if card.Type == "campaign" {
+			if card.Rarity < 3 {
+				return normalPath, nil
+			}
+			return afterTrainingPath, nil
+		}
+		if card.Rarity < 3 {
+			return normalPath, nil
+		}
+		if card.Type == "birthday" || card.Type == "others" || card.Type == "kirafes" {
+			return afterTrainingPath, nil
+		}
+	}
+	return normalPath, nil
 }
 
 /*
