@@ -1,6 +1,6 @@
 # 🎸 bandori-tg
 
-一个用于手游 **《BanG Dream! 少女乐团派对！》**（邦 / Bandori）的 Telegram 机器人，提供查卡、查活动、档线预测等实用功能，支持多服务区、多语言，数据来源于 [Bestdori](https://bestdori.com)。
+一个用于手游 **《BanG Dream! 少女乐团派对！》**（邦多利 / Bandori）的 Telegram 机器人，提供查卡、查活动、档线预测等实用功能，支持多服务区、多语言，数据来源于 [Bestdori](https://bestdori.com)。
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
@@ -22,7 +22,7 @@
 
 | 组件 | 说明 |
 | --- | --- |
-| 语言 | Go 1.26 |
+| 语言 | Go 1.27 |
 | 框架 | [gotgbot](https://github.com/PaulSonOfLars/gotgbot) (v2) |
 | 数据库 | SQLite（[modernc.org/sqlite](https://modernc.org/sqlite)，纯 Go 实现，支持 `CGO_ENABLED=0` 交叉编译） |
 | 图片生成 | [fogleman/gg](https://github.com/fogleman/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
@@ -176,10 +176,9 @@ go build ./...
 
 ## 开发路线
 
-- [ ] 添加更多语言支持
-- [ ] 优化用户界面
-- [ ] 增强数据处理能力
-- [ ] 提高系统稳定性
+- [ ] 新闻页面
+- [ ] 招募信息查询
+- [ ] 更多语言支持（需要帮助！）
 
 ## 📄 许可证
 
