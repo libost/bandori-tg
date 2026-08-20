@@ -143,35 +143,7 @@ func initAll() {
 }
 
 func cronTasks(c *cron.Cron) {
-	_, err := c.AddFunc("0 4 * * *", utils.CronInit) // 每天 04:00 AM 更新列表 间隔太大了，多少加一次
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("30 8 * * *", utils.CronInit) // 每天 8:30 AM 更新列表 国际服活动开始前30分钟
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("30 12 * * *", utils.CronInit) // 每天 12:30 PM 更新活动 国服活动开始前30分钟
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("30 13 * * *", utils.CronInit) // 每天 13:30 PM 更新列表 日服活动开始前30分钟
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("29 14 * * *", utils.CronInit) // 每天 14:29 PM 更新列表 国际服活动结束前30分钟
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("29 19 * * *", utils.CronInit) // 每天 19:29 PM 更新活动 日服活动结束前30分钟
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("29 20 * * *", utils.CronInit) // 每天 20:29 PM 更新列表 台服活动结束前30分钟
-	if err != nil {
-		log.Printf("Error adding cron job: %v", err)
-	}
-	_, err = c.AddFunc("29 22 * * *", utils.CronInit) // 每天 22:29 PM 更新活动 国服活动结束前30分钟
+	_, err := c.AddFunc("30 * * * *", utils.CronInit) // 每个小时的第30分钟执行一次
 	if err != nil {
 		log.Printf("Error adding cron job: %v", err)
 	}
