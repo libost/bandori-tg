@@ -11,10 +11,100 @@ const (
 	RecentFile     = "./res/recent.json"
 )
 
+const (
+	Card1PowerfulFrame = "https://bestdori.com/res/image/card-1-powerful.png"
+	Card1CoolFrame     = "https://bestdori.com/res/image/card-1-cool.png"
+	Card1HappyFrame    = "https://bestdori.com/res/image/card-1-happy.png"
+	Card1PureFrame     = "https://bestdori.com/res/image/card-1-pure.png"
+	Card2Frame         = "https://bestdori.com/res/image/card-2.png"
+	Card3Frame         = "https://bestdori.com/res/image/card-3.png"
+	Card4Frame         = "https://bestdori.com/res/image/card-4.png"
+	Card5Frame         = "https://bestdori.com/res/image/card-5.png"
+	PowerfulFrame      = "https://bestdori.com/res/icon/powerful.svg"
+	CoolFrame          = "https://bestdori.com/res/icon/cool.svg"
+	HappyFrame         = "https://bestdori.com/res/icon/happy.svg"
+	PureFrame          = "https://bestdori.com/res/icon/pure.svg"
+	StarIcon           = "https://bestdori.com/res/icon/star.png"
+)
+
+var Card1Frames = [...]string{
+	Card1PowerfulFrame,
+	Card1CoolFrame,
+	Card1HappyFrame,
+	Card1PureFrame,
+}
+
+var CardFrames = [...]string{
+	Card2Frame,
+	Card3Frame,
+	Card4Frame,
+	Card5Frame,
+}
+
+var AttributeFrames = [...]string{
+	PowerfulFrame,
+	CoolFrame,
+	HappyFrame,
+	PureFrame,
+}
+
+var BandFrames = [...]string{
+	"https://bestdori.com/res/icon/band_1.svg",
+	"https://bestdori.com/res/icon/band_2.svg",
+	"https://bestdori.com/res/icon/band_3.svg",
+	"https://bestdori.com/res/icon/band_4.svg",
+	"https://bestdori.com/res/icon/band_5.svg", // 250*250
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"https://bestdori.com/res/icon/band_18.svg", // 18 44*44
+	"0",
+	"0",
+	"https://bestdori.com/res/icon/band_21.svg", // 21 44*44
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"0",
+	"https://bestdori.com/res/icon/band_45.svg", // 45
+}
+
+// Attr 178*179 right upper corner
+// Star 174*179 left down corner
+// Bandlogo 180*179 left upper corner
+
 type Config struct {
 	General struct {
 		Token      string `yaml:"token"`
 		AdminToken string `yaml:"admin_token"`
+		PicDepot   string `yaml:"pic_depot"`
 	} `yaml:"general"`
 	Proxy struct {
 		Enabled  bool   `yaml:"enabled"`
@@ -275,6 +365,25 @@ type PaymentMethods struct {
 	CostItemQuantity int    `json:"costItemQuantity"`
 	DiscountType     string `json:"discountType"`
 }
+
+type EventTracker struct {
+	Cutoffs []Cutoff `json:"cutoffs"`
+	Result  bool     `json:"result"`
+}
+
+type Cutoff struct {
+	Time int64 `json:"time"`
+	Ep   int64 `json:"ep"`
+}
+
+type Rates struct {
+	Type   string  `json:"type"`
+	Server int     `json:"server"`
+	Tier   int     `json:"tier"`
+	Rate   float64 `json:"rate"`
+}
+
+type RatesData map[string]Rates
 
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
 var CharaEmoji = [...]int64{

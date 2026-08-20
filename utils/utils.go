@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,9 +12,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/PaulSonOfLars/gotgbot/v2"
+	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed fonts/*.ttf
+var FontFS embed.FS
 
 type fetchTask struct {
 	URL    string
@@ -184,4 +191,25 @@ func CronInit() {
 			time.Sleep(delay)
 		}
 	}
+}
+
+// 由于未知的原因，SendRichMessage中无法直接使用InputFileByReader上传图片，因此需要先上传图片到PicDepot，然后再使用file_id发送图片
+func GetImageIDWorkAround(b *gotgbot.Bot, buf bytes.Buffer) (string, error) {
+	picDepot := "@" + config.AppConfig.General.PicDepot
+	inputFile := gotgbot.InputFileByReader("image.png", &buf)
+	msg, err := b.SendPhoto(0, inputFile, &gotgbot.SendPhotoOpts{
+		RequestOpts: &gotgbot.RequestOpts{
+			OverrideParams: map[string]any{
+				"chat_id": picDepot,
+			},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+	if len(msg.Photo) == 0 {
+		return "", fmt.Errorf("no photo returned from Telegram")
+	}
+	fileID := msg.Photo[len(msg.Photo)-1].FileId
+	return fileID, nil
 }

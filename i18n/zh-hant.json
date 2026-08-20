@@ -97,6 +97,17 @@
         "tw": "台服 🇹🇼",
         "cn": "中國服 🇨🇳",
         "kr": "韓服 🇰🇷",
-        "request_timeout": "請求超時，請稍後再試。"
+        "request_timeout": "請求超時，請稍後再試。",
+        "event_members": "Card",
+        "event_bonus_cards": "獎勵",
+        "status": "狀態: ",
+        "complete_percent": "%[1]d%% 完成",
+        "predicted_cutoff": "預測分數線: ",
+        "not_enough_data": "數據不足，無法進行預測。",
+        "latest_cutoff": "最新分數線: ",
+        "updated_at": "更新時間: ",
+        "speed": "速度: ",
+        "actual": "目前分數線",
+        "predicted": "預測最終分數線"
     }
 }
