@@ -100,6 +100,17 @@
         "tw": "台服 🇹🇼",
         "cn": "国服 🇨🇳",
         "kr": "韩服 🇰🇷",
-        "request_timeout": "请求超时，请稍后再试。"
+        "request_timeout": "请求超时，请稍后再试。",
+        "event_members": "Card",
+        "event_bonus_cards": "奖励",
+        "status": "状态: ",
+        "complete_percent": "%[1]d%% 完成",
+        "predicted_cutoff": "预测分数线: ",
+        "not_enough_data": "数据不足，无法进行预测。",
+        "latest_cutoff": "最新分数线: ",
+        "updated_at": "更新时间: ",
+        "speed": "速度: ",
+        "actual": "目前分数线",
+        "predicted": "预测最终分数线"
     }
 }

@@ -1,10 +1,12 @@
 package events
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image/png"
 	"log"
 	"slices"
 	"strconv"
@@ -138,7 +140,7 @@ func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *t
 }
 
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	eventMap := utils.ReadEvents()
 	_, exists := eventMap[eventID]
@@ -299,13 +301,57 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		}
 	}
 
+	img, err := generateEventMembers(eventDetailed)
+	if err != nil {
+		log.Printf("Error generating event members image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
+	var buf bytes.Buffer
+	err = png.Encode(&buf, img)
+	if err != nil {
+		log.Printf("Error encoding event members image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
+	img2, err := generateEventBonusCards(eventDetailed)
+	var buf2 bytes.Buffer
+	err = png.Encode(&buf2, img2)
+	if err != nil {
+		log.Printf("Error encoding event bonus cards image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
+	fileID, err := utils.GetImageIDWorkAround(b, buf)
+	if err != nil {
+		log.Printf("Error getting image ID for event members image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
+	fileID2, err := utils.GetImageIDWorkAround(b, buf2)
+	if err != nil {
+		log.Printf("Error getting image ID for event bonus cards image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
+	photoBlock := gotgbot.InputRichBlockPhoto{
+		Photo: gotgbot.InputMediaPhoto{
+			Media: gotgbot.InputFileByID(fileID),
+		},
+	}
+	photoBlock2 := gotgbot.InputRichBlockPhoto{
+		Photo: gotgbot.InputMediaPhoto{
+			Media: gotgbot.InputFileByID(fileID2),
+		},
+	}
+
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(
 					I.GetLocalisedString("events.event_details", langCode),
 				),
-				Size: 3,
+				Size: 2,
 			},
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
@@ -320,6 +366,18 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 			gotgbot.InputRichBlockTable{
 				Cells: richCells,
 			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockSectionHeading{
+				Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_members", langCode)),
+				Size: 3,
+			},
+			photoBlock,
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockSectionHeading{
+				Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_bonus_cards", langCode)),
+				Size: 3,
+			},
+			photoBlock2,
 		},
 	}
 
@@ -331,6 +389,10 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
 		log.Printf("Request timed out while sending event details to user %d", ctx.EffectiveUser.Id)
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
+		return err
+	}
+	if err != nil {
+		return err
 	}
 	return err
 
@@ -338,6 +400,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
+	dispatcher.AddHandler(handlers.NewCommand("fsx", fsxCommand))
 }
 
 func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt int64) gotgbot.RichTextArray {
@@ -375,6 +438,129 @@ func timeCalc(time int64) (int64, int64, int64, int64) {
 		return seconds, minutes, 0, 0
 	}
 	return time, 0, 0, 0
+}
+
+func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	if len(ctx.Args()) < 2 {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
+		return nil
+	}
+	eventID := ctx.Args()[1]
+	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	regionCode := indexHelper(qlangCode)
+	img, last, predicted, latestTime, speed, err := getEventTracker(qlangCode, eventID)
+	if err != nil {
+		return err
+	}
+	// Do something with the generated image, e.g., send it to the user
+	var buf bytes.Buffer
+	err = png.Encode(&buf, img)
+	if err != nil {
+		log.Printf("Error encoding event tracker image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
+		return err
+	}
+	var status string
+	events := utils.ReadEvents()
+	event, _ := events[eventID]
+	now := time.Now().Unix() * 1000
+	startAt, err := strconv.ParseInt(event.StartAt[regionCode], 10, 64)
+	if err != nil {
+		return err
+	}
+	endAt, err := strconv.ParseInt(event.EndAt[regionCode], 10, 64)
+	if err != nil {
+		return err
+	}
+	if now > endAt {
+		status = I.GetLocalisedString("events.event_ended", langCode)
+	} else if now > startAt {
+		percent := int64(float64(now-startAt) / float64(endAt-startAt) * 100)
+		status = fmt.Sprintf(I.GetLocalisedString("events.complete_percent", langCode), percent)
+	}
+	predictedStr := fmt.Sprintf("%d", predicted)
+	if predicted == 0 {
+		predictedStr = I.GetLocalisedString("events.not_enough_data", langCode)
+	}
+	tz := tzHelper(qlangCode)
+	loc, _ := time.LoadLocation(tz)
+	lastTimeStr := time.Unix(latestTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+
+	fileId, err := utils.GetImageIDWorkAround(b, buf)
+	richMessage := gotgbot.InputRichMessage{
+		Blocks: []gotgbot.InputRichBlock{
+			gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByID(fileId),
+				},
+			},
+			gotgbot.InputRichBlockTable{
+				Cells: [][]gotgbot.RichBlockTableCell{
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.status", langCode)),
+							Align: "left",
+						},
+						{
+							Text:  gotgbot.RichTextString(status),
+							Align: "right",
+						},
+					},
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.latest_cutoff", langCode)),
+							Align: "left",
+						},
+						{
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%d", last)),
+							Align: "right",
+						},
+					},
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.predicted_cutoff", langCode)),
+							Align: "left",
+						},
+						{
+							Text:  gotgbot.RichTextString(predictedStr),
+							Align: "right",
+						},
+					},
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.updated_at", langCode)),
+							Align: "left",
+						},
+						{
+							Text: gotgbot.RichTextDateTime{
+								Text:           gotgbot.RichTextString(lastTimeStr),
+								UnixTime:       latestTime / 1000,
+								DateTimeFormat: "DwT",
+							},
+							Align: "right",
+						},
+					},
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.speed", langCode)),
+							Align: "left",
+						},
+						{
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%dpt/h", speed)),
+							Align: "right",
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+		ReplyParameters: &gotgbot.ReplyParameters{
+			MessageId: ctx.EffectiveMessage.MessageId,
+		},
+	})
+	return err
 }
 
 func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {

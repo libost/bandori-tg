@@ -2,6 +2,7 @@ package cards
 
 import (
 	"context"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"log"
@@ -23,6 +24,14 @@ import (
 	"github.com/libost/bandori-tg/skills"
 	"github.com/libost/bandori-tg/utils"
 )
+
+// XMLNode 定义递归 XML 节点结构
+type XMLNode struct {
+	XMLName  xml.Name
+	Attrs    []xml.Attr `xml:",any,attr"`
+	Content  []byte     `xml:",chardata"`
+	Children []XMLNode  `xml:",any"`
+}
 
 func selectLocaleString(strings []string, index int) string {
 	var selected string

@@ -97,6 +97,17 @@
         "kr": "Korea 🇰🇷",
         "en": "English 🇺🇸",
         "cn": "China 🇨🇳",
-        "request_timeout": "Request timed out. Please try again later."
+        "request_timeout": "Request timed out. Please try again later.",
+        "event_members": "Card",
+        "event_bonus_cards": "Bonus",
+        "status": "Status: ",
+        "complete_percent": "%[1]d%% Complete",
+        "predicted_cutoff": "Predicted Cutoff: ",
+        "not_enough_data": "Not enough data to make a prediction.",
+        "latest_cutoff": "Latest Cutoff: ",
+        "updated_at": "Updated At: ",
+        "speed": "Speed: ",
+        "actual": "Current Cutoff",
+        "predicted": "Predicted Final Cutoff"
     }
 }
