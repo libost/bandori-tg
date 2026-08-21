@@ -108,6 +108,9 @@
         "updated_at": "Updated At: ",
         "speed": "Speed: ",
         "actual": "Current Cutoff",
-        "predicted": "Predicted Final Cutoff"
+        "predicted": "Predicted Final Cutoff",
+        "event_image_error": "Failed to load event image. Please try again later.",
+        "fsx_disclaimer": "Disclaimer: The predicted cutoff is for reference only, and the actual results may vary.",
+        "no_cutoff_data": "No cutoff data available for the current event."
     }
 }

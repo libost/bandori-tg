@@ -1,14 +1,16 @@
 package constants
 
+import "fmt"
+
 const (
-	BandNameFile   = "./res/bandname.json"
-	CardsFile      = "./res/cards.json"
-	CharactersFile = "./res/characters.json"
-	ConfigPath     = "./config.yaml"
-	DatabaseFile   = "./res/bandori.db"
-	EventsFile     = "./res/events.json"
-	SkillsFile     = "./res/skills.json"
-	RecentFile     = "./res/recent.json"
+	ConfigPath   = "./config.yaml"
+	DatabaseFile = "./res/bandori.db"
+)
+
+var (
+	ErrCannotPredict = fmt.Errorf("not enough data to make predictions")
+	ErrNoCutoffData  = fmt.Errorf("no cutoff data available for this event")
+	ErrNoSuchEvent   = fmt.Errorf("no such event")
 )
 
 const (
@@ -94,6 +96,27 @@ var BandFrames = [...]string{
 	"0",
 	"0",
 	"https://bestdori.com/res/icon/band_45.svg", // 45
+}
+
+var CNTierList = [...]int{
+	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 3000, 4000, 5000, 10000, 15000, 20000, 30000, 40000, 50000, 100000, 150000, 200000, 300000,
+}
+
+var JPTierList = [...]int{
+	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 2000, 5000, 10000, 20000, 30000, 50000, 70000, 100000, 300000,
+}
+
+var TWTierList = [...]int{
+	20, 30, 40, 50, 100, 500, 1000, 3000, 5000,
+}
+
+var ENTierList = [...]int{
+	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 2000, 2500, 3000, 4000, 5000, 10000,
+}
+
+// 真有人会查死了的KR吗... Bestdori上都查不到KR档线，给那些在意的人留个念想吧
+var KRTierList = [...]int{
+	100,
 }
 
 // Attr 178*179 right upper corner

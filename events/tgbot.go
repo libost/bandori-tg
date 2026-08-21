@@ -371,13 +371,23 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 				Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_members", langCode)),
 				Size: 3,
 			},
-			photoBlock,
+			gotgbot.InputRichBlockDetails{
+				Summary: gotgbot.RichTextString(""),
+				Blocks: []gotgbot.InputRichBlock{
+					photoBlock,
+				},
+			},
 			gotgbot.InputRichBlockDivider{},
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_bonus_cards", langCode)),
 				Size: 3,
 			},
-			photoBlock2,
+			gotgbot.InputRichBlockDetails{
+				Summary: gotgbot.RichTextString(""),
+				Blocks: []gotgbot.InputRichBlock{
+					photoBlock2,
+				},
+			},
 		},
 	}
 
@@ -441,17 +451,63 @@ func timeCalc(time int64) (int64, int64, int64, int64) {
 }
 
 func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) < 2 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 		return nil
 	}
-	eventID := ctx.Args()[1]
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+
+	tier := 0
+	if len(ctx.Args()) > 2 {
+		t, err := strconv.Atoi(ctx.Args()[2])
+		if err != nil {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
+			return nil
+		}
+		tier = t
+	}
+	if len(ctx.Args()) > 3 {
+		region := ctx.Args()[3]
+		if !slices.Contains(C.AcceptedRegions, region) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.invalid_region", langCode), nil)
+			return nil
+		}
+		qlangCode = region
+	}
+	eventID := ctx.Args()[1]
 	regionCode := indexHelper(qlangCode)
-	img, last, predicted, latestTime, speed, err := getEventTracker(qlangCode, eventID)
+	img, last, predicted, latestTime, speed, err := getEventTracker(qlangCode, eventID, tier)
 	if err != nil {
-		return err
+		if errors.Is(err, C.ErrNoSuchEvent) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
+			return nil
+		}
+		if errors.Is(err, C.ErrNoCutoffData) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.no_cutoff_data", langCode), nil)
+			return nil
+		}
 	}
 	// Do something with the generated image, e.g., send it to the user
 	var buf bytes.Buffer
@@ -547,8 +603,18 @@ func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%dpt/h", speed)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%d pt/h", speed)),
 							Align: "right",
+						},
+					},
+				},
+			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockBlockQuotation{
+				Blocks: []gotgbot.InputRichBlock{
+					gotgbot.InputRichBlockParagraph{
+						Text: gotgbot.RichTextItalic{
+							Text: gotgbot.RichTextString(I.GetLocalisedString("events.fsx_disclaimer", langCode)),
 						},
 					},
 				},
@@ -560,6 +626,7 @@ func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	stopActionLoop()
 	return err
 }
 

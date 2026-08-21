@@ -248,7 +248,7 @@ func frameHelper(rarity int, attribute string) string {
 	return ""
 }
 
-func ThumbGenerate(cardId string) (image.Image, error) {
+func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	cardMap := utils.ReadCards()
 	card, exists := cardMap[cardId]
 	if !exists {
@@ -318,7 +318,13 @@ func ThumbGenerate(cardId string) (image.Image, error) {
 	}
 	dc.SetFontFace(fontFace)
 	dc.SetHexColor("#000000")
-	dc.DrawStringAnchored(cardId, 90, 220, 0.5, 0.5)
+	var inputStr string
+	if percent > 0 {
+		inputStr = fmt.Sprintf("%s (+%d%%)", cardId, percent)
+	} else {
+		inputStr = cardId
+	}
+	dc.DrawStringAnchored(inputStr, 90, 220, 0.5, 0.5)
 	return dc.Image(), nil
 }
 

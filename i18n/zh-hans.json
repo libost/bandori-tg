@@ -111,6 +111,9 @@
         "updated_at": "更新时间: ",
         "speed": "速度: ",
         "actual": "目前分数线",
-        "predicted": "预测最终分数线"
+        "predicted": "预测最终分数线",
+        "event_image_error": "活动图片加载失败，请稍后再试。",
+        "fsx_disclaimer": "免责声明：预测分数线仅供参考，实际结果可能会有所不同。",
+        "no_cutoff_data": "当前活动暂无分数线数据。"
     }
 }
