@@ -410,7 +410,8 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
-	dispatcher.AddHandler(handlers.NewCommand("fsx", fsxCommand))
+	dispatcher.AddHandler(handlers.NewCommand("cutoff", FsxCommand))
+	dispatcher.AddHandler(handlers.NewCommand("fsx", FsxCommand))
 }
 
 func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt int64) gotgbot.RichTextArray {
@@ -450,7 +451,7 @@ func timeCalc(time int64) (int64, int64, int64, int64) {
 	return time, 0, 0, 0
 }
 
-func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	stopAction := make(chan struct{})
 	var stopActionOnce sync.Once
 	stopActionLoop := func() {

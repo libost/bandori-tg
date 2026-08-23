@@ -7,7 +7,7 @@
     },
     "commands": {
         "start_desc": "Welcome to the Bandori Bot! Use /help to view the help message. \n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
-        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.",
+        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.\n/cutoff <event_id> - Query the predicted cutoff for a specific event by its ID.\n/cutoff <event_id> <tier> <region> - Query the predicted cutoff for a specific event by its ID, tier, and server code.",
         "lang_desc": "Select the language you want to set.",
         "lang_desc_group": "Please use the /lang command in a private chat to set the language.",
         "lang_dlang": "Set Display Language",
