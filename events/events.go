@@ -344,6 +344,9 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 	}
 	var ratesData C.RatesData
 	err = json.Unmarshal(data, &ratesData)
+	if err != nil {
+		return []predictedCutoff{}, err
+	}
 	var rateAssigned float64
 	for _, rate := range ratesData {
 		if rate.Type == eventType && rate.Server == server && rate.Tier == tier {

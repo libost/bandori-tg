@@ -412,7 +412,7 @@ type Rates struct {
 	Rate   float64 `json:"rate"`
 }
 
-type RatesData map[string]Rates
+type RatesData []Rates
 
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
 var CharaEmoji = [...]int64{
