@@ -26,6 +26,19 @@ func loadConfig(configPath string) (*C.Config, error) {
 	return cf, nil
 }
 
+func checkConfig(cf *C.Config) error {
+	if cf.General.Token == "" {
+		return C.ErrNoBotToken
+	}
+	if cf.General.AdminToken == "" {
+		return C.ErrNoAdminToken
+	}
+	if cf.General.PicDepot == "" {
+		return C.ErrNoPicDepot
+	}
+	return nil
+}
+
 func InitConfig() {
 	var configPath = C.ConfigPath
 	_, err := os.Stat(configPath)
@@ -33,6 +46,10 @@ func InitConfig() {
 		panic(err)
 	}
 	cf, err := loadConfig(configPath)
+	if err != nil {
+		panic(err)
+	}
+	err = checkConfig(cf)
 	if err != nil {
 		panic(err)
 	}

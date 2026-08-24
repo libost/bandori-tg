@@ -13,6 +13,12 @@ var (
 	ErrNoSuchEvent   = fmt.Errorf("no such event")
 )
 
+var (
+	ErrNoBotToken   = fmt.Errorf("no bot token was provided in the config file")
+	ErrNoAdminToken = fmt.Errorf("no admin token was provided in the config file")
+	ErrNoPicDepot   = fmt.Errorf("no pic depot was provided in the config file")
+)
+
 const (
 	Card1PowerfulFrame = "https://bestdori.com/res/image/card-1-powerful.png"
 	Card1CoolFrame     = "https://bestdori.com/res/image/card-1-cool.png"

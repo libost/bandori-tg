@@ -9,7 +9,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/tdewolff/canvas v0.0.0-20260820161200-72985dc66d4e
+	github.com/tdewolff/canvas v0.0.0-20260822211237-56e622de465a
 	golang.org/x/image v0.45.0
 	golang.org/x/net v0.58.0
 	golang.org/x/sync v0.22.0
@@ -41,14 +41,14 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/srwiley/scanx v0.0.0-20190309010443-e94503791388 // indirect
-	github.com/tdewolff/font v0.0.0-20260809175822-e00d3ed980cd // indirect
+	github.com/tdewolff/font v0.0.0-20260822205238-d0d2f004b117 // indirect
 	github.com/tdewolff/minify/v2 v2.24.17 // indirect
 	github.com/tdewolff/parse/v2 v2.8.16 // indirect
 	github.com/yuin/goldmark v1.8.5 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	modernc.org/knuth v0.6.0 // indirect
-	modernc.org/libc v1.75.3 // indirect
+	modernc.org/libc v1.75.4 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 	modernc.org/token v1.1.0 // indirect
