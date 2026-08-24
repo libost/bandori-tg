@@ -114,7 +114,7 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 }
 
 func setFont(fontFile string) (*opentype.Font, error) {
-	file, err := utils.FontFS.ReadFile(fontFile)
+	file, err := utils.GetFontsFile(fontFile)
 	if err != nil {
 		return nil, err
 	}
@@ -223,15 +223,15 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	var fontFile string
 	switch regionCode {
 	case "jp":
-		fontFile = "fonts/NotoSansJP-Regular.ttf"
+		fontFile = "NotoSansJP-Regular.ttf"
 	case "tw":
-		fontFile = "fonts/NotoSansTC-Regular.ttf"
+		fontFile = "NotoSansTC-Regular.ttf"
 	case "cn":
-		fontFile = "fonts/NotoSansSC-Regular.ttf"
+		fontFile = "NotoSansSC-Regular.ttf"
 	case "kr":
-		fontFile = "fonts/NotoSansKR-Regular.ttf"
+		fontFile = "NotoSansKR-Regular.ttf"
 	case "en":
-		fontFile = "fonts/NotoSans-Regular.ttf"
+		fontFile = "NotoSans-Regular.ttf"
 	}
 	_, err = setFont(fontFile)
 	if err != nil {

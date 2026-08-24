@@ -308,7 +308,7 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		}
 		drawScaledImage(dc, bandFrameImg, 0, 0, 50, 50)
 	}
-	font, err := utils.FontFS.ReadFile("fonts/NotoSansSC-Regular.ttf")
+	font, err := utils.GetFontsFile("NotoSans-Regular.ttf")
 	if err != nil {
 		return nil, err
 	}
