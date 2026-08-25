@@ -501,7 +501,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	eventID := ctx.Args()[1]
 	regionCode := indexHelper(qlangCode)
-	img, last, predicted, latestTime, speed, err := getEventTracker(qlangCode, eventID, tier)
+	img, last, predicted, latestTime, speed, allTimeSpeed, err := getEventTracker(qlangCode, eventID, tier)
 	if err != nil {
 		if errors.Is(err, C.ErrNoSuchEvent) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
@@ -607,6 +607,16 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						},
 						{
 							Text:  gotgbot.RichTextString(fmt.Sprintf("%d pt/h", speed)),
+							Align: "right",
+						},
+					},
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.all_time_speed", langCode)),
+							Align: "left",
+						},
+						{
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%d pt/h", allTimeSpeed)),
 							Align: "right",
 						},
 					},

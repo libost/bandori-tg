@@ -111,6 +111,7 @@
         "predicted": "Predicted Final Cutoff",
         "event_image_error": "Failed to load event image. Please try again later.",
         "fsx_disclaimer": "Disclaimer: The predicted cutoff is for reference only, and the actual results may vary.",
-        "no_cutoff_data": "No cutoff data available for the current event."
+        "no_cutoff_data": "No cutoff data available for the current event.",
+        "all_time_speed": "Average Speed: "
     }
 }

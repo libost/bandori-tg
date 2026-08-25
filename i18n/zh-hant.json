@@ -111,6 +111,7 @@
         "predicted": "預測最終分數線",
         "event_image_error": "活動圖片加載失敗，請稍後再試。",
         "fsx_disclaimer": "免責聲明：預測分數線僅供參考，實際結果可能會有所不同。",
-        "no_cutoff_data": "當前活動暫無分數線數據。"
+        "no_cutoff_data": "當前活動暫無分數線數據。",
+        "all_time_speed": "平均速度: "
     }
 }

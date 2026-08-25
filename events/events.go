@@ -134,11 +134,11 @@ func setFont(fontFile string) (*opentype.Font, error) {
 	return ttFont, nil
 }
 
-func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, error) {
+func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, int64, error) {
 	eventMap := utils.ReadEvents()
 	event, exists := eventMap[eventID]
 	if !exists {
-		return nil, 0, 0, 0, 0, C.ErrNoSuchEvent
+		return nil, 0, 0, 0, 0, 0, C.ErrNoSuchEvent
 	}
 	var tierList []int
 	switch regionCode {
@@ -163,17 +163,17 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	var tracker C.EventTracker
 	err = json.Unmarshal(data, &tracker)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	if len(tracker.Cutoffs) == 0 {
 		for _, tier := range tierList {
@@ -199,20 +199,20 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 			}
 		}
 		if len(tracker.Cutoffs) == 0 {
-			return nil, 0, 0, 0, 0, C.ErrNoCutoffData
+			return nil, 0, 0, 0, 0, 0, C.ErrNoCutoffData
 		}
 	}
 	startAt, err := strconv.ParseInt(event.StartAt[region], 10, 64)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	endAt, err := strconv.ParseInt(event.EndAt[region], 10, 64)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	predicted, err := getPredictedEp(event.EventType, region, tier, tracker, startAt, endAt)
 	if err != nil && !errors.Is(err, C.ErrCannotPredict) {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	var lastPredictedEp int64
 	if len(predicted) > 0 {
@@ -235,7 +235,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	}
 	_, err = setFont(fontFile)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	plot.DefaultFont = font.Font{Typeface: font.Typeface(fontFile)}
 	plotter.DefaultFont = plot.DefaultFont
@@ -272,7 +272,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	p.Add(grid)
 	line, points, err := plotter.NewLinePoints(pts)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	line.Color = color.RGBA{R: 31, G: 119, B: 180, A: 255} // 经典蓝色
 	line.Width = vg.Points(2)
@@ -285,7 +285,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 
 	line2, points2, err := plotter.NewLinePoints(predictedPts)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	line2.Color = color.RGBA{R: 255, G: 127, B: 14, A: 255} // 经典橙色
 	line2.Width = vg.Points(2)
@@ -299,7 +299,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	// 添加一个透明的点和线，用于把图片拉长到活动结束时间
 	line3, point3, err := plotter.NewLinePoints(phonyPts)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	line3.Color = color.RGBA{R: 255, G: 255, B: 255, A: 0}
 	line3.Width = vg.Points(2)
@@ -317,7 +317,8 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	lastEpIncrement := tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep - tracker.Cutoffs[len(tracker.Cutoffs)-2].Ep
 	lastTimeIncrement := tracker.Cutoffs[len(tracker.Cutoffs)-1].Time - tracker.Cutoffs[len(tracker.Cutoffs)-2].Time
 	speed := int64(float64(lastEpIncrement) / (float64(lastTimeIncrement) / 3600000)) // 计算每小时的速度
-	return canvas.Image(), tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep, lastPredictedEp, tracker.Cutoffs[len(tracker.Cutoffs)-1].Time, speed, nil
+	allTimeSpeed := int64(float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep-tracker.Cutoffs[0].Ep) / (float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Time-tracker.Cutoffs[0].Time) / 3600000))
+	return canvas.Image(), tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep, lastPredictedEp, tracker.Cutoffs[len(tracker.Cutoffs)-1].Time, speed, allTimeSpeed, nil
 }
 
 type predictedCutoff struct {
