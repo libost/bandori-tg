@@ -38,6 +38,7 @@ var Events C.EventsData
 var Recent C.Recent
 var Skills C.SkillData
 var Gacha C.GachaData
+var Rates C.RatesData
 var REventsKeys []string
 
 func ReadBand() C.BandData {
@@ -82,13 +83,19 @@ func ReadGacha() C.GachaData {
 	return Gacha
 }
 
+func ReadRates() C.RatesData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Rates
+}
+
 func ReadREventsKeys() []string {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return append([]string(nil), REventsKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData) {
+func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
@@ -99,6 +106,7 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	Recent = snapshotRecent
 	Skills = snapshotSkills
 	Gacha = snapshotGacha
+	Rates = snapshotRates
 
 	REventsKeys = make([]string, 0, len(Recent.Events))
 	for k := range Recent.Events {
@@ -125,6 +133,7 @@ func InitLists() error {
 	var snapshotRecent C.Recent
 	var snapshotSkills C.SkillData
 	var snapshotGacha C.GachaData
+	var snapshotRates C.RatesData
 
 	data := []fetchTask{
 		{URL: "https://bestdori.com/api/bands/main.1.json", Target: &snapshotBand},
@@ -134,6 +143,7 @@ func InitLists() error {
 		{URL: "https://bestdori.com/api/news/dynamic/recent.json", Target: &snapshotRecent},
 		{URL: "https://bestdori.com/api/skills/all.10.json", Target: &snapshotSkills},
 		{URL: "https://bestdori.com/api/gacha/all.5.json", Target: &snapshotGacha},
+		{URL: "https://bestdori.com/api/tracker/rates.json", Target: &snapshotRates},
 	}
 
 	eg, gCtx := errgroup.WithContext(ctx)
@@ -148,7 +158,7 @@ func InitLists() error {
 		return err
 	}
 
-	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha)
+	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates)
 	fmt.Println("All lists initialized successfully.")
 	return nil
 }

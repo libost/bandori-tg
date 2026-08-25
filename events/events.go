@@ -1,4 +1,4 @@
-package events
+﻿package events
 
 import (
 	"encoding/json"
@@ -332,21 +332,7 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 	if latestTime-timeStart < 86400000 { // 如果最新时间距离开始时间不足一天，则不进行预测
 		return []predictedCutoff{}, C.ErrCannotPredict
 	}
-	url := "https://bestdori.com/api/tracker/rates.json"
-	resp, err := http.Get(url)
-	if err != nil {
-		return []predictedCutoff{}, err
-	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return []predictedCutoff{}, err
-	}
-	var ratesData C.RatesData
-	err = json.Unmarshal(data, &ratesData)
-	if err != nil {
-		return []predictedCutoff{}, err
-	}
+	ratesData := utils.ReadRates()
 	var rateAssigned float64
 	for _, rate := range ratesData {
 		if rate.Type == eventType && rate.Server == server && rate.Tier == tier {

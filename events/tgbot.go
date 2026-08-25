@@ -452,6 +452,8 @@ func timeCalc(time int64) (int64, int64, int64, int64) {
 }
 
 func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	contextTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	stopAction := make(chan struct{})
 	var stopActionOnce sync.Once
 	stopActionLoop := func() {
@@ -622,11 +624,17 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(contextTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil && errors.Is(err, context.DeadlineExceeded) {
+		log.Printf("Request timed out while sending event tracker to user %d", ctx.EffectiveUser.Id)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
+		stopActionLoop()
+		return err
+	}
 	stopActionLoop()
 	return err
 }
