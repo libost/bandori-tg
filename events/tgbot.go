@@ -17,6 +17,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/dustin/go-humanize"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/recent"
@@ -538,13 +539,16 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		percent := int64(float64(now-startAt) / float64(endAt-startAt) * 100)
 		status = fmt.Sprintf(I.GetLocalisedString("events.complete_percent", langCode), percent)
 	}
-	predictedStr := fmt.Sprintf("%d", predicted)
+	lastStr := humanize.Comma(last)
+	predictedStr := humanize.Comma(predicted)
 	if predicted == 0 {
 		predictedStr = I.GetLocalisedString("events.not_enough_data", langCode)
 	}
 	tz := tzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
 	lastTimeStr := time.Unix(latestTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	allTimeSpeedStr := humanize.Comma(allTimeSpeed)
+	speedStr := humanize.Comma(speed)
 
 	fileId, err := utils.GetImageIDWorkAround(b, buf)
 	richMessage := gotgbot.InputRichMessage{
@@ -572,7 +576,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%d", last)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%s", lastStr)),
 							Align: "right",
 						},
 					},
@@ -606,7 +610,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%d pt/h", speed)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%s pt/h", speedStr)),
 							Align: "right",
 						},
 					},
@@ -616,7 +620,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%d pt/h", allTimeSpeed)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%s pt/h", allTimeSpeedStr)),
 							Align: "right",
 						},
 					},
