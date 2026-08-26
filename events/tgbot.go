@@ -183,11 +183,11 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	if startAtUnix > now {
 		// The event hasn't started yet
 		remainingTime := startAtUnix - now
-		secs, mins, hrs, days = timeCalc(remainingTime)
+		secs, mins, hrs, days = TimeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 	} else if endAtUnix > now && startAtUnix < now {
 		remainingTime := endAtUnix - now
-		secs, mins, hrs, days = timeCalc(remainingTime)
+		secs, mins, hrs, days = TimeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 	} else {
 		// The event has ended
@@ -433,7 +433,7 @@ func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt
 	}
 }
 
-func timeCalc(time int64) (int64, int64, int64, int64) {
+func TimeCalc(time int64) (int64, int64, int64, int64) {
 	if time >= 60 {
 		minutes := int64(time / 60)
 		seconds := time % 60
@@ -724,10 +724,10 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			if remainingTime <= 0 {
 				remainingTimeText = I.GetLocalisedString("events.event_ended", langCode)
 			} else if startRemainingTime > 0 {
-				secs, mins, hrs, days := timeCalc(startRemainingTime)
+				secs, mins, hrs, days := TimeCalc(startRemainingTime)
 				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 			} else {
-				secs, mins, hrs, days := timeCalc(remainingTime)
+				secs, mins, hrs, days := TimeCalc(remainingTime)
 				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 			}
 

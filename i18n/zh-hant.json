@@ -113,5 +113,31 @@
         "fsx_disclaimer": "免責聲明：預測分數線僅供參考，實際結果可能會有所不同。",
         "no_cutoff_data": "當前活動暫無分數線數據。",
         "all_time_speed": "平均速度: "
+    },
+    "songs": {
+        "search_usage": "請提供要搜索的歌曲名稱。使用方法： /search <song_name>。",
+        "search_invalid_region": "無效的伺服器代碼。請使用以下之一: jp, en, tw, cn, kr。",
+        "search_results": "\"%[1]s\"的搜索結果(%[2]s): \n",
+        "search_no_results": "未找到歌曲 \"%[1]s\" ( %[2]s )。",
+        "song_usage": "請提供要查詢的歌曲名稱。使用方法： /song <song_name>。",
+        "header": "歌曲",
+        "info": "資訊",
+        "title": "標題: ",
+        "type": "種類: ",
+        "lyricist": "作詞: ",
+        "composer": "作曲: ",
+        "arranger": "編曲: ",
+        "description": "描述: ",
+        "band": "樂團: ",
+        "difficulty": "難度: ",
+        "length": "長度: ",
+        "countdown": "倒數計時: ",
+        "published_at": "發布時間: ",
+        "how_to_get": "獲取方式: ",
+        "normal": "原創曲",
+        "anime": "翻唱曲",
+        "tie_up": "額外曲",
+        "countdown_end": "已發布",
+        "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後"
     }
 }

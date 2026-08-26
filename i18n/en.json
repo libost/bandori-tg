@@ -113,5 +113,31 @@
         "fsx_disclaimer": "Disclaimer: The predicted cutoff is for reference only, and the actual results may vary.",
         "no_cutoff_data": "No cutoff data available for the current event.",
         "all_time_speed": "Average Speed: "
+    },
+    "songs": {
+        "search_usage": "Please provide a song name to search for. Usage: /search <song_name>.",
+        "search_invalid_region": "Invalid server code. Please use one of the following: jp, en, tw, cn, kr.",
+        "search_results": "Search results for \"%[1]s\" (%[2]s): \n",
+        "search_no_results": "No songs found for \"%[1]s\" ( %[2]s ).",
+        "song_usage": "Please provide a song name to query. Usage: /song <song_name>.",
+        "header": "Song",
+        "info": "Info",
+        "title": "Title: ",
+        "type": "Type: ",
+        "lyricist": "Lyrics: ",
+        "composer": "Composer: ",
+        "arranger": "Arrangement: ",
+        "description": "Description: ",
+        "band": "Band: ",
+        "difficulty": "Difficulty: ",
+        "length": "Length: ",
+        "countdown": "Countdown: ",
+        "published_at": "Release Date: ",
+        "how_to_get": "How to Get: ",
+        "normal": "Original",
+        "anime": "Cover",
+        "tie_up": "Extra",
+        "countdown_end": "Released",
+        "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
     }
 }

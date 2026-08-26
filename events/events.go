@@ -252,7 +252,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 		predictedPts[i].X = float64(cutoff.Time / 1000)
 		predictedPts[i].Y = float64(cutoff.Ep)
 	}
-	phonyPtsY := float64(pts[len(pts)-1].Y-pts[0].Y) * 1.3
+	phonyPtsY := float64(pts[len(pts)-1].Y) * 1.3
 	if len(predictedPts) > 0 {
 		phonyPtsY = float64(predictedPts[len(predictedPts)-1].Y-pts[0].Y) * 1.3
 	}

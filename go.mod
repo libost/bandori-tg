@@ -10,6 +10,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/sahilm/fuzzy v0.1.3
 	github.com/tdewolff/canvas v0.0.0-20260822211237-56e622de465a
 	golang.org/x/image v0.45.0
 	golang.org/x/net v0.58.0

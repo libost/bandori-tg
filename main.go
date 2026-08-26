@@ -21,6 +21,7 @@ import (
 	C "github.com/libost/bandori-tg/constants"
 	DB "github.com/libost/bandori-tg/database"
 	"github.com/libost/bandori-tg/events"
+	"github.com/libost/bandori-tg/songs"
 	"github.com/libost/bandori-tg/text"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
@@ -103,6 +104,7 @@ func main() {
 	commands.AddHandlers(dispatcher)
 	events.AddHandlers(dispatcher)
 	cards.AddHandlers(dispatcher)
+	songs.AddHandlers(dispatcher)
 	text.AddHandlers(dispatcher)
 
 	if config.AppConfig.Webhook.Enabled {

@@ -116,5 +116,31 @@
         "fsx_disclaimer": "免责声明：预测分数线仅供参考，实际结果可能会有所不同。",
         "no_cutoff_data": "当前活动暂无分数线数据。",
         "all_time_speed": "平均速度: "
+    },
+    "songs": {
+        "search_usage": "请提供要搜索的歌曲名称。使用方法： /search <song_name>。",
+        "search_invalid_region": "无效的服务器代码。请使用以下之一: jp, en, tw, cn, kr。",
+        "search_results": "\"%[1]s\"的搜索结果(%[2]s): \n",
+        "search_no_results": "未找到歌曲 \"%[1]s\" ( %[2]s )。",
+        "song_usage": "请提供要查询的歌曲名称。使用方法： /song <song_name>。",
+        "header": "歌曲",
+        "info": "资讯",
+        "title": "标题: ",
+        "type": "种类: ",
+        "lyricist": "作词: ",
+        "composer": "作曲: ",
+        "arranger": "编曲: ",
+        "description": "简介: ",
+        "band": "乐团: ",
+        "difficulty": "难度: ",
+        "length": "时长: ",
+        "countdown": "倒计时: ",
+        "published_at": "发布时间: ",
+        "how_to_get": "获取方式: ",
+        "normal": "原创曲",
+        "anime": "翻唱曲",
+        "tie_up": "额外曲",
+        "countdown_end": "已发布",
+        "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后"
     }
 }

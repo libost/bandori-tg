@@ -227,13 +227,13 @@ type Band struct {
 type BandData map[string]Band
 
 type Recent struct {
-	Songs      map[string]SongsData      `json:"songs"`
+	Songs      map[string]RSongsData     `json:"songs"`
 	Events     map[string]EventData      `json:"events"`
 	Gacha      map[string]RGachaData     `json:"gacha"`
 	LoginBonus map[string]LoginBonusData `json:"loginBonus"`
 }
 
-type SongsData struct {
+type RSongsData struct {
 	MusicTitle  []string `json:"musicTitle"`
 	PublishedAt []string `json:"publishedAt"`
 }
@@ -414,6 +414,84 @@ type Rates struct {
 
 type RatesData []Rates
 
+type Songs struct {
+	Tag         string                    `json:"tag"` // `normal` for og, `anime` for covers and `tie-up` for extras
+	BandID      int                       `json:"bandId"`
+	JacketImage []string                  `json:"jacketImage"`
+	MusicTitle  []string                  `json:"musicTitle"`
+	PublishedAt []string                  `json:"publishedAt"`
+	ClosedAt    []string                  `json:"closedAt"`
+	Difficulty  map[string]DifficultyData `json:"difficulty"`
+}
+
+type DifficultyData struct {
+	PlayLevel   int      `json:"playLevel"`
+	PublishedAt []string `json:"publishedAt"`
+}
+
+type SongsData map[string]Songs
+
+type SongsDetailed struct {
+	BgmID        string                        `json:"bgmId"`
+	BgmFile      string                        `json:"bgmFile"`
+	Tag          string                        `json:"tag"`
+	BandID       int                           `json:"bandId"`
+	Achievements []AchievementsData            `json:"achievements"`
+	JacketImage  []string                      `json:"jacketImage"`
+	Seq          int                           `json:"seq"`
+	MusicTitle   []string                      `json:"musicTitle"`
+	Ruby         []string                      `json:"ruby"`
+	Phonetic     []string                      `json:"phonetic"`
+	Lyricist     []string                      `json:"lyricist"`
+	Composer     []string                      `json:"composer"`
+	Arranger     []string                      `json:"arranger"`
+	HowToGet     []string                      `json:"howToGet"`
+	PublishedAt  []string                      `json:"publishedAt"`
+	ClosedAt     []string                      `json:"closedAt"`
+	Description  []string                      `json:"description"`
+	Difficulty   map[string]DifficultyDetailed `json:"difficulty"`
+	Length       float64                       `json:"length"`
+	Notes        map[string]int                `json:"notes"`
+	Bpm          map[string]BpmData            `json:"bpm"`
+}
+
+type AchievementsData struct {
+	MusicID         int    `json:"musicId"`
+	AchievementType string `json:"achievementType"`
+	RewardType      string `json:"rewardType"`
+	Quantity        int    `json:"quantity"`
+}
+
+type DifficultyDetailed struct {
+	PlayLevel         int                              `json:"playLevel"`
+	MultiLiveScoreMap map[string]MultiLiveScoreMapData `json:"multiLiveScoreMap"`
+	NotesQuantity     int                              `json:"notesQuantity"`
+	ScoreC            int                              `json:"scoreC"`
+	ScoreB            int                              `json:"scoreB"`
+	ScoreA            int                              `json:"scoreA"`
+	ScoreS            int                              `json:"scoreS"`
+	ScoreSS           int                              `json:"scoreSS"`
+}
+
+type MultiLiveScoreMapData struct {
+	MusicID                 int    `json:"musicId"`
+	MusicDifficulty         string `json:"musicDifficulty"`
+	MusicLiveDifficultyID   int    `json:"musicLiveDifficultyId"`
+	ScoreS                  int    `json:"scoreS"`
+	ScoreA                  int    `json:"scoreA"`
+	ScoreB                  int    `json:"scoreB"`
+	ScoreC                  int    `json:"scoreC"`
+	MultiLiveDifficultyType string `json:"multiLiveDifficultyType"`
+	ScoreSS                 int    `json:"scoreSS"`
+	ScoreSSS                int    `json:"scoreSSS"`
+}
+
+type BpmData []struct {
+	Bpm   int     `json:"bpm"`
+	Start float64 `json:"start"`
+	End   float64 `json:"end"`
+}
+
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
 var CharaEmoji = [...]int64{
 	6046130500299398386,
@@ -460,6 +538,7 @@ var CharaEmoji = [...]int64{
 
 // Access emoji by using BandEmoji[bandID-1], for example, BandEmoji[0] will return the emoji for band ID 1.
 // For unknown reasons, the IDs of RAS, Morfonica and MyGO are 18, 21 and 45 respectively, so the missing IDs will be filled with 0.
+// Now I know the reason, some songs are performed by other combinations of bands, so they have their own IDs.
 var BandEmoji = [...]int64{
 	6048882135522089606,
 	6046584078910627512,
@@ -525,6 +604,18 @@ var RarityEmoji = [...]int64{
 var AcceptedRegions = []string{"jp", "en", "tw", "kr", "cn"}
 
 // These cards are known to have issues with their data, so they are excluded from the bot's responses.
+// Maybe they fixed now, but I will leave them here just in case. If you find any other cards with issues, please report them to me.
+// Symptom: when send rich message, the telegram api will return 400 Bad Request with message "wrong type of the web page content".
 var BadCards = []string{"2309"}
 
 var TelegramAcceptPorts = []int{80, 88, 443, 8443}
+
+var BandWithEmoji = []int{1, 2, 3, 4, 5, 18, 21, 45}
+
+var DifficultyColors = []string{
+	"#3076F8", // Easy
+	"#188A28", // Normal
+	"#D1861A", // Hard
+	"#FD2A30", // Expert
+	"#F12199", // Special
+}
