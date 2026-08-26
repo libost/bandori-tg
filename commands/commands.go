@@ -232,6 +232,9 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "help", Description: I.GetLocalisedString("commands.setcommands_desc_list[1]", code)},
 			{Command: "cards", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
 			{Command: "events", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
+			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
+			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
+			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "lang", Description: I.GetLocalisedString("commands.setcommands_desc_list[4]", code)},
 			{Command: "about", Description: I.GetLocalisedString("commands.setcommands_desc_list[5]", code)},
 		}
@@ -250,6 +253,9 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "start", Description: I.GetLocalisedString("commands.setcommands_desc_list[6]", code)},
 			{Command: "cards", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
 			{Command: "events", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
+			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
+			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
+			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "help", Description: I.GetLocalisedString("commands.setcommands_desc_list[1]", code)},
 			{Command: "about", Description: I.GetLocalisedString("commands.setcommands_desc_list[5]", code)},
 		}
