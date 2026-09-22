@@ -17,6 +17,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/dustin/go-humanize"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/recent"
@@ -182,11 +183,11 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	if startAtUnix > now {
 		// The event hasn't started yet
 		remainingTime := startAtUnix - now
-		secs, mins, hrs, days = timeCalc(remainingTime)
+		secs, mins, hrs, days = TimeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 	} else if endAtUnix > now && startAtUnix < now {
 		remainingTime := endAtUnix - now
-		secs, mins, hrs, days = timeCalc(remainingTime)
+		secs, mins, hrs, days = TimeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 	} else {
 		// The event has ended
@@ -371,13 +372,23 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 				Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_members", langCode)),
 				Size: 3,
 			},
-			photoBlock,
+			gotgbot.InputRichBlockDetails{
+				Summary: gotgbot.RichTextString(""),
+				Blocks: []gotgbot.InputRichBlock{
+					photoBlock,
+				},
+			},
 			gotgbot.InputRichBlockDivider{},
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_bonus_cards", langCode)),
 				Size: 3,
 			},
-			photoBlock2,
+			gotgbot.InputRichBlockDetails{
+				Summary: gotgbot.RichTextString(""),
+				Blocks: []gotgbot.InputRichBlock{
+					photoBlock2,
+				},
+			},
 		},
 	}
 
@@ -400,7 +411,8 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
-	dispatcher.AddHandler(handlers.NewCommand("fsx", fsxCommand))
+	dispatcher.AddHandler(handlers.NewCommand("cutoff", FsxCommand))
+	dispatcher.AddHandler(handlers.NewCommand("fsx", FsxCommand))
 }
 
 func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt int64) gotgbot.RichTextArray {
@@ -421,7 +433,7 @@ func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt
 	}
 }
 
-func timeCalc(time int64) (int64, int64, int64, int64) {
+func TimeCalc(time int64) (int64, int64, int64, int64) {
 	if time >= 60 {
 		minutes := int64(time / 60)
 		seconds := time % 60
@@ -440,18 +452,66 @@ func timeCalc(time int64) (int64, int64, int64, int64) {
 	return time, 0, 0, 0
 }
 
-func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	contextTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) < 2 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 		return nil
 	}
-	eventID := ctx.Args()[1]
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+
+	tier := 0
+	if len(ctx.Args()) > 2 {
+		t, err := strconv.Atoi(ctx.Args()[2])
+		if err != nil {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
+			return nil
+		}
+		tier = t
+	}
+	if len(ctx.Args()) > 3 {
+		region := ctx.Args()[3]
+		if !slices.Contains(C.AcceptedRegions, region) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.invalid_region", langCode), nil)
+			return nil
+		}
+		qlangCode = region
+	}
+	eventID := ctx.Args()[1]
 	regionCode := indexHelper(qlangCode)
-	img, last, predicted, latestTime, speed, err := getEventTracker(qlangCode, eventID)
+	img, last, predicted, latestTime, speed, allTimeSpeed, err := getEventTracker(qlangCode, eventID, tier)
 	if err != nil {
-		return err
+		if errors.Is(err, C.ErrNoSuchEvent) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
+			return nil
+		}
+		if errors.Is(err, C.ErrNoCutoffData) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.no_cutoff_data", langCode), nil)
+			return nil
+		}
 	}
 	// Do something with the generated image, e.g., send it to the user
 	var buf bytes.Buffer
@@ -479,13 +539,16 @@ func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		percent := int64(float64(now-startAt) / float64(endAt-startAt) * 100)
 		status = fmt.Sprintf(I.GetLocalisedString("events.complete_percent", langCode), percent)
 	}
-	predictedStr := fmt.Sprintf("%d", predicted)
+	lastStr := humanize.Comma(last)
+	predictedStr := humanize.Comma(predicted)
 	if predicted == 0 {
 		predictedStr = I.GetLocalisedString("events.not_enough_data", langCode)
 	}
 	tz := tzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
 	lastTimeStr := time.Unix(latestTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	allTimeSpeedStr := humanize.Comma(allTimeSpeed)
+	speedStr := humanize.Comma(speed)
 
 	fileId, err := utils.GetImageIDWorkAround(b, buf)
 	richMessage := gotgbot.InputRichMessage{
@@ -513,7 +576,7 @@ func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%d", last)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%s", lastStr)),
 							Align: "right",
 						},
 					},
@@ -547,19 +610,46 @@ func fsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%dpt/h", speed)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%s pt/h", speedStr)),
 							Align: "right",
+						},
+					},
+					{
+						{
+							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.all_time_speed", langCode)),
+							Align: "left",
+						},
+						{
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%s pt/h", allTimeSpeedStr)),
+							Align: "right",
+						},
+					},
+				},
+			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockBlockQuotation{
+				Blocks: []gotgbot.InputRichBlock{
+					gotgbot.InputRichBlockParagraph{
+						Text: gotgbot.RichTextItalic{
+							Text: gotgbot.RichTextString(I.GetLocalisedString("events.fsx_disclaimer", langCode)),
 						},
 					},
 				},
 			},
 		},
 	}
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(contextTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil && errors.Is(err, context.DeadlineExceeded) {
+		log.Printf("Request timed out while sending event tracker to user %d", ctx.EffectiveUser.Id)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
+		stopActionLoop()
+		return err
+	}
+	stopActionLoop()
 	return err
 }
 
@@ -634,10 +724,10 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			if remainingTime <= 0 {
 				remainingTimeText = I.GetLocalisedString("events.event_ended", langCode)
 			} else if startRemainingTime > 0 {
-				secs, mins, hrs, days := timeCalc(startRemainingTime)
+				secs, mins, hrs, days := TimeCalc(startRemainingTime)
 				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 			} else {
-				secs, mins, hrs, days := timeCalc(remainingTime)
+				secs, mins, hrs, days := TimeCalc(remainingTime)
 				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 			}
 

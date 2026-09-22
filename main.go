@@ -21,6 +21,8 @@ import (
 	C "github.com/libost/bandori-tg/constants"
 	DB "github.com/libost/bandori-tg/database"
 	"github.com/libost/bandori-tg/events"
+	"github.com/libost/bandori-tg/songs"
+	"github.com/libost/bandori-tg/text"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
 	"github.com/robfig/cron/v3"
@@ -101,7 +103,9 @@ func main() {
 	callback.AddHandlers(dispatcher)
 	commands.AddHandlers(dispatcher)
 	events.AddHandlers(dispatcher)
-	cards.AddHandlers(dispatcher) // 必须放在最后，因为它包含了一个通配的消息处理器，会捕获所有未被其他处理器处理的消息。
+	cards.AddHandlers(dispatcher)
+	songs.AddHandlers(dispatcher)
+	text.AddHandlers(dispatcher)
 
 	if config.AppConfig.Webhook.Enabled {
 		startWebhookCommunication(config.AppConfig, updater, b)

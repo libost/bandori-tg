@@ -15,7 +15,6 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/message"
 	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/characters"
 	C "github.com/libost/bandori-tg/constants"
@@ -95,21 +94,10 @@ func isWebPageContentErr(err error) bool {
 }
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
-	dispatcher.AddHandler(handlers.NewCommand("cards", queryHandler))
-	dispatcher.AddHandler(handlers.NewMessage(message.Text, textHandler))
+	dispatcher.AddHandler(handlers.NewCommand("cards", QueryHandler))
 }
 
-func textHandler(b *gotgbot.Bot, ctx *ext.Context) error {
-	text := ctx.EffectiveMessage.Text
-	switch true {
-	case strings.HasPrefix(text, "查卡 "):
-		return queryHandler(b, ctx)
-	default:
-		return nil
-	}
-}
-
-func queryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	stopAction := make(chan struct{})

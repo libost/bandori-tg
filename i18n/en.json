@@ -7,7 +7,7 @@
     },
     "commands": {
         "start_desc": "Welcome to the Bandori Bot! Use /help to view the help message. \n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
-        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.",
+        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.\n/cutoff <event_id> - Query the predicted cutoff for a specific event by its ID.\n/cutoff <event_id> <tier> <region> - Query the predicted cutoff for a specific event by its ID, tier, and server code.\ns/song <song_name> - Query information about a specific song by its name.\n/search <keyword> - Search for songs by keyword.",
         "lang_desc": "Select the language you want to set.",
         "lang_desc_group": "Please use the /lang command in a private chat to set the language.",
         "lang_dlang": "Set Display Language",
@@ -22,7 +22,10 @@
             "Query ongoing events.",
             "Set the language.",
             "Show the version information of Bandori Bot.",
-            "Start the Bandori bot and get a welcome message."
+            "Start the Bandori bot and get a welcome message.",
+            "Query the cutoff scores for a specific event.",
+            "Query information about a specific song by its name.",
+            "Search for songs by keyword."
         ]
     },
     "cards": {
@@ -108,6 +111,36 @@
         "updated_at": "Updated At: ",
         "speed": "Speed: ",
         "actual": "Current Cutoff",
-        "predicted": "Predicted Final Cutoff"
+        "predicted": "Predicted Final Cutoff",
+        "event_image_error": "Failed to load event image. Please try again later.",
+        "fsx_disclaimer": "Disclaimer: The predicted cutoff is for reference only, and the actual results may vary.",
+        "no_cutoff_data": "No cutoff data available for the current event.",
+        "all_time_speed": "Average Speed: "
+    },
+    "songs": {
+        "search_usage": "Please provide a song name to search for. Usage: /search <song_name>.",
+        "search_invalid_region": "Invalid server code. Please use one of the following: jp, en, tw, cn, kr.",
+        "search_results": "Search results for \"%[1]s\" (%[2]s): \n",
+        "search_no_results": "No songs found for \"%[1]s\" ( %[2]s ).",
+        "song_usage": "Please provide a song name to query. Usage: /song <song_name>.",
+        "header": "Song",
+        "info": "Info",
+        "title": "Title: ",
+        "type": "Type: ",
+        "lyricist": "Lyrics: ",
+        "composer": "Composer: ",
+        "arranger": "Arrangement: ",
+        "description": "Description: ",
+        "band": "Band: ",
+        "difficulty": "Difficulty: ",
+        "length": "Length: ",
+        "countdown": "Countdown: ",
+        "published_at": "Release Date: ",
+        "how_to_get": "How to Get: ",
+        "normal": "Original",
+        "anime": "Cover",
+        "tie_up": "Extra",
+        "countdown_end": "Released",
+        "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
     }
 }

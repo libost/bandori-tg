@@ -1,14 +1,17 @@
 package utils
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,8 +21,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-//go:embed fonts/*.ttf
-var FontFS embed.FS
+//go:embed fonts/*.zip
+var fontFS embed.FS
 
 type fetchTask struct {
 	URL    string
@@ -35,7 +38,14 @@ var Events C.EventsData
 var Recent C.Recent
 var Skills C.SkillData
 var Gacha C.GachaData
+var Rates C.RatesData
+var Songs C.SongsData
 var REventsKeys []string
+var SongsKeysJP []string
+var SongsKeysEN []string
+var SongsKeysCN []string
+var SongsKeysKR []string
+var SongsKeysTW []string
 
 func ReadBand() C.BandData {
 	dataMu.RLock()
@@ -79,13 +89,25 @@ func ReadGacha() C.GachaData {
 	return Gacha
 }
 
+func ReadRates() C.RatesData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Rates
+}
+
+func ReadSongs() C.SongsData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Songs
+}
+
 func ReadREventsKeys() []string {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return append([]string(nil), REventsKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData) {
+func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
@@ -96,12 +118,36 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	Recent = snapshotRecent
 	Skills = snapshotSkills
 	Gacha = snapshotGacha
+	Rates = snapshotRates
+	Songs = snapshotSongs
 
 	REventsKeys = make([]string, 0, len(Recent.Events))
 	for k := range Recent.Events {
 		REventsKeys = append(REventsKeys, k)
 	}
 	sort.Strings(REventsKeys)
+
+	SongsKeysJP = make([]string, 0, len(Songs))
+	SongsKeysCN = make([]string, 0, len(Songs))
+	SongsKeysEN = make([]string, 0, len(Songs))
+	SongsKeysKR = make([]string, 0, len(Songs))
+	SongsKeysTW = make([]string, 0, len(Songs))
+	for k := range Songs {
+		SongsKeysJP = append(SongsKeysJP, Songs[k].MusicTitle[0])
+		SongsKeysEN = append(SongsKeysEN, Songs[k].MusicTitle[1])
+		SongsKeysTW = append(SongsKeysTW, Songs[k].MusicTitle[2])
+		SongsKeysCN = append(SongsKeysCN, Songs[k].MusicTitle[3])
+		SongsKeysKR = append(SongsKeysKR, Songs[k].MusicTitle[4])
+	}
+	sort.Strings(SongsKeysJP)
+
+	sort.Strings(SongsKeysEN)
+
+	sort.Strings(SongsKeysCN)
+
+	sort.Strings(SongsKeysKR)
+
+	sort.Strings(SongsKeysTW)
 }
 
 func InitLists() error {
@@ -122,15 +168,19 @@ func InitLists() error {
 	var snapshotRecent C.Recent
 	var snapshotSkills C.SkillData
 	var snapshotGacha C.GachaData
+	var snapshotRates C.RatesData
+	var snapshotSongs C.SongsData
 
 	data := []fetchTask{
-		{URL: "https://bestdori.com/api/bands/main.1.json", Target: &snapshotBand},
+		{URL: "https://bestdori.com/api/bands/all.1.json", Target: &snapshotBand},
 		{URL: "https://bestdori.com/api/cards/all.5.json", Target: &snapshotCards},
 		{URL: "https://bestdori.com/api/characters/main.3.json", Target: &snapshotCharacters},
 		{URL: "https://bestdori.com/api/events/all.5.json", Target: &snapshotEvents},
 		{URL: "https://bestdori.com/api/news/dynamic/recent.json", Target: &snapshotRecent},
 		{URL: "https://bestdori.com/api/skills/all.10.json", Target: &snapshotSkills},
 		{URL: "https://bestdori.com/api/gacha/all.5.json", Target: &snapshotGacha},
+		{URL: "https://bestdori.com/api/tracker/rates.json", Target: &snapshotRates},
+		{URL: "https://bestdori.com/api/songs/all.5.json", Target: &snapshotSongs},
 	}
 
 	eg, gCtx := errgroup.WithContext(ctx)
@@ -145,7 +195,7 @@ func InitLists() error {
 		return err
 	}
 
-	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha)
+	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs)
 	fmt.Println("All lists initialized successfully.")
 	return nil
 }
@@ -212,4 +262,33 @@ func GetImageIDWorkAround(b *gotgbot.Bot, buf bytes.Buffer) (string, error) {
 	}
 	fileID := msg.Photo[len(msg.Photo)-1].FileId
 	return fileID, nil
+}
+
+func GetFontsFile(fontName string) ([]byte, error) {
+	fontName = strings.TrimSuffix(fontName, ".ttf")
+	fontName += ".zip"
+	zipFilePath := "fonts/" + fontName
+	fontData, err := fontFS.ReadFile(zipFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read font file %s: %w", zipFilePath, err)
+	}
+	reader, err := zip.NewReader(bytes.NewReader(fontData), int64(len(fontData)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create zip reader for file %s: %w", zipFilePath, err)
+	}
+	for _, file := range reader.File {
+		if strings.HasSuffix(file.Name, ".ttf") {
+			rc, err := file.Open()
+			if err != nil {
+				return nil, fmt.Errorf("failed to open font file %s inside zip: %w", file.Name, err)
+			}
+			defer rc.Close()
+			fontBytes, err := io.ReadAll(rc)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read font file %s inside zip: %w", file.Name, err)
+			}
+			return fontBytes, nil
+		}
+	}
+	return nil, fmt.Errorf("font file not found in zip: %s", zipFilePath)
 }

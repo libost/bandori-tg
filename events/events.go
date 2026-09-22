@@ -1,13 +1,15 @@
-package events
+﻿package events
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
 	"io"
 	"math"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -87,7 +89,7 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, member := range members {
-		memberImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", member.SituationID))
+		memberImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", member.SituationID), member.Percent)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +104,7 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, card := range bonusCards {
-		cardImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", card))
+		cardImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", card), 0)
 		if err != nil {
 			return nil, err
 		}
@@ -112,7 +114,7 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 }
 
 func setFont(fontFile string) (*opentype.Font, error) {
-	file, err := utils.FontFS.ReadFile(fontFile)
+	file, err := utils.GetFontsFile(fontFile)
 	if err != nil {
 		return nil, err
 	}
@@ -132,66 +134,115 @@ func setFont(fontFile string) (*opentype.Font, error) {
 	return ttFont, nil
 }
 
-func getEventTracker(regionCode, eventID string) (image.Image, int64, int64, int64, int64, error) {
+func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, int64, error) {
 	eventMap := utils.ReadEvents()
 	event, exists := eventMap[eventID]
 	if !exists {
-		return nil, 0, 0, 0, 0, fmt.Errorf("event not found")
+		return nil, 0, 0, 0, 0, 0, C.ErrNoSuchEvent
 	}
-	region, tier := getRegionCodeandTier(regionCode)
+	var tierList []int
+	switch regionCode {
+	case "jp":
+		tierList = C.JPTierList[:]
+	case "tw":
+		tierList = C.TWTierList[:]
+	case "cn":
+		tierList = C.CNTierList[:]
+	case "kr":
+		tierList = C.KRTierList[:]
+	case "en":
+		tierList = C.ENTierList[:]
+	}
+	var region int
+	if !slices.Contains(tierList, tier) {
+		region, tier = getRegionCodeandTier(regionCode)
+	} else {
+		region, _ = getRegionCodeandTier(regionCode)
+	}
 
 	url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	var tracker C.EventTracker
 	err = json.Unmarshal(data, &tracker)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
+	}
+	if len(tracker.Cutoffs) == 0 {
+		for _, tier := range tierList {
+			// Process each tier
+			url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
+			resp, err := http.Get(url)
+			if err != nil {
+				continue
+			}
+			defer resp.Body.Close()
+			data, err := io.ReadAll(resp.Body)
+			if err != nil {
+				continue
+			}
+			var newTracker C.EventTracker
+			err = json.Unmarshal(data, &newTracker)
+			if err != nil {
+				continue
+			}
+			if len(newTracker.Cutoffs) > 0 {
+				tracker = newTracker
+				break
+			}
+		}
+		if len(tracker.Cutoffs) == 0 {
+			return nil, 0, 0, 0, 0, 0, C.ErrNoCutoffData
+		}
 	}
 	startAt, err := strconv.ParseInt(event.StartAt[region], 10, 64)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	endAt, err := strconv.ParseInt(event.EndAt[region], 10, 64)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
-	}
-	if len(tracker.Cutoffs) == 0 {
-		return nil, 0, 0, 0, 0, fmt.Errorf("no cutoff data available for this event")
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	predicted, err := getPredictedEp(event.EventType, region, tier, tracker, startAt, endAt)
-	if err != nil {
-		return nil, 0, 0, 0, 0, err
+	if err != nil && !errors.Is(err, C.ErrCannotPredict) {
+		return nil, 0, 0, 0, 0, 0, err
+	}
+	var lastPredictedEp int64
+	if len(predicted) > 0 {
+		lastPredictedEp = predicted[len(predicted)-1].Ep
+	} else {
+		lastPredictedEp = 0
 	}
 	var fontFile string
 	switch regionCode {
 	case "jp":
-		fontFile = "fonts/NotoSansJP-Regular.ttf"
+		fontFile = "NotoSansJP-Regular.ttf"
 	case "tw":
-		fontFile = "fonts/NotoSansTC-Regular.ttf"
+		fontFile = "NotoSansTC-Regular.ttf"
 	case "cn":
-		fontFile = "fonts/NotoSansSC-Regular.ttf"
+		fontFile = "NotoSansSC-Regular.ttf"
 	case "kr":
-		fontFile = "fonts/NotoSansKR-Regular.ttf"
+		fontFile = "NotoSansKR-Regular.ttf"
 	case "en":
-		fontFile = "fonts/NotoSans-Regular.ttf"
+		fontFile = "NotoSans-Regular.ttf"
 	}
 	_, err = setFont(fontFile)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	plot.DefaultFont = font.Font{Typeface: font.Typeface(fontFile)}
 	plotter.DefaultFont = plot.DefaultFont
 
 	pts := make(plotter.XYs, len(tracker.Cutoffs))
 	predictedPts := make(plotter.XYs, len(predicted))
+	phonyPts := make(plotter.XYs, 1)
 
 	for i, cutoff := range tracker.Cutoffs {
 		pts[i].X = float64(cutoff.Time / 1000)
@@ -201,6 +252,12 @@ func getEventTracker(regionCode, eventID string) (image.Image, int64, int64, int
 		predictedPts[i].X = float64(cutoff.Time / 1000)
 		predictedPts[i].Y = float64(cutoff.Ep)
 	}
+	phonyPtsY := float64(pts[len(pts)-1].Y) * 1.3
+	if len(predictedPts) > 0 {
+		phonyPtsY = float64(predictedPts[len(predictedPts)-1].Y-pts[0].Y) * 1.3
+	}
+	phonyPts[0].X = float64(endAt / 1000)
+	phonyPts[0].Y = phonyPtsY
 	p := plot.New()
 	p.Title.Text = fmt.Sprintf("%s(%s) - %s - T%d", event.EventName[region], eventID, strings.ToUpper(regionCode), tier)
 	p.X.Label.Text = "Time"
@@ -215,7 +272,7 @@ func getEventTracker(regionCode, eventID string) (image.Image, int64, int64, int
 	p.Add(grid)
 	line, points, err := plotter.NewLinePoints(pts)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	line.Color = color.RGBA{R: 31, G: 119, B: 180, A: 255} // 经典蓝色
 	line.Width = vg.Points(2)
@@ -228,7 +285,7 @@ func getEventTracker(regionCode, eventID string) (image.Image, int64, int64, int
 
 	line2, points2, err := plotter.NewLinePoints(predictedPts)
 	if err != nil {
-		return nil, 0, 0, 0, 0, err
+		return nil, 0, 0, 0, 0, 0, err
 	}
 	line2.Color = color.RGBA{R: 255, G: 127, B: 14, A: 255} // 经典橙色
 	line2.Width = vg.Points(2)
@@ -239,6 +296,18 @@ func getEventTracker(regionCode, eventID string) (image.Image, int64, int64, int
 	points2.Radius = vg.Points(3)
 	p.Add(line2, points2)
 
+	// 添加一个透明的点和线，用于把图片拉长到活动结束时间
+	line3, point3, err := plotter.NewLinePoints(phonyPts)
+	if err != nil {
+		return nil, 0, 0, 0, 0, 0, err
+	}
+	line3.Color = color.RGBA{R: 255, G: 255, B: 255, A: 0}
+	line3.Width = vg.Points(2)
+	point3.Shape = draw.CircleGlyph{}
+	point3.Color = color.RGBA{R: 255, G: 255, B: 255, A: 0}
+	point3.Radius = vg.Points(3)
+	p.Add(line3, point3)
+
 	p.Legend.Add("Actual Cutoff", line, points)
 	p.Legend.Add("Predicted Final Cutoff", line2, points2)
 
@@ -248,7 +317,8 @@ func getEventTracker(regionCode, eventID string) (image.Image, int64, int64, int
 	lastEpIncrement := tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep - tracker.Cutoffs[len(tracker.Cutoffs)-2].Ep
 	lastTimeIncrement := tracker.Cutoffs[len(tracker.Cutoffs)-1].Time - tracker.Cutoffs[len(tracker.Cutoffs)-2].Time
 	speed := int64(float64(lastEpIncrement) / (float64(lastTimeIncrement) / 3600000)) // 计算每小时的速度
-	return canvas.Image(), tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep, predicted[len(predicted)-1].Ep, tracker.Cutoffs[len(tracker.Cutoffs)-1].Time, speed, nil
+	allTimeSpeed := int64(float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep-tracker.Cutoffs[0].Ep) / (float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Time-tracker.Cutoffs[0].Time) / 3600000))
+	return canvas.Image(), tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep, lastPredictedEp, tracker.Cutoffs[len(tracker.Cutoffs)-1].Time, speed, allTimeSpeed, nil
 }
 
 type predictedCutoff struct {
@@ -261,20 +331,9 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 	latestTime := tracker.Cutoffs[len(tracker.Cutoffs)-1].Time
 	predicted := make([]predictedCutoff, len(tracker.Cutoffs))
 	if latestTime-timeStart < 86400000 { // 如果最新时间距离开始时间不足一天，则不进行预测
-		return []predictedCutoff{}, fmt.Errorf("not enough data to make predictions")
+		return []predictedCutoff{}, C.ErrCannotPredict
 	}
-	url := "https://bestdori.com/api/tracker/rates.json"
-	resp, err := http.Get(url)
-	if err != nil {
-		return []predictedCutoff{}, err
-	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return []predictedCutoff{}, err
-	}
-	var ratesData C.RatesData
-	err = json.Unmarshal(data, &ratesData)
+	ratesData := utils.ReadRates()
 	var rateAssigned float64
 	for _, rate := range ratesData {
 		if rate.Type == eventType && rate.Server == server && rate.Tier == tier {
@@ -319,21 +378,29 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 		}
 	}
 	predicted = predicted[lastEqualIndex:] // 截断预测值，去掉与实际值相同的部分
+	predicted = append(
+		predicted,
+		predictedCutoff{
+			Time:    timeEnd,
+			Ep:      predicted[len(predicted)-1].Ep,
+			Percent: 1.0,
+		},
+	)
 	return predicted, nil
 }
 
 func getRegionCodeandTier(regionCode string) (int, int) {
 	switch regionCode {
 	case "jp":
-		return 0, 10000
+		return 0, 1000
 	case "en":
 		return 1, 3000
 	case "tw":
 		return 2, 100
 	case "cn":
-		return 3, 10000
+		return 3, 2000
 	default:
-		return 0, 10000
+		return 0, 1000
 	}
 }
 

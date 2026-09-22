@@ -1,6 +1,7 @@
 general:
   token: "YOUR_BOT_TOKEN" #填入你的Telegram Bot Token
   admin_token: "YOUR_ADMIN_TOKEN" #填入你的管理员Token，务必保密
+  pic_depot: "YOUR_PIC_DEPOT_CHANNEL" #填入图片仓库频道用户名，不包括@，例如：example_channel
 proxy:
   enabled: false #是否启用代理
   type: "http" #代理类型，可选值为"http"或"socks5"
