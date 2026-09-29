@@ -42,6 +42,7 @@
         "event": "活动",
         "campaign": "联名合作",
         "others": "其他",
+        "special": "cardspecial",
         "no_card_id": "请提供要查询的卡片 ID。",
         "card_not_found": "未找到卡片。请检查卡片 ID 是否正确。",
         "error_occurred": "查询卡片信息时发生错误，请稍后再试。",
@@ -118,7 +119,8 @@
         "event_image_error": "活动图片加载失败，请稍后再试。",
         "fsx_disclaimer": "免责声明：预测分数线仅供参考，实际结果可能会有所不同。",
         "no_cutoff_data": "当前活动暂无分数线数据。",
-        "all_time_speed": "平均速度: "
+        "all_time_speed": "平均速度: ",
+        "fsx_usage": "使用方法: /cutoff <event_id> <tier> <region>。例如: /cutoff 12345 1000 en"
     },
     "songs": {
         "search_usage": "请提供要搜索的歌曲名称。使用方法： /search <song_name>。",

@@ -41,6 +41,7 @@
         "event": "Event",
         "campaign": "Campaign",
         "others": "Others",
+        "special": "cardspecial",
         "no_card_id": "Please provide a card ID to query.",
         "card_not_found": "Card not found. Please check if the card ID is correct.",
         "error_occurred": "An error occurred while querying card information. Please try again later.",
@@ -115,7 +116,8 @@
         "event_image_error": "Failed to load event image. Please try again later.",
         "fsx_disclaimer": "Disclaimer: The predicted cutoff is for reference only, and the actual results may vary.",
         "no_cutoff_data": "No cutoff data available for the current event.",
-        "all_time_speed": "Average Speed: "
+        "all_time_speed": "Average Speed: ",
+        "fsx_usage": "Usage: /cutoff <event_id> <tier> <region>. Example: /cutoff 12345 1000 en"
     },
     "songs": {
         "search_usage": "Please provide a song name to search for. Usage: /search <song_name>.",
