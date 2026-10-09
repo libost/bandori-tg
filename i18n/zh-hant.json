@@ -117,7 +117,8 @@
         "fsx_disclaimer": "免責聲明：預測分數線僅供參考，實際結果可能會有所不同。",
         "no_cutoff_data": "當前活動暫無分數線數據。",
         "all_time_speed": "平均速度: ",
-        "fsx_usage": "使用方法: /cutoff <event_id> <tier> <region>。例如: /cutoff 12345 1000 en"
+        "fsx_usage": "使用方法: /cutoff <event_id> <tier> <region>。例如: /cutoff 12345 1000 en",
+        "fsx_data_delay": "警告：目前的分數線數據延迟較大，請謹慎參考。"
     },
     "songs": {
         "search_usage": "請提供要搜索的歌曲名稱。使用方法： /search <song_name>。",

@@ -638,6 +638,20 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
+	if now < endAt && now-latestTime > 3600000 {
+		richMessage.Blocks = append(richMessage.Blocks, 
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockBlockQuotation{
+				Blocks: []gotgbot.InputRichBlock{
+					gotgbot.InputRichBlockParagraph{
+						Text: gotgbot.RichTextItalic{
+							Text: gotgbot.RichTextString(I.GetLocalisedString("events.fsx_data_delay", langCode)),
+						},
+					},
+				},
+			},
+		)
+	}
 	_, err = b.SendRichMessageWithContext(contextTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
