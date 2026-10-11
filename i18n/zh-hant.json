@@ -15,6 +15,10 @@
         "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
         "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢卡片中的信息，不適用於顯示的文本。",
         "about_desc": "Bandori Bot \n版本: %[1]s\n構建時間: %[2]s\nGit 提交: %[3]s\n分支: %[4]s\n項目地址: https://github.com/libost/bandori-tg",
+        "setadmin_no_token": "請提供管理員令牌。",
+        "setadmin_invalid_token": "無效的管理員令牌。",
+        "setadmin_success": "管理員設置成功。",
+        "setadmin_error": "設置管理員時發生錯誤，請稍後再試。",
         "setcommands_desc_list": [
             "啟動機器人並獲取歡迎消息。",
             "顯示此幫助消息。",

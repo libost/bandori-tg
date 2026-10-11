@@ -15,6 +15,10 @@
         "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
         "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot.",
         "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s\nProject URL: https://github.com/libost/bandori-tg",
+        "setadmin_no_token": "Please provide an administrator token.",
+        "setadmin_invalid_token": "Invalid administrator token.",
+        "setadmin_success": "Administrator settings updated successfully.",
+        "setadmin_error": "An error occurred while setting the administrator, please try again later.",
         "setcommands_desc_list": [
             "Start the bot and get a welcome message.",
             "Show this help message.",
