@@ -747,6 +747,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 
 		eventMap := utils.ReadEvents()
+		timeNow := time.Now().Unix()
 		for _, r := range regions {
 			event := eventMap[ongoingIDs[r.idx]]
 			loc, _ := time.LoadLocation(r.tz)
@@ -755,8 +756,8 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 
 			eventStart := int64(eStart) / 1000
 			eventEnd := int64(eEnd) / 1000
-			remainingTime := eventEnd - time.Now().Unix()
-			startRemainingTime := eventStart - time.Now().Unix()
+			remainingTime := eventEnd - timeNow
+			startRemainingTime := eventStart - timeNow
 
 			var remainingTimeText string
 			if remainingTime <= 0 {
@@ -804,7 +805,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						{
 							Text:         gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
 							Style:        "primary",
-							CallbackData: "events_" + ongoingIDs[r.idx] + "_" + r.region,
+							CallbackData: "events_" + ongoingIDs[r.idx] + "_" + r.region + "_" + fmt.Sprint(timeNow),
 						},
 					},
 					Align: "center",
@@ -861,15 +862,28 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	defer stopActionLoop()
 	data := ctx.CallbackQuery.Data
 	parts := strings.Split(data, "_")
-	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-		Text:      I.GetLocalisedString("events.loading", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
-		ShowAlert: false,
-	})
-	if err != nil {
-		log.Printf("Error answering callback query: %v", err)
-	}
-	if len(parts) != 3 {
+	if len(parts) != 4 {
 		return fmt.Errorf("invalid callback data")
+	}
+	timeThen, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		log.Printf("Error parsing timestamp from callback data: %v", err)
+		return fmt.Errorf("invalid timestamp in callback data")
+	}
+	if time.Now().Unix() > timeThen+60 {
+		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("events.callback_expired", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+			ShowAlert: true,
+		})
+		return err
+	} else {
+		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("events.loading", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+			ShowAlert: false,
+		})
+		if err != nil {
+			log.Printf("Error answering callback query: %v", err)
+		}
 	}
 	return SendDetailedEvent(b, ctx, parts[1], I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode), parts[2])
 }
