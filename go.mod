@@ -3,7 +3,7 @@ module github.com/libost/bandori-tg
 go 1.27.0
 
 require (
-	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.36
+	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.37
 	github.com/creasty/defaults v1.11.0
 	github.com/dustin/go-humanize v1.1.0
 	github.com/fogleman/gg v1.3.0
@@ -43,13 +43,13 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/srwiley/scanx v0.0.0-20190309010443-e94503791388 // indirect
 	github.com/tdewolff/font v0.0.0-20261010204837-88a7f6b56918 // indirect
-	github.com/tdewolff/minify/v2 v2.24.19 // indirect
-	github.com/tdewolff/parse/v2 v2.8.16 // indirect
+	github.com/tdewolff/minify/v2 v2.24.22 // indirect
+	github.com/tdewolff/parse/v2 v2.8.19 // indirect
 	github.com/yuin/goldmark v1.8.6 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	modernc.org/knuth v0.6.0 // indirect
-	modernc.org/libc v1.78.0 // indirect
+	modernc.org/libc v1.79.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 	modernc.org/token v1.1.0 // indirect

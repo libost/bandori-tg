@@ -403,6 +403,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		return err
 	}
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 	return err
@@ -639,7 +640,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		},
 	}
 	if now < endAt && now-latestTime > 3600000 {
-		richMessage.Blocks = append(richMessage.Blocks, 
+		richMessage.Blocks = append(richMessage.Blocks,
 			gotgbot.InputRichBlockDivider{},
 			gotgbot.InputRichBlockBlockQuotation{
 				Blocks: []gotgbot.InputRichBlock{

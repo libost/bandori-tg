@@ -149,5 +149,8 @@
         "tie_up": "額外曲",
         "countdown_end": "已發布",
         "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後"
+    },
+    "generic": {
+        "error": "發生錯誤，請稍後再試。錯誤信息: %[1]s"
     }
 }
