@@ -17,6 +17,7 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/dustin/go-humanize"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
@@ -141,6 +142,27 @@ func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *t
 }
 
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	eventMap := utils.ReadEvents()
@@ -403,6 +425,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		return err
 	}
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 	return err
@@ -413,6 +436,7 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
 	dispatcher.AddHandler(handlers.NewCommand("cutoff", FsxCommand))
 	dispatcher.AddHandler(handlers.NewCommand("fsx", FsxCommand))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("events_"), callbackEventsCommand))
 }
 
 func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt int64) gotgbot.RichTextArray {
@@ -638,6 +662,20 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
+	if now < endAt && now-latestTime > 3600000 {
+		richMessage.Blocks = append(richMessage.Blocks,
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockBlockQuotation{
+				Blocks: []gotgbot.InputRichBlock{
+					gotgbot.InputRichBlockParagraph{
+						Text: gotgbot.RichTextItalic{
+							Text: gotgbot.RichTextString(I.GetLocalisedString("events.fsx_data_delay", langCode)),
+						},
+					},
+				},
+			},
+		)
+	}
 	_, err = b.SendRichMessageWithContext(contextTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
@@ -761,11 +799,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						eventEnd,
 					),
 				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextUrl{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
-						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_%s", b.Username, ongoingIDs[r.idx], r.region),
+				gotgbot.InputRichBlockButtons{
+					Buttons: []gotgbot.RichMessageButton{
+						{
+							Text:         gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
+							Style:        "primary",
+							CallbackData: "events_" + ongoingIDs[r.idx] + "_" + r.region,
+						},
 					},
+					Align: "center",
 				},
 			)
 		}
@@ -793,4 +835,41 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		return SendDetailedEvent(b, ctx, param, langCode, qlangCode)
 	}
+}
+
+func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
+	data := ctx.CallbackQuery.Data
+	parts := strings.Split(data, "_")
+	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      I.GetLocalisedString("events.loading", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+		ShowAlert: false,
+	})
+	if err != nil {
+		log.Printf("Error answering callback query: %v", err)
+	}
+	if len(parts) != 3 {
+		return fmt.Errorf("invalid callback data")
+	}
+	return SendDetailedEvent(b, ctx, parts[1], I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode), parts[2])
 }

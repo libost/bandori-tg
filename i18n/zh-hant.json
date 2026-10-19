@@ -15,6 +15,10 @@
         "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
         "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢卡片中的信息，不適用於顯示的文本。",
         "about_desc": "Bandori Bot \n版本: %[1]s\n構建時間: %[2]s\nGit 提交: %[3]s\n分支: %[4]s\n項目地址: https://github.com/libost/bandori-tg",
+        "setadmin_no_token": "請提供管理員令牌。",
+        "setadmin_invalid_token": "無效的管理員令牌。",
+        "setadmin_success": "管理員設置成功。",
+        "setadmin_error": "設置管理員時發生錯誤，請稍後再試。",
         "setcommands_desc_list": [
             "啟動機器人並獲取歡迎消息。",
             "顯示此幫助消息。",
@@ -41,6 +45,7 @@
         "event": "活動",
         "campaign": "聯名合作",
         "others": "其他",
+        "special": "cardspecial",
         "no_card_id": "請提供要查詢的卡片 ID。",
         "card_not_found": "未找到卡片。請檢查卡片 ID 是否正確。",
         "error_occurred": "查詢卡片信息時發生錯誤，請稍後再試。",
@@ -115,7 +120,10 @@
         "event_image_error": "活動圖片加載失敗，請稍後再試。",
         "fsx_disclaimer": "免責聲明：預測分數線僅供參考，實際結果可能會有所不同。",
         "no_cutoff_data": "當前活動暫無分數線數據。",
-        "all_time_speed": "平均速度: "
+        "all_time_speed": "平均速度: ",
+        "fsx_usage": "使用方法: /cutoff <event_id> <tier> <region>。例如: /cutoff 12345 1000 en",
+        "fsx_data_delay": "警告：目前的分數線數據延迟較大，請謹慎參考。",
+        "loading": "載入中..."
     },
     "songs": {
         "search_usage": "請提供要搜索的歌曲名稱。使用方法： /search <song_name>。",
@@ -142,5 +150,8 @@
         "tie_up": "額外曲",
         "countdown_end": "已發布",
         "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後"
+    },
+    "generic": {
+        "error": "發生錯誤，請稍後再試。錯誤信息: %[1]s"
     }
 }

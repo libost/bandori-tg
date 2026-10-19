@@ -15,6 +15,10 @@
         "dlanguages_desc": "Set the display language.\nThis setting only affects the text displayed by the bot, not the information queried from the cards.",
         "qlanguages_desc": "Set the query language.\nThis setting only affects the information queried from the cards, not the text displayed by the bot.",
         "about_desc": "Bandori Bot \nVersion: %[1]s\nBuild Time: %[2]s\nGit Commit: %[3]s\nBranch: %[4]s\nProject URL: https://github.com/libost/bandori-tg",
+        "setadmin_no_token": "Please provide an administrator token.",
+        "setadmin_invalid_token": "Invalid administrator token.",
+        "setadmin_success": "Administrator settings updated successfully.",
+        "setadmin_error": "An error occurred while setting the administrator, please try again later.",
         "setcommands_desc_list": [
             "Start the bot and get a welcome message.",
             "Show this help message.",
@@ -41,6 +45,7 @@
         "event": "Event",
         "campaign": "Campaign",
         "others": "Others",
+        "special": "cardspecial",
         "no_card_id": "Please provide a card ID to query.",
         "card_not_found": "Card not found. Please check if the card ID is correct.",
         "error_occurred": "An error occurred while querying card information. Please try again later.",
@@ -115,7 +120,10 @@
         "event_image_error": "Failed to load event image. Please try again later.",
         "fsx_disclaimer": "Disclaimer: The predicted cutoff is for reference only, and the actual results may vary.",
         "no_cutoff_data": "No cutoff data available for the current event.",
-        "all_time_speed": "Average Speed: "
+        "all_time_speed": "Average Speed: ",
+        "fsx_usage": "Usage: /cutoff <event_id> <tier> <region>. Example: /cutoff 12345 1000 en",
+        "fsx_data_delay": "Warning: The current cutoff data is significantly delayed. Please use with caution.",
+        "loading": "Loading..."
     },
     "songs": {
         "search_usage": "Please provide a song name to search for. Usage: /search <song_name>.",
@@ -142,5 +150,8 @@
         "tie_up": "Extra",
         "countdown_end": "Released",
         "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
+    },
+    "generic": {
+        "error": "An error occurred. Please try again later. Error message: %[1]s"
     }
 }
