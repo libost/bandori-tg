@@ -122,7 +122,8 @@
         "no_cutoff_data": "No cutoff data available for the current event.",
         "all_time_speed": "Average Speed: ",
         "fsx_usage": "Usage: /cutoff <event_id> <tier> <region>. Example: /cutoff 12345 1000 en",
-        "fsx_data_delay": "Warning: The current cutoff data is significantly delayed. Please use with caution."
+        "fsx_data_delay": "Warning: The current cutoff data is significantly delayed. Please use with caution.",
+        "loading": "Loading..."
     },
     "songs": {
         "search_usage": "Please provide a song name to search for. Usage: /search <song_name>.",
