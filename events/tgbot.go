@@ -870,20 +870,21 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		log.Printf("Error parsing timestamp from callback data: %v", err)
 		return fmt.Errorf("invalid timestamp in callback data")
 	}
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if time.Now().Unix() > timeThen+60 {
 		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-			Text:      I.GetLocalisedString("events.callback_expired", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+			Text:      I.GetLocalisedString("events.callback_expired", langCode),
 			ShowAlert: true,
 		})
 		return err
 	} else {
 		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-			Text:      I.GetLocalisedString("events.loading", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+			Text:      I.GetLocalisedString("events.loading", langCode),
 			ShowAlert: false,
 		})
 		if err != nil {
 			log.Printf("Error answering callback query: %v", err)
 		}
 	}
-	return SendDetailedEvent(b, ctx, parts[1], I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode), parts[2])
+	return SendDetailedEvent(b, ctx, parts[1], langCode, parts[2])
 }
