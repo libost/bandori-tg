@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/events"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/utils"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
+	"github.com/libost/gotgbot/v2/ext/handlers"
 	"github.com/sahilm/fuzzy"
 )
 

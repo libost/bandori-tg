@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
+	"github.com/libost/gotgbot/v2"
 	"golang.org/x/sync/errgroup"
 )
 

@@ -3,12 +3,12 @@ module github.com/libost/bandori-tg
 go 1.27.0
 
 require (
-	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.37
 	github.com/creasty/defaults v1.11.0
 	github.com/dustin/go-humanize v1.1.0
 	github.com/fogleman/gg v1.3.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c

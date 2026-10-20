@@ -1,9 +1,9 @@
 package gacha
 
 import (
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
+	"github.com/libost/gotgbot/v2/ext/handlers"
 )
 
 func AddHandlers(dispatcher *ext.Dispatcher) {

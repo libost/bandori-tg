@@ -12,9 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/libost/bandori-tg/band"
 	"github.com/libost/bandori-tg/characters"
 	C "github.com/libost/bandori-tg/constants"
@@ -22,6 +19,9 @@ import (
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/skills"
 	"github.com/libost/bandori-tg/utils"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
+	"github.com/libost/gotgbot/v2/ext/handlers"
 )
 
 // XMLNode 定义递归 XML 节点结构

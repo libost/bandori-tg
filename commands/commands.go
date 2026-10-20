@@ -5,14 +5,14 @@ import (
 	"log"
 	"strings"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/libost/bandori-tg/config"
 	DB "github.com/libost/bandori-tg/database"
 	"github.com/libost/bandori-tg/events"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/version"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
+	"github.com/libost/gotgbot/v2/ext/handlers"
 )
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
