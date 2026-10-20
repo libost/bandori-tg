@@ -33,9 +33,6 @@ func checkConfig(cf *C.Config) error {
 	if cf.General.AdminToken == "" {
 		return C.ErrNoAdminToken
 	}
-	if cf.General.PicDepot == "" {
-		return C.ErrNoPicDepot
-	}
 	return nil
 }
 
