@@ -7,6 +7,10 @@
 
 ---
 
+试用机器人：[@gbp_hina_bot](https://t.me/gbp_hina_bot)
+
+---
+
 ## ✨ 功能特性
 
 - 🃏 **查卡**：通过 `/cards` 指令或中文文本指令「查卡」查询卡片，自动生成卡片图片，包含稀有度、属性、数值、技能等信息。
@@ -23,7 +27,7 @@
 | 组件 | 说明 |
 | --- | --- |
 | 语言 | Go 1.27 |
-| 框架 | [gotgbot](https://github.com/PaulSonOfLars/gotgbot) (v2) |
+| 框架 | [gotgbot](https://github.com/libost/gotgbot) (v2) |
 | 数据库 | SQLite（[modernc.org/sqlite](https://modernc.org/sqlite)，纯 Go 实现，支持 `CGO_ENABLED=0` 交叉编译） |
 | 图片生成 | [fogleman/gg](https://github.com/fogleman/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
 | 定时任务 | [robfig/cron](https://github.com/robfig/cron) |

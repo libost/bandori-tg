@@ -124,7 +124,8 @@
         "fsx_usage": "Usage: /cutoff <event_id> <tier> <region>. Example: /cutoff 12345 1000 en",
         "fsx_data_delay": "Warning: The current cutoff data is significantly delayed. Please use with caution.",
         "loading": "Loading...",
-        "callback_expired": "The callback has expired. Please use the /events command again."
+        "callback_expired": "The callback has expired. Please use the /events command again.",
+        "invalid_callback_data": "Invalid callback data. Please use the /events command again."
     },
     "songs": {
         "search_usage": "Please provide a song name to search for. Usage: /search <song_name>.",

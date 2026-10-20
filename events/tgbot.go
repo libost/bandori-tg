@@ -14,15 +14,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/dustin/go-humanize"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/recent"
 	"github.com/libost/bandori-tg/utils"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
+	"github.com/libost/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 )
 
 func selectLocaleString(strings []string, index int) string {
@@ -345,26 +345,14 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
 		return err
 	}
-	fileID, err := utils.GetImageIDWorkAround(b, buf)
-	if err != nil {
-		log.Printf("Error getting image ID for event members image for event ID %s: %v", eventID, err)
-		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
-		return err
-	}
-	fileID2, err := utils.GetImageIDWorkAround(b, buf2)
-	if err != nil {
-		log.Printf("Error getting image ID for event bonus cards image for event ID %s: %v", eventID, err)
-		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
-		return err
-	}
 	photoBlock := gotgbot.InputRichBlockPhoto{
 		Photo: gotgbot.InputMediaPhoto{
-			Media: gotgbot.InputFileByID(fileID),
+			Media: gotgbot.InputFileByReader("image.png", &buf),
 		},
 	}
 	photoBlock2 := gotgbot.InputRichBlockPhoto{
 		Photo: gotgbot.InputMediaPhoto{
-			Media: gotgbot.InputFileByID(fileID2),
+			Media: gotgbot.InputFileByReader("image2.png", &buf2),
 		},
 	}
 
@@ -574,12 +562,11 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	allTimeSpeedStr := humanize.Comma(allTimeSpeed)
 	speedStr := humanize.Comma(speed)
 
-	fileId, err := utils.GetImageIDWorkAround(b, buf)
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
-					Media: gotgbot.InputFileByID(fileId),
+					Media: gotgbot.InputFileByReader("image.png", &buf),
 				},
 			},
 			gotgbot.InputRichBlockTable{
@@ -862,7 +849,12 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	defer stopActionLoop()
 	data := ctx.CallbackQuery.Data
 	parts := strings.Split(data, "_")
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(parts) != 4 {
+		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("events.invalid_callback_data", langCode),
+			ShowAlert: true,
+		})
 		return fmt.Errorf("invalid callback data")
 	}
 	timeThen, err := strconv.ParseInt(parts[3], 10, 64)
@@ -870,20 +862,21 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		log.Printf("Error parsing timestamp from callback data: %v", err)
 		return fmt.Errorf("invalid timestamp in callback data")
 	}
+
 	if time.Now().Unix() > timeThen+60 {
 		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-			Text:      I.GetLocalisedString("events.callback_expired", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+			Text:      I.GetLocalisedString("events.callback_expired", langCode),
 			ShowAlert: true,
 		})
 		return err
 	} else {
 		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-			Text:      I.GetLocalisedString("events.loading", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
+			Text:      I.GetLocalisedString("events.loading", langCode),
 			ShowAlert: false,
 		})
 		if err != nil {
 			log.Printf("Error answering callback query: %v", err)
 		}
 	}
-	return SendDetailedEvent(b, ctx, parts[1], I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode), parts[2])
+	return SendDetailedEvent(b, ctx, parts[1], langCode, parts[2])
 }

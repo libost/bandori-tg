@@ -12,8 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/libost/bandori-tg/callback"
 	"github.com/libost/bandori-tg/cards"
 	"github.com/libost/bandori-tg/commands"
@@ -25,6 +23,8 @@ import (
 	"github.com/libost/bandori-tg/text"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
 	"github.com/robfig/cron/v3"
 	"golang.org/x/net/proxy"
 	"gopkg.in/natefinch/lumberjack.v2"

@@ -23,10 +23,6 @@ github.com/BurntSushi/xgbutil v0.0.0-20190907113008-ad855c713046 h1:O/r2Sj+8QcMF
 github.com/BurntSushi/xgbutil v0.0.0-20190907113008-ad855c713046/go.mod h1:uw9h2sd4WWHOPdJ13MQpwK5qYWKYDumDqxWWIknEQ+k=
 github.com/ByteArena/poly2tri-go v0.0.0-20170716161910-d102ad91854f h1:l7moT9o/v/9acCWA64Yz/HDLqjcRTvc0noQACi4MsJw=
 github.com/ByteArena/poly2tri-go v0.0.0-20170716161910-d102ad91854f/go.mod h1:vIOkSdX3NDCPwgu8FIuTat2zDF0FPXXQ0RYFRy+oQic=
-github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.36 h1:OCI373QkuzXNOoaUBNEwh4uxaaPOfSFYn3ck7WlrqMI=
-github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.36/go.mod h1:yrKnA/812p/Vh84TYQMz36/8SNLF7OOdTmKFr5i7W7g=
-github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.37 h1:0e60L8uN4WXzTP/FpkVzbVpEkhp8EW/l7ilZ80qJQ2s=
-github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.37/go.mod h1:yrKnA/812p/Vh84TYQMz36/8SNLF7OOdTmKFr5i7W7g=
 github.com/ajstarks/deck v0.0.0-20200831202436-30c9fc6549a9/go.mod h1:JynElWSGnm/4RlzPXRlREEwqTHAN3T56Bv2ITsFT3gY=
 github.com/ajstarks/deck/generate v0.0.0-20210309230005-c3f852c02e19/go.mod h1:T13YZdzov6OU0A1+RfKZiZN9ca6VeKdBdyDV+BY97Tk=
 github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b h1:slYM766cy2nI3BwyRiyQj/Ud48djTMtMebDqepE95rw=
@@ -64,6 +60,8 @@ github.com/hashicorp/golang-lru/v2 v2.0.7/go.mod h1:QeFd9opnmA6QUJc5vARoKUSoFhyf
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
+github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm h1:krm1v+A0bBo79UYIrlZIAVY/VLot2Y6hP1Xvpehfbuc=
+github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm/go.mod h1:3rM7mQkcVSvUOFDe7Ior3CPyM8J9z9jEEC1bp/7LHTE=
 github.com/mattn/go-isatty v0.0.24 h1:tGZZoVgT/KiqK1c8ocVLeDS8BSWMRd47J3Lbz7vsReI=
 github.com/mattn/go-isatty v0.0.24/go.mod h1:nMCL3Zebbrt45jsMDgnfIwz6ydEQApk5oEI3HqDio6A=
 github.com/ncruces/go-strftime v1.1.0 h1:vtPmPWMkb539RGV9WpWT9EwJGvrOCKvMNI4obWL47Hk=
@@ -90,12 +88,8 @@ github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c h1:eXJXpQAo8l0AdVn
 github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c/go.mod h1:K9Ux3cwFtyAFRITZ46g7v+ORXgI3ENtQa5rL9yjNz5Y=
 github.com/tdewolff/font v0.0.0-20261010204837-88a7f6b56918 h1:z7YAbjYz/bmG0AUx2pqmClRxUI2aCxP0rQMJAMcdmok=
 github.com/tdewolff/font v0.0.0-20261010204837-88a7f6b56918/go.mod h1:ipESUihcEdgRBhIwTRHmBTOMamccMQrp4iCxfa1aFws=
-github.com/tdewolff/minify/v2 v2.24.21 h1:p0esUXNVAIxgI8JdejyrETFc7B5QZo0SX7+O9CADO10=
-github.com/tdewolff/minify/v2 v2.24.21/go.mod h1:DaTjZNnoQmNeVKK/52ab9I+36kuzo1Kg912469NK0Tk=
 github.com/tdewolff/minify/v2 v2.24.22 h1:48fGkqDfZ/dAHGf51NsuHQaMYRRmSh3hhVjnGXheGhs=
 github.com/tdewolff/minify/v2 v2.24.22/go.mod h1:y+QjTzveZX+MfkswbAnt4V/zcBbKjNBdDTrOoqy4nX8=
-github.com/tdewolff/parse/v2 v2.8.18 h1:XkWp4Ow06VF8xGWy3ifh/aOK66UsSAs8p1nsFX0Jj3k=
-github.com/tdewolff/parse/v2 v2.8.18/go.mod h1:OemXEPll2+Sn7pQ6xFxC9cEm1wDnNt1hC2q3jIh+OoI=
 github.com/tdewolff/parse/v2 v2.8.19 h1:p+JoZI06kApwHWyOe/BAsl7DC06UqyDDbAKU68/9I4w=
 github.com/tdewolff/parse/v2 v2.8.19/go.mod h1:OemXEPll2+Sn7pQ6xFxC9cEm1wDnNt1hC2q3jIh+OoI=
 github.com/tdewolff/test v1.0.12 h1:7F21DqIajswxuche0geHdrUZRCWE4oko4b7bcmkkrxk=
