@@ -28,6 +28,8 @@ import (
 	"github.com/robfig/cron/v3"
 	"golang.org/x/net/proxy"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	_ "time/tzdata"
 )
 
 func main() {
@@ -72,15 +74,14 @@ func main() {
 	}
 	initAll()
 
-	err = utils.InitLists()
-	if err != nil {
-		log.Fatalf("Failed to initialize lists: %v", err)
-	}
-
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger), cron.SkipIfStillRunning(cron.DefaultLogger)))
 
 	config.InitConfig()
+	err = utils.InitLists()
+	if err != nil {
+		log.Fatalf("Failed to initialize lists: %v", err)
+	}
 	token := config.AppConfig.General.Token
 	httpClient := httpClientWithProxy(config.AppConfig)
 	b, err := gotgbot.NewBot(token, &gotgbot.BotOpts{
