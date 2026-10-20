@@ -3,18 +3,18 @@ module github.com/libost/bandori-tg
 go 1.27.0
 
 require (
-	github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.36
 	github.com/creasty/defaults v1.11.0
 	github.com/dustin/go-humanize v1.1.0
 	github.com/fogleman/gg v1.3.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c
-	golang.org/x/image v0.46.0
-	golang.org/x/net v0.59.0
-	golang.org/x/sync v0.23.0
+	golang.org/x/image v0.47.0
+	golang.org/x/net v0.61.0
+	golang.org/x/sync v0.24.0
 	gonum.org/v1/plot v0.17.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	modernc.org/sqlite v1.60.1
@@ -42,14 +42,14 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/srwiley/scanx v0.0.0-20190309010443-e94503791388 // indirect
-	github.com/tdewolff/font v0.0.0-20260913163313-54f98bb59ee6 // indirect
-	github.com/tdewolff/minify/v2 v2.24.17 // indirect
-	github.com/tdewolff/parse/v2 v2.8.16 // indirect
+	github.com/tdewolff/font v0.0.0-20261010204837-88a7f6b56918 // indirect
+	github.com/tdewolff/minify/v2 v2.24.22 // indirect
+	github.com/tdewolff/parse/v2 v2.8.19 // indirect
 	github.com/yuin/goldmark v1.8.6 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	modernc.org/knuth v0.6.0 // indirect
-	modernc.org/libc v1.77.1 // indirect
+	modernc.org/libc v1.79.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 	modernc.org/token v1.1.0 // indirect

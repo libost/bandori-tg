@@ -133,7 +133,6 @@ type Config struct {
 	General struct {
 		Token      string `yaml:"token"`
 		AdminToken string `yaml:"admin_token"`
-		PicDepot   string `yaml:"pic_depot"`
 	} `yaml:"general"`
 	Proxy struct {
 		Enabled  bool   `yaml:"enabled"`

@@ -14,14 +14,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PaulSonOfLars/gotgbot/v2"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext"
-	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
 	"github.com/dustin/go-humanize"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/recent"
 	"github.com/libost/bandori-tg/utils"
+	"github.com/libost/gotgbot/v2"
+	"github.com/libost/gotgbot/v2/ext"
+	"github.com/libost/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 )
 
 func selectLocaleString(strings []string, index int) string {
@@ -141,6 +142,27 @@ func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *t
 }
 
 func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	eventMap := utils.ReadEvents()
@@ -323,26 +345,14 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
 		return err
 	}
-	fileID, err := utils.GetImageIDWorkAround(b, buf)
-	if err != nil {
-		log.Printf("Error getting image ID for event members image for event ID %s: %v", eventID, err)
-		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
-		return err
-	}
-	fileID2, err := utils.GetImageIDWorkAround(b, buf2)
-	if err != nil {
-		log.Printf("Error getting image ID for event bonus cards image for event ID %s: %v", eventID, err)
-		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
-		return err
-	}
 	photoBlock := gotgbot.InputRichBlockPhoto{
 		Photo: gotgbot.InputMediaPhoto{
-			Media: gotgbot.InputFileByID(fileID),
+			Media: gotgbot.InputFileByReader("image.png", &buf),
 		},
 	}
 	photoBlock2 := gotgbot.InputRichBlockPhoto{
 		Photo: gotgbot.InputMediaPhoto{
-			Media: gotgbot.InputFileByID(fileID2),
+			Media: gotgbot.InputFileByReader("image2.png", &buf2),
 		},
 	}
 
@@ -403,6 +413,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		return err
 	}
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 	return err
@@ -413,6 +424,7 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
 	dispatcher.AddHandler(handlers.NewCommand("cutoff", FsxCommand))
 	dispatcher.AddHandler(handlers.NewCommand("fsx", FsxCommand))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("events_"), callbackEventsCommand))
 }
 
 func eventTimingParagraph(startLabel, endLabel, dlangCode string, startAt, endAt int64) gotgbot.RichTextArray {
@@ -550,12 +562,11 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	allTimeSpeedStr := humanize.Comma(allTimeSpeed)
 	speedStr := humanize.Comma(speed)
 
-	fileId, err := utils.GetImageIDWorkAround(b, buf)
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
-					Media: gotgbot.InputFileByID(fileId),
+					Media: gotgbot.InputFileByReader("image.png", &buf),
 				},
 			},
 			gotgbot.InputRichBlockTable{
@@ -638,6 +649,20 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
+	if now < endAt && now-latestTime > 3600000 {
+		richMessage.Blocks = append(richMessage.Blocks,
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockBlockQuotation{
+				Blocks: []gotgbot.InputRichBlock{
+					gotgbot.InputRichBlockParagraph{
+						Text: gotgbot.RichTextItalic{
+							Text: gotgbot.RichTextString(I.GetLocalisedString("events.fsx_data_delay", langCode)),
+						},
+					},
+				},
+			},
+		)
+	}
 	_, err = b.SendRichMessageWithContext(contextTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
@@ -709,6 +734,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 
 		eventMap := utils.ReadEvents()
+		timeNow := time.Now().Unix()
 		for _, r := range regions {
 			event := eventMap[ongoingIDs[r.idx]]
 			loc, _ := time.LoadLocation(r.tz)
@@ -717,8 +743,8 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 
 			eventStart := int64(eStart) / 1000
 			eventEnd := int64(eEnd) / 1000
-			remainingTime := eventEnd - time.Now().Unix()
-			startRemainingTime := eventStart - time.Now().Unix()
+			remainingTime := eventEnd - timeNow
+			startRemainingTime := eventStart - timeNow
 
 			var remainingTimeText string
 			if remainingTime <= 0 {
@@ -761,11 +787,15 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						eventEnd,
 					),
 				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextUrl{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
-						Url:  fmt.Sprintf("https://t.me/%s?start=events_%s_%s", b.Username, ongoingIDs[r.idx], r.region),
+				gotgbot.InputRichBlockButtons{
+					Buttons: []gotgbot.RichMessageButton{
+						{
+							Text:         gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
+							Style:        "primary",
+							CallbackData: "events_" + ongoingIDs[r.idx] + "_" + r.region + "_" + fmt.Sprint(timeNow),
+						},
 					},
+					Align: "center",
 				},
 			)
 		}
@@ -793,4 +823,60 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		return SendDetailedEvent(b, ctx, param, langCode, qlangCode)
 	}
+}
+
+func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
+	data := ctx.CallbackQuery.Data
+	parts := strings.Split(data, "_")
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	if len(parts) != 4 {
+		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("events.invalid_callback_data", langCode),
+			ShowAlert: true,
+		})
+		return fmt.Errorf("invalid callback data")
+	}
+	timeThen, err := strconv.ParseInt(parts[3], 10, 64)
+	if err != nil {
+		log.Printf("Error parsing timestamp from callback data: %v", err)
+		return fmt.Errorf("invalid timestamp in callback data")
+	}
+
+	if time.Now().Unix() > timeThen+60 {
+		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("events.callback_expired", langCode),
+			ShowAlert: true,
+		})
+		return err
+	} else {
+		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("events.loading", langCode),
+			ShowAlert: false,
+		})
+		if err != nil {
+			log.Printf("Error answering callback query: %v", err)
+		}
+	}
+	return SendDetailedEvent(b, ctx, parts[1], langCode, parts[2])
 }

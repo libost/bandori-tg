@@ -16,6 +16,10 @@
         "dlanguages_desc": "设置显示语言。\n本设置仅适用于显示的文本，不适用于查询卡片中的信息。",
         "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询卡片中的信息，不适用于显示的文本。",
         "about_desc": "Bandori Bot \n版本: %[1]s\n构建时间: %[2]s\nGit 提交: %[3]s\n分支: %[4]s \n项目地址: https://github.com/libost/bandori-tg",
+        "setadmin_no_token": "请提供管理员令牌。",
+        "setadmin_invalid_token": "无效的管理员令牌。",
+        "setadmin_success": "管理员设置成功。",
+        "setadmin_error": "设置管理员时发生错误，请稍后再试。",
         "setcommands_desc_list": [
             "启动机器人并获取欢迎消息。",
             "显示此帮助消息。",
@@ -42,6 +46,7 @@
         "event": "活动",
         "campaign": "联名合作",
         "others": "其他",
+        "special": "cardspecial",
         "no_card_id": "请提供要查询的卡片 ID。",
         "card_not_found": "未找到卡片。请检查卡片 ID 是否正确。",
         "error_occurred": "查询卡片信息时发生错误，请稍后再试。",
@@ -118,7 +123,12 @@
         "event_image_error": "活动图片加载失败，请稍后再试。",
         "fsx_disclaimer": "免责声明：预测分数线仅供参考，实际结果可能会有所不同。",
         "no_cutoff_data": "当前活动暂无分数线数据。",
-        "all_time_speed": "平均速度: "
+        "all_time_speed": "平均速度: ",
+        "fsx_usage": "使用方法: /cutoff <event_id> <tier> <region>。例如: /cutoff 12345 1000 en",
+        "fsx_data_delay": "警告：目前的分数线数据延迟较大，请谨慎参考。",
+        "loading": "加载中...",
+        "callback_expired": "回调已过期，请重新使用命令 /events 。",
+        "invalid_callback_data": "无效的回调数据。请重新使用命令 /events 。"
     },
     "songs": {
         "search_usage": "请提供要搜索的歌曲名称。使用方法： /search <song_name>。",
@@ -145,5 +155,8 @@
         "tie_up": "额外曲",
         "countdown_end": "已发布",
         "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后"
+    },
+    "generic": {
+        "error": "发生错误，请稍后再试。错误信息: %[1]s"
     }
 }
