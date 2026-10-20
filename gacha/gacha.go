@@ -3,6 +3,7 @@ package gacha
 import (
 	"encoding/json"
 	"fmt"
+	"image"
 	"net/http"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -34,4 +35,8 @@ func GetGachaDetails(gachaId string) (C.GachaDetailed, error) {
 		return C.GachaDetailed{}, err
 	}
 	return gachaDetailed, nil
+}
+
+func generateGachaResults(gachaId string, pullCount int) (image.Image, error) {
+	return nil, nil
 }
