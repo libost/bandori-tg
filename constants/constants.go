@@ -275,7 +275,7 @@ type Attributes struct {
 }
 
 type EventsCharacters struct {
-	CharacterID int `json:"characterId"`
+	CharacterID any `json:"characterId"`
 	Percent     int `json:"percent"`
 }
 
