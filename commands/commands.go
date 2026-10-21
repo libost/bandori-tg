@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"runtime"
 	"strings"
 
 	"github.com/libost/bandori-tg/config"
@@ -164,8 +165,13 @@ func qlangHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	displayText := fmt.Sprintf(I.GetLocalisedString("commands.about_desc", langCode), version.Version, version.BuildTime, version.GitCommit, version.Branch)
-	ctx.EffectiveMessage.Reply(b, displayText, nil)
+	system := runtime.GOOS
+	arch := runtime.GOARCH
+	goVersion := runtime.Version()
+	displayText := fmt.Sprintf(I.GetLocalisedString("commands.about_desc", langCode), version.Version, version.BuildTime, version.GitCommit, version.Branch, system, arch, goVersion)
+	ctx.EffectiveMessage.Reply(b, displayText, &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 	return nil
 }
 
