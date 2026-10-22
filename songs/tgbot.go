@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -36,6 +37,27 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 }
 
 func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) < 2 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("songs.search_usage", langCode), nil)
@@ -68,10 +90,45 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(qlangCode))+strings.Join(songs, "\n"), nil)
+	if err != nil {
+		if ctx.EffectiveChat.Type == "private" {
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+				ParseMode: "HTML",
+			})
+		} else {
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+				EphemeralMessageParameters: &gotgbot.EphemeralMessageParameters{
+					ReceiverUserId: ctx.EffectiveUser.Id,
+				},
+				ParseMode: "HTML",
+			})
+		}
+	}
 	return err
 }
 
 func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) < 2 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("songs.song_usage", langCode), nil)
@@ -146,17 +203,23 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	}
 	detailedSong, err := GetDetailedSong(songId)
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error fetching song details: "+err.Error(), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return nil
 	}
 	jacketURL, _, err := getJacket(songId, detailedSong.JacketImage[0], region)
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error fetching song jacket: "+err.Error(), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error fetching song jacket: "+err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return nil
 	}
 	bgmURL, err := getBgm(songId, region)
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error fetching song BGM: "+err.Error(), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error fetching song BGM: "+err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return nil
 	}
 	bandMap := utils.ReadBand()
@@ -252,13 +315,15 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	})
 	var countdownTime int64
 	publishedAt, err := strconv.Atoi(detailedSong.PublishedAt[regionIndex])
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error parsing published at: "+err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
+		return nil
+	}
 	loc, _ := time.LoadLocation(tz)
 	timeStr := time.Unix(int64(publishedAt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	now := time.Now().Unix()
-	if err != nil {
-		ctx.EffectiveMessage.Reply(b, "Error parsing published at: "+err.Error(), nil)
-		return nil
-	}
 	countdownTime = max(int64(publishedAt)-int64(now)*1000, 0)
 	var countdownStr string
 	if countdownTime > 0 {
@@ -369,5 +434,19 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil {
+		if ctx.EffectiveChat.Type == "private" {
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+				ParseMode: "HTML",
+			})
+		} else {
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+				EphemeralMessageParameters: &gotgbot.EphemeralMessageParameters{
+					ReceiverUserId: ctx.EffectiveUser.Id,
+				},
+				ParseMode: "HTML",
+			})
+		}
+	}
 	return err
 }

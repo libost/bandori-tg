@@ -430,6 +430,10 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.request_timeout", dlangCode), nil)
 		log.Printf("Request timed out while sending card details to user %d", ctx.EffectiveUser.Id)
+	} else if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 	}
 	stopActionLoop()
 	return err

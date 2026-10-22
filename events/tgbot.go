@@ -413,7 +413,9 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		return err
 	}
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return err
 	}
 	return err
@@ -671,8 +673,10 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
 		log.Printf("Request timed out while sending event tracker to user %d", ctx.EffectiveUser.Id)
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
-		stopActionLoop()
-		return err
+	} else if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 	}
 	stopActionLoop()
 	return err
