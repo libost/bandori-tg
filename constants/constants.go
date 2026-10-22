@@ -133,7 +133,6 @@ type Config struct {
 	General struct {
 		Token      string `yaml:"token"`
 		AdminToken string `yaml:"admin_token"`
-		PicDepot   string `yaml:"pic_depot"`
 	} `yaml:"general"`
 	Proxy struct {
 		Enabled  bool   `yaml:"enabled"`
@@ -257,17 +256,27 @@ type LoginBonusData struct {
 }
 
 type Events struct {
-	EventType             string   `json:"eventType"`
-	EventName             []string `json:"eventName"`
-	AssetBundleName       string   `json:"assetBundleName"`
-	BannerAssetBundleName string   `json:"bannerAssetBundleName"`
-	StartAt               []string `json:"startAt"`
-	EndAt                 []string `json:"endAt"`
-	Attribute             []any    `json:"attribute"`
-	Characters            []any    `json:"characters"`
-	Members               []any    `json:"members"`
-	LimitBreaks           []any    `json:"limitBreaks"`
-	RewardCards           []any    `json:"rewardCards"`
+	EventType             string             `json:"eventType"`
+	EventName             []string           `json:"eventName"`
+	AssetBundleName       string             `json:"assetBundleName"`
+	BannerAssetBundleName string             `json:"bannerAssetBundleName"`
+	StartAt               []string           `json:"startAt"`
+	EndAt                 []string           `json:"endAt"`
+	Attribute             []Attributes       `json:"attribute"`
+	Characters            []EventsCharacters `json:"characters"`
+	Members               []any              `json:"members"`
+	LimitBreaks           []any              `json:"limitBreaks"`
+	RewardCards           []int              `json:"rewardCards"`
+}
+
+type Attributes struct {
+	Attribute string `json:"attribute"`
+	Percent   int    `json:"percent"`
+}
+
+type EventsCharacters struct {
+	CharacterID any `json:"characterId"`
+	Percent     int `json:"percent"`
 }
 
 type EventsData map[string]Events

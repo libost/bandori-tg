@@ -15,7 +15,7 @@
         "lang_qlang": "设置查询语言",
         "dlanguages_desc": "设置显示语言。\n本设置仅适用于显示的文本，不适用于查询卡片中的信息。",
         "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询卡片中的信息，不适用于显示的文本。",
-        "about_desc": "Bandori Bot \n版本: %[1]s\n构建时间: %[2]s\nGit 提交: %[3]s\n分支: %[4]s \n项目地址: https://github.com/libost/bandori-tg",
+        "about_desc": "Bandori Bot \n版本: <code>%[1]s</code>\n构建时间: <code>%[2]s</code>\nGit 提交: <code>%[3]s</code>\n分支: <code>%[4]s</code> \n运行环境: <code>%[5]s/%[6]s</code> \nGo 版本: <code>%[7]s</code>\n项目地址: https://github.com/libost/bandori-tg",
         "setadmin_no_token": "请提供管理员令牌。",
         "setadmin_invalid_token": "无效的管理员令牌。",
         "setadmin_success": "管理员设置成功。",
@@ -157,6 +157,6 @@
         "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后"
     },
     "generic": {
-        "error": "发生错误，请稍后再试。错误信息: %[1]s"
+        "error": "发生错误，请稍后再试。错误信息: \n<code>%[1]s</code>"
     }
 }

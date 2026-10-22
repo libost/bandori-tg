@@ -10,12 +10,15 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
+	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -151,12 +154,49 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 func InitLists() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	config := config.AppConfig
 
-	httpClient := &http.Client{
-		Timeout: 5 * time.Second,
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 10,
-		},
+	var httpClient *http.Client
+
+	if config.Proxy.Enabled {
+		switch config.Proxy.Type {
+		case "http":
+			httpClient = &http.Client{
+				Timeout: 5 * time.Second,
+				Transport: &http.Transport{
+					MaxIdleConnsPerHost: 10,
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: "http",
+						Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
+						User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
+					}),
+				},
+			}
+		case "socks5":
+			dialer, err := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port), &proxy.Auth{
+				User:     config.Proxy.Username,
+				Password: config.Proxy.Password,
+			}, proxy.Direct)
+			if err != nil {
+				return fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
+			}
+			httpClient = &http.Client{
+				Timeout: 5 * time.Second,
+				Transport: &http.Transport{
+					MaxIdleConnsPerHost: 10,
+					Dial:                dialer.Dial,
+				},
+			}
+		default:
+			log.Fatalf("Unsupported proxy type: %s", config.Proxy.Type)
+		}
+	} else {
+		httpClient = &http.Client{
+			Timeout: 5 * time.Second,
+			Transport: &http.Transport{
+				MaxIdleConnsPerHost: 10,
+			},
+		}
 	}
 
 	var snapshotBand C.BandData

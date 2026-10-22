@@ -27,7 +27,7 @@
 | 组件 | 说明 |
 | --- | --- |
 | 语言 | Go 1.27 |
-| 框架 | [gotgbot](https://github.com/libost/gotgbot) (v2) |
+| 框架 | [gotgbot(自有分支)](https://github.com/libost/gotgbot) (v2) |
 | 数据库 | SQLite（[modernc.org/sqlite](https://modernc.org/sqlite)，纯 Go 实现，支持 `CGO_ENABLED=0` 交叉编译） |
 | 图片生成 | [fogleman/gg](https://github.com/fogleman/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
 | 定时任务 | [robfig/cron](https://github.com/robfig/cron) |
