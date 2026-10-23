@@ -115,6 +115,7 @@
         "latest_cutoff": "最新分數線: ",
         "updated_at": "更新時間: ",
         "speed": "速度: ",
+        "speed_final": "最終速度: ",
         "actual": "目前分數線",
         "predicted": "預測最終分數線",
         "event_image_error": "活動圖片加載失敗，請稍後再試。",

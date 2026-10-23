@@ -115,6 +115,7 @@
         "latest_cutoff": "Latest Cutoff: ",
         "updated_at": "Updated At: ",
         "speed": "Speed: ",
+        "speed_final": "Final Speed: ",
         "actual": "Current Cutoff",
         "predicted": "Predicted Final Cutoff",
         "event_image_error": "Failed to load event image. Please try again later.",

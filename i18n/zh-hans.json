@@ -118,6 +118,7 @@
         "latest_cutoff": "最新分数线: ",
         "updated_at": "更新时间: ",
         "speed": "速度: ",
+        "speed_final": "最终速度: ",
         "actual": "目前分数线",
         "predicted": "预测最终分数线",
         "event_image_error": "活动图片加载失败，请稍后再试。",
