@@ -370,20 +370,20 @@ type Gacha struct {
 type GachaData map[string]Gacha
 
 type GachaDetailed struct {
-	Details               []any            `json:"details"`
-	Rates                 []any            `json:"rates"`
-	PaymentMethods        []PaymentMethods `json:"paymentMethods"`
-	ResourceName          string           `json:"resourceName"`
-	BannerAssetBundleName string           `json:"bannerAssetBundleName"`
-	GachaName             []string         `json:"gachaName"`
-	PublishedAt           []string         `json:"publishedAt"`
-	ClosedAt              []string         `json:"closedAt"`
-	Description           []string         `json:"description"`
-	Annotation            []string         `json:"annotation"`
-	GachaPeriod           []string         `json:"gachaPeriod"`
-	GachaType             string           `json:"gachaType"`
-	Type                  string           `json:"type"`
-	NewCards              []int            `json:"newCards"`
+	Details               []GachaDetailedData `json:"details"`
+	Rates                 []GachaRatesData    `json:"rates"`
+	PaymentMethods        []PaymentMethods    `json:"paymentMethods"`
+	ResourceName          string              `json:"resourceName"`
+	BannerAssetBundleName string              `json:"bannerAssetBundleName"`
+	GachaName             []string            `json:"gachaName"`
+	PublishedAt           []string            `json:"publishedAt"`
+	ClosedAt              []string            `json:"closedAt"`
+	Description           []string            `json:"description"`
+	Annotation            []string            `json:"annotation"`
+	GachaPeriod           []string            `json:"gachaPeriod"`
+	GachaType             string              `json:"gachaType"`
+	Type                  string              `json:"type"`
+	NewCards              []int               `json:"newCards"`
 	Information           struct {
 		Description   []string `json:"description"`
 		Term          []string `json:"term"`
@@ -392,8 +392,23 @@ type GachaDetailed struct {
 	} `json:"information"`
 }
 
+type DetailsGacha struct {
+	RarityIndex int  `json:"rarityIndex"`
+	Weight      int  `json:"weight"`
+	Pickup      bool `json:"pickup"`
+}
+
+type GachaDetailedData map[string]DetailsGacha
+
+type GachaRates struct {
+	Rate        float32 `json:"rate"`
+	WeightTotal int     `json:"weightTotal"`
+}
+
+type GachaRatesData map[string]GachaRates
+
 type PaymentMethods struct {
-	GachaID          string `json:"gachaId"`
+	GachaID          int    `json:"gachaId"`
 	PaymentMethod    string `json:"paymentMethod"`
 	Quantity         int    `json:"quantity"`
 	PaymentMethodID  int    `json:"paymentMethodId"`
@@ -401,7 +416,7 @@ type PaymentMethods struct {
 	Behavior         string `json:"behavior"`
 	Pickup           bool   `json:"pickup"`
 	CostItemQuantity int    `json:"costItemQuantity"`
-	DiscountType     string `json:"discountType"`
+	DiscountType     int    `json:"discountType"`
 }
 
 type EventTracker struct {

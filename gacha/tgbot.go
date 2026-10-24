@@ -1,12 +1,18 @@
 package gacha
 
 import (
+	"bytes"
+	"context"
+	"fmt"
+	"image/png"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
-	"fmt"
-	"strconv"
-	"time"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 
 	"github.com/libost/bandori-tg/events"
 	I "github.com/libost/bandori-tg/i18n"
@@ -29,13 +35,31 @@ func indexHelper(code string) int {
 	}
 }
 
+func reverseIndexHelper(index int) string {
+	switch index {
+	case 0:
+		return "jp"
+	case 1:
+		return "en"
+	case 2:
+		return "tw"
+	case 3:
+		return "cn"
+	case 4:
+		return "kr"
+	default:
+		return "jp"
+	}
+}
+
 func AddHandlers(dispatcher *ext.Dispatcher) {
-	//Remember to register this command after the handler is implemented
 	dispatcher.AddHandler(handlers.NewCommand("gacha", gachaHandler))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("gacha_"), gachaCallbackHandler))
 }
 
 func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
-	//TODO: Implement gacha command logic here
+	context, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.missing_argument", langCode), nil)
@@ -57,6 +81,18 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	qindex := indexHelper(regionCode)
 
+	if gachaDetailed.GachaName[qindex] == "" {
+		for index, name := range gachaDetailed.GachaName {
+			if name != "" {
+				qindex = index
+				break
+			}
+		}
+		region := reverseIndexHelper(qindex)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("gacha.not_in_specified_region", langCode), regionCode, region), nil)
+		regionCode = reverseIndexHelper(qindex)
+	}
+
 	now := time.Now().Unix() * 1000 // Convert to milliseconds
 	var countdownStr string
 	publishedAt, parseErr := strconv.ParseInt(gachaDetailed.PublishedAt[qindex], 10, 64)
@@ -72,11 +108,11 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if publishedAt > now {
 		countdown := publishedAt - now
 		secs, mins, hrs, days := events.TimeCalc(countdown)
-		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_published", langCode), days, hrs, mins, secs)
+		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_future", langCode), days, hrs, mins, secs)
 	} else if endAt > now {
 		countdown := endAt - now
 		secs, mins, hrs, days := events.TimeCalc(countdown)
-		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_closed", langCode), days, hrs, mins, secs)
+		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_now", langCode), days, hrs, mins, secs)
 	} else {
 		countdownStr = I.GetLocalisedString("gacha.countdown_ended", langCode)
 	}
@@ -84,15 +120,35 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	startTimeStr := time.Unix(publishedAt/1000, 0).Format("2006-01-02 15:04:05")
 	endTimeStr := time.Unix(endAt/1000, 0).Format("2006-01-02 15:04:05")
 
+	var paymentButtons []gotgbot.RichMessageButton
+	if len(gachaDetailed.PaymentMethods) > 0 {
+		i := 0
+		for _, method := range gachaDetailed.PaymentMethods {
+			if method.PaymentMethod == "free" {
+				paymentButtons = append(paymentButtons, gotgbot.RichMessageButton{
+					Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button_free", langCode), method.Count)),
+					CallbackData: "gacha_" + ctx.Args()[1] + "_" + strconv.Itoa(i) + "_" + regionCode,
+				})
+				i++
+				continue
+			}
+			paymentButtons = append(paymentButtons, gotgbot.RichMessageButton{
+				Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button", langCode), method.Quantity, I.GetLocalisedString(fmt.Sprintf("gacha.%s", method.PaymentMethod), langCode), method.Count)),
+				CallbackData: "gacha_" + ctx.Args()[1] + "_" + strconv.Itoa(i) + "_" + regionCode,
+			})
+			i++
+		}
+	}
+
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
-				Text: gotgbot.RichTextString(I.GetLocalisedString("gacha.title", langCode)),
+				Text: gotgbot.RichTextString(gachaDetailed.GachaName[qindex]),
 				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
-					Media: gotgbot.InputFileByURL("https://bestdori.com/assets/" + regionCode + "homebanner_rip/" + gachaDetailed.BannerAssetBundleName + ".png"),
+					Media: gotgbot.InputFileByURL("https://bestdori.com/assets/" + regionCode + "/homebanner_rip/" + gachaDetailed.BannerAssetBundleName + ".png"),
 				},
 			},
 			gotgbot.InputRichBlockTable{
@@ -113,7 +169,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("gacha."+string(gachaDetailed.GachaType[qindex]), langCode)),
+							Text:  gotgbot.RichTextString(I.GetLocalisedString(fmt.Sprintf("gacha.%s", gachaDetailed.Type), langCode)),
 							Align: "right",
 						},
 					},
@@ -167,10 +223,69 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 				},
 			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockButtons{
+				Buttons: paymentButtons,
+				Align:   "center",
+			},
 		},
 	}
 
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+		ReplyParameters: &gotgbot.ReplyParameters{
+			MessageId: ctx.EffectiveMessage.MessageId,
+		},
+	})
+	return err
+}
+
+func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	callbackData := ctx.CallbackQuery.Data
+	parts := strings.Split(callbackData, "_")
+	if len(parts) < 4 {
+		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      I.GetLocalisedString("gacha.invalid_callback_data", langCode),
+			ShowAlert: true,
+		})
+		return fmt.Errorf("invalid callback data")
+	}
+	ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      I.GetLocalisedString("gacha.processing", langCode),
+		ShowAlert: false,
+	})
+	gachaId := parts[1]
+	gachaDetailed, err := GetGachaDetails(gachaId)
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
+		return err
+	}
+	regionCode := parts[3]
+	paymentIndex, err := strconv.Atoi(parts[2])
+	if err != nil || paymentIndex < 0 || paymentIndex >= len(gachaDetailed.PaymentMethods) {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.invalid_payment_index", langCode), nil)
+		return fmt.Errorf("invalid payment index")
+	}
+	results, err := gachaHelper(gachaDetailed, regionCode, gachaDetailed.PaymentMethods[paymentIndex])
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
+		return err
+	}
+
+	img, err := generateGachaImage(results)
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.image_generation_error", langCode), nil)
+		return err
+	}
+
+	var buf bytes.Buffer
+	err = png.Encode(&buf, img)
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.image_encoding_error", langCode), nil)
+		return err
+	}
+
+	_, err = b.SendPhoto(ctx.EffectiveChat.Id, gotgbot.InputFileByReader("image.png", &buf), &gotgbot.SendPhotoOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},

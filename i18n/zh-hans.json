@@ -159,5 +159,33 @@
     },
     "generic": {
         "error": "发生错误，请稍后再试。错误信息: \n<code>%[1]s</code>"
+    },
+    "gacha": {
+        "title": "标题: ",
+        "type": "种类: ",
+        "countdown": "倒计时: ",
+        "start_time": "开始时间: ",
+        "end_time": "结束时间: ",
+        "description": "描述: ",
+        "countdown_future": "开始于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
+        "countdown_now": "结束于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
+        "countdown_ended": "已结束",
+        "not_in_specified_region": "当前服务器 (%[1]s) 暂无该招募数据，将显示服务器 (%[2]s) 的招募数据。",
+        "payment_button": "模拟使用 %[1]d个%[2]s招募%[3]d次",
+        "payment_button_free": "模拟使用免费招募%[1]d次",
+        "free_star": "星石（免费）",
+        "paid_star": "星石（付费）",
+        "normal_ticket": "星石招募券",
+        "over_the_3_star_ticket": "★3以上稀有度必出招募券",
+        "over_the_4_star_ticket": "4.5周年纪念★4以上确认招募券",
+        "fixed_5_star_ticket": "4.5周年纪念★５确认招募券",
+        "permanent": "无期限",
+        "limited": "期间限定",
+        "dreamfes": "梦限",
+        "kirafes": "闪限",
+        "birthday": "生日",
+        "miracle": "奇迹",
+        "special": "特殊",
+        "free": "免费"
     }
 }
