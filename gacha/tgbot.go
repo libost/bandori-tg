@@ -133,7 +133,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				continue
 			}
 			paymentButtons = append(paymentButtons, gotgbot.RichMessageButton{
-				Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button", langCode), method.Quantity, I.GetLocalisedString(fmt.Sprintf("gacha.%s", method.PaymentMethod), langCode), method.Count)),
+				Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button", langCode), method.CostItemQuantity, I.GetLocalisedString(fmt.Sprintf("gacha.%s", method.PaymentMethod), langCode), method.Count)),
 				CallbackData: "gacha_" + ctx.Args()[1] + "_" + strconv.Itoa(i) + "_" + regionCode,
 			})
 			i++
