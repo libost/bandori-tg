@@ -14,7 +14,7 @@
         "lang_qlang": "設置查詢語言",
         "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
         "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢卡片中的信息，不適用於顯示的文本。",
-        "about_desc": "Bandori Bot \n版本: %[1]s\n構建時間: %[2]s\nGit 提交: %[3]s\n分支: %[4]s\n項目地址: https://github.com/libost/bandori-tg",
+        "about_desc": "Bandori Bot \n版本: <code>%[1]s</code>\n構建時間: <code>%[2]s</code>\nGit 提交: <code>%[3]s</code>\n分支: <code>%[4]s</code>\n運行環境: <code>%[5]s/%[6]s</code> \nGo 版本: <code>%[7]s</code>\n項目地址: https://github.com/libost/bandori-tg",
         "setadmin_no_token": "請提供管理員令牌。",
         "setadmin_invalid_token": "無效的管理員令牌。",
         "setadmin_success": "管理員設置成功。",
@@ -115,6 +115,7 @@
         "latest_cutoff": "最新分數線: ",
         "updated_at": "更新時間: ",
         "speed": "速度: ",
+        "speed_final": "最終速度: ",
         "actual": "目前分數線",
         "predicted": "預測最終分數線",
         "event_image_error": "活動圖片加載失敗，請稍後再試。",
@@ -154,6 +155,6 @@
         "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後"
     },
     "generic": {
-        "error": "發生錯誤，請稍後再試。錯誤信息: %[1]s"
+        "error": "發生錯誤，請稍後再試。錯誤信息: \n<code>%[1]s</code>"
     }
 }

@@ -413,7 +413,9 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		return err
 	}
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return err
 	}
 	return err
@@ -514,6 +516,22 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	eventID := ctx.Args()[1]
 	regionCode := indexHelper(qlangCode)
+	if eventID == "now" || eventID == "当前" {
+		ongoingEvents, err := recent.GetOngoingEventsID()
+		if err != nil {
+			log.Printf("Error fetching ongoing events: %v", err)
+			if ctx.EffectiveChat.Type == "private" {
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+			} else {
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+					EphemeralMessageParameters: &gotgbot.EphemeralMessageParameters{
+						ReceiverUserId: ctx.EffectiveSender.ChatId,
+					},
+				})
+			}
+		}
+		eventID = ongoingEvents[regionCode]
+	}
 	img, last, predicted, latestTime, speed, allTimeSpeed, err := getEventTracker(qlangCode, eventID, tier)
 	if err != nil {
 		if errors.Is(err, C.ErrNoSuchEvent) {
@@ -525,7 +543,6 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			return nil
 		}
 	}
-	// Do something with the generated image, e.g., send it to the user
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
 	if err != nil {
@@ -534,8 +551,13 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 	var status string
+	var speedStrHeader gotgbot.RichTextString
 	events := utils.ReadEvents()
-	event, _ := events[eventID]
+	event, exists := events[eventID]
+	if !exists {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
+		return nil
+	}
 	now := time.Now().Unix() * 1000
 	startAt, err := strconv.ParseInt(event.StartAt[regionCode], 10, 64)
 	if err != nil {
@@ -546,8 +568,10 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 	if now > endAt {
+		speedStrHeader = gotgbot.RichTextString(I.GetLocalisedString("events.speed_final", langCode))
 		status = I.GetLocalisedString("events.event_ended", langCode)
 	} else if now > startAt {
+		speedStrHeader = gotgbot.RichTextString(I.GetLocalisedString("events.speed", langCode))
 		percent := int64(float64(now-startAt) / float64(endAt-startAt) * 100)
 		status = fmt.Sprintf(I.GetLocalisedString("events.complete_percent", langCode), percent)
 	}
@@ -617,7 +641,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 					},
 					{
 						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("events.speed", langCode)),
+							Text:  speedStrHeader,
 							Align: "left",
 						},
 						{
@@ -663,6 +687,17 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		)
 	}
+	richMessage.Blocks = append(richMessage.Blocks,
+		gotgbot.InputRichBlockDivider{},
+		gotgbot.InputRichBlockButtons{
+			Buttons: []gotgbot.RichMessageButton{{
+				Text:         gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
+				Style:        "primary",
+				CallbackData: "events_" + eventID + "_" + qlangCode + "_" + fmt.Sprint(now/1000),
+			}},
+			Align: "center",
+		},
+	)
 	_, err = b.SendRichMessageWithContext(contextTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
@@ -671,8 +706,10 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
 		log.Printf("Request timed out while sending event tracker to user %d", ctx.EffectiveUser.Id)
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
-		stopActionLoop()
-		return err
+	} else if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 	}
 	stopActionLoop()
 	return err
