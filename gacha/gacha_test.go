@@ -19,3 +19,20 @@ func TestGenerateGachaResultHonorsGuarantee(t *testing.T) {
 		t.Fatalf("generateGachaResult returned non-guaranteed card %q", result)
 	}
 }
+
+func TestGenerateGachaResultByRatesUsesRarityRatesBeforeCardWeights(t *testing.T) {
+	gachaMaps := []gachaMap{
+		{Id: "1-star", Weight: 1, Rarity: 1},
+		{Id: "5-star", Weight: 1000, Rarity: 5},
+	}
+
+	for i := 0; i < 100; i++ {
+		result, err := generateGachaResultByRates(gachaMaps, []int{100, 0, 0, 0, 0}, 1)
+		if err != nil {
+			t.Fatalf("generateGachaResultByRates returned an error: %v", err)
+		}
+		if result != "1-star" {
+			t.Fatalf("generateGachaResultByRates selected %q despite the rarity rate", result)
+		}
+	}
+}

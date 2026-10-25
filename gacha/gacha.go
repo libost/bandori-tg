@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
+	"math"
 	"math/rand/v2"
 	"net/http"
 
@@ -15,6 +16,7 @@ import (
 
 type gachaMap struct {
 	Id          string
+	Weight      int
 	WeightTotal int
 	Rarity      int
 }
@@ -85,6 +87,72 @@ func generateGachaResult(gachaMaps []gachaMap, guarantee int) (string, error) {
 	return "", fmt.Errorf("failed to generate gacha result")
 }
 
+func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int, guarantee int) (string, error) {
+	if len(gachaMaps) == 0 {
+		return "", fmt.Errorf("no gacha cards available")
+	}
+
+	rarityTotal := 0
+	eligibleRarities := make([]int, 0, len(rarityWeights))
+	for rarity, weight := range rarityWeights {
+		rarityIndex := rarity + 1
+		if rarityIndex < guarantee || weight <= 0 {
+			continue
+		}
+		hasCards := false
+		for _, gacha := range gachaMaps {
+			if gacha.Rarity == rarityIndex && gacha.Weight > 0 {
+				hasCards = true
+				break
+			}
+		}
+		if hasCards {
+			rarityTotal += weight
+			eligibleRarities = append(eligibleRarities, rarityIndex)
+		}
+	}
+	if len(eligibleRarities) == 0 {
+		return "", fmt.Errorf("no gacha rarities meet rarity guarantee: %d", guarantee)
+	}
+
+	randomNum, err := randomNumGen(1, rarityTotal)
+	if err != nil {
+		return "", err
+	}
+	selectedRarity := 0
+	for _, rarity := range eligibleRarities {
+		randomNum -= rarityWeights[rarity-1]
+		if randomNum <= 0 {
+			selectedRarity = rarity
+			break
+		}
+	}
+	if selectedRarity == 0 {
+		return "", fmt.Errorf("failed to generate gacha rarity result")
+	}
+
+	cardWeightTotal := 0
+	for _, gacha := range gachaMaps {
+		if gacha.Rarity == selectedRarity && gacha.Weight > 0 {
+			cardWeightTotal += gacha.Weight
+		}
+	}
+	randomNum, err = randomNumGen(1, cardWeightTotal)
+	if err != nil {
+		return "", err
+	}
+	for _, gacha := range gachaMaps {
+		if gacha.Rarity != selectedRarity || gacha.Weight <= 0 {
+			continue
+		}
+		randomNum -= gacha.Weight
+		if randomNum <= 0 {
+			return gacha.Id, nil
+		}
+	}
+	return "", fmt.Errorf("failed to generate gacha card result")
+}
+
 func randomNumGen(min int, max int) (int, error) {
 	if min > max {
 		return 0, fmt.Errorf("min cannot be greater than max")
@@ -100,19 +168,38 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 
 	var results []string
 	index := indexHelper(regionCode)
+	if index >= len(gachaDetailed.Details) || index >= len(gachaDetailed.Rates) {
+		return nil, fmt.Errorf("no gacha data found for region code: %s", regionCode)
+	}
 	details := gachaDetailed.Details[index]
 	if len(details) == 0 {
 		return nil, fmt.Errorf("no gacha details found for region code: %s", regionCode)
 	}
 	var gachaMaps []gachaMap
-	weightTotal := 0
 	for id, gacha := range details {
-		weightTotal += gacha.Weight
 		gachaMaps = append(gachaMaps, gachaMap{
-			Id:          id,
-			WeightTotal: weightTotal,
-			Rarity:      gacha.RarityIndex,
+			Id:     id,
+			Weight: gacha.Weight,
+			Rarity: gacha.RarityIndex,
 		})
+	}
+	var rarityRates [5]float32
+
+	for rarity, rate := range gachaDetailed.Rates[index] {
+		var rarityIndex int
+		if _, err := fmt.Sscanf(rarity, "%d", &rarityIndex); err != nil {
+			return nil, fmt.Errorf("invalid rarity %q: %w", rarity, err)
+		}
+
+		if rarityIndex < 1 || rarityIndex > len(rarityRates) {
+			return nil, fmt.Errorf("rarity out of range: %d", rarityIndex)
+		}
+
+		rarityRates[rarityIndex-1] = rate.Rate
+	}
+	rarityWeightsInt := make([]int, len(rarityRates))
+	for i, rate := range rarityRates {
+		rarityWeightsInt[i] = int(math.Round(float64(rate) * 100))
 	}
 	guaranteedRarity := 3
 	switch paymentMethods.Behavior {
@@ -122,13 +209,14 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 	hasFulfilledGuarantee := false
 	for i := range pull {
 		if i == pull-1 && pull != 1 && !hasFulfilledGuarantee {
-			result, err := generateGachaResult(gachaMaps, guaranteedRarity)
+
+			result, err := generateGachaResultByRates(gachaMaps, rarityWeightsInt, guaranteedRarity)
 			if err != nil {
 				return nil, err
 			}
 			results = append(results, result)
 		} else {
-			result, err := generateGachaResult(gachaMaps, 0)
+			result, err := generateGachaResultByRates(gachaMaps, rarityWeightsInt, 1)
 			if err != nil {
 				return nil, err
 			}
