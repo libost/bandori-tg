@@ -29,7 +29,8 @@
             "Start the Bandori bot and get a welcome message.",
             "Query the cutoff scores for a specific event.",
             "Query information about a specific song by its name.",
-            "Search for songs by keyword."
+            "Search for songs by keyword.",
+            "Search Gacha information by Gacha ID."
         ]
     },
     "cards": {
@@ -156,5 +157,40 @@
     },
     "generic": {
         "error": "An error occurred. Please try again later. Error message: \n<code>%[1]s</code>"
+    },
+    "gacha": {
+        "title": "Title: ",
+        "type": "Type: ",
+        "countdown": "Countdown: ",
+        "start_time": "Release Time: ",
+        "end_time": "Close Time: ",
+        "description": "Description: ",
+        "countdown_future": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "countdown_now": "Closes in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "countdown_ended": "Completed",
+        "not_in_specified_region": "The current server (%[1]s) does not have this gacha data. Displaying data from server (%[2]s).",
+        "payment_button": "Simulate using %[1]d % [2]s to gacha %[3]d times",
+        "payment_button_free": "Simulate using free gacha %[1]d times",
+        "free_star": "Star (Free)",
+        "paid_star": "Star (Paid)",
+        "normal_ticket": "Normal Ticket",
+        "over_the_3_star_ticket": ">3 Star Ticket",
+        "over_the_4_star_ticket": ">4 Star Ticket",
+        "fixed_5_star_ticket": "=5 Star Ticket",
+        "permanent": "Permanent",
+       	"limited":	"Limited",
+		"dreamfes":	"Dream Fes",
+		"kirafes":	"Kira Fes",
+		"birthday":	"Birthday",
+		"miracle":	"Miracle",
+		"special":	"Special",
+		"free":	"Free",
+		"processing":"Processing...",
+		"pickup_cards":"Spotlight Cards",
+        "missing_argument": "Missing argument. Please provide a gacha ID. Usage: /gacha <gacha_id>.",
+        "invalid_argument": "Invalid gacha ID. Please check your input.",
+        "api_error": "An error occurred while querying gacha information. Please try again later.",
+        "invalid_callback_data": "Invalid callback data. Please re-use the command /gacha .",
+        "invalid_payment_index": "Invalid payment index. Please re-use the command /gacha ."
     }
 }

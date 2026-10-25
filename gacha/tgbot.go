@@ -147,9 +147,44 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			})
 		}
 	}
+	var pickupCards []string
+	for i, cards := range gachaDetailed.Details[qindex] {
+		if cards.Pickup {
+			pickupCards = append(pickupCards, i)
+		}
+	}
 
+	if len(pickupCards) > 5 {
+		pickupCards = pickupCards[:5]
+	}
+
+	img, err := generateGachaImage(pickupCards)
+	if err != nil {
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
+		return err
+	}
+
+	var buf bytes.Buffer
+	err = png.Encode(&buf, img)
+	if err != nil {
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
+		return err
+	}
+	pickupSection := gotgbot.InputRichBlockDetails{
+		Blocks: []gotgbot.InputRichBlock{
+			gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByReader("pickup_cards.png", &buf),
+				},
+			},
+		},
+	}
+	pickupHeading := gotgbot.InputRichBlockSectionHeading{
+		Text: gotgbot.RichTextString(I.GetLocalisedString("gacha.pickup_cards", langCode)),
+		Size: 5,
+	}
 	richMessage := gotgbot.InputRichMessage{
-		Blocks: append([]gotgbot.InputRichBlock{
+		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(gachaDetailed.GachaName[qindex]),
 				Size: 3,
@@ -232,8 +267,12 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				},
 			},
 			gotgbot.InputRichBlockDivider{},
-		}, buttons...),
+		},
 	}
+	if len(pickupCards) > 0 {
+		richMessage.Blocks = append(richMessage.Blocks, pickupHeading, pickupSection, gotgbot.InputRichBlockDivider{})
+	}
+	richMessage.Blocks = append(richMessage.Blocks, buttons...)
 
 	_, err = b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{

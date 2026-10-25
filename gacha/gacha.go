@@ -231,7 +231,13 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 }
 
 func generateGachaImage(results []string) (image.Image, error) {
-	dc := gg.NewContext(len(results)*180+20*len(results)+20, 300)
+	width := len(results)*180 + 20*len(results) + 20
+	length := 300
+	if len(results) >= 5 {
+		width = 5*180 + 20*5 + 20
+		length = 300 * ((len(results) + 4) / 5)
+	}
+	dc := gg.NewContext(width, length)
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, result := range results {
@@ -239,7 +245,9 @@ func generateGachaImage(results []string) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		dc.DrawImageAnchored(cardImage, 200*i+20, 25, 0, 0)
+		x := 200*(i%5) + 20
+		y := 25 + (i/5)*300
+		dc.DrawImageAnchored(cardImage, x, y, 0, 0)
 	}
 	return dc.Image(), nil
 }
