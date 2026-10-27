@@ -161,7 +161,10 @@ func cronTasks(c *cron.Cron) {
 
 func startWebhookCommunication(cfg *C.Config, updater *ext.Updater, b *gotgbot.Bot) {
 	webhookURL := mustParseWebhookURL(cfg.Webhook.URL)
-	webhookOpts, setWebhookOpts := buildWebhookOptions(cfg)
+	webhookOpts, setWebhookOpts, pubCert := buildWebhookOptions(cfg)
+	if pubCert != nil {
+		defer pubCert.Close()
+	}
 
 	if err := updater.StartWebhook(b, webhookURL.Path, webhookOpts); err != nil {
 		log.Printf("failed to start webhook: %v", err)
@@ -192,7 +195,7 @@ func mustParseWebhookURL(rawURL string) *url.URL {
 	return webhookURL
 }
 
-func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpts) {
+func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpts, *os.File) {
 	listenAddr := fmt.Sprintf("0.0.0.0:%d", cfg.Webhook.Port)
 	webhookOpts := ext.WebhookOpts{
 		ListenAddr:  listenAddr,
@@ -202,14 +205,16 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		SecretToken:        webhookOpts.SecretToken,
 		DropPendingUpdates: true,
 	}
+	var pubCert *os.File
 	if cfg.Webhook.Cert.SelfSigned {
 		pubCert, err := os.Open(cfg.Webhook.Cert.CertPath)
 		if err != nil {
 			log.Printf("failed to open certificate file: %v", err)
 			panic(err)
 		}
-		defer pubCert.Close()
 		setWebhookOpts.Certificate = gotgbot.InputFileByReader("public.pem", pubCert)
+		webhookOpts.CertFile = cfg.Webhook.Cert.CertPath
+		webhookOpts.KeyFile = cfg.Webhook.Cert.KeyPath
 	}
 
 	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts, cfg.Webhook.Port) {
@@ -218,9 +223,9 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 
 	if cfg.Webhook.NginxEnabled && os.Getenv("IN_DOCKER") != "true" {
 		webhookOpts.ListenAddr = fmt.Sprintf("127.0.0.1:%d", cfg.Webhook.Port)
-		return webhookOpts, setWebhookOpts
+		return webhookOpts, setWebhookOpts, pubCert
 	}
-	return webhookOpts, setWebhookOpts
+	return webhookOpts, setWebhookOpts, pubCert
 }
 
 func httpClientWithProxy(cfg *C.Config) *http.Client {
