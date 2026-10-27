@@ -4,7 +4,6 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"image"
-	"io"
 	"net/http"
 	"strconv"
 
@@ -37,13 +36,10 @@ func GetDetailedSong(songId string) (C.SongsDetailed, error) {
 		return C.SongsDetailed{}, err
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return C.SongsDetailed{}, err
-	}
+
 	var detailedSong C.SongsDetailed
-	err = json.Unmarshal(body, &detailedSong)
-	if err != nil {
+
+	if err = json.UnmarshalRead(resp.Body, &detailedSong); err != nil {
 		return C.SongsDetailed{}, err
 	}
 	return detailedSong, nil

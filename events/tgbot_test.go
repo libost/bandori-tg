@@ -1,7 +1,7 @@
 package events
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
 	"testing"
 )
 
@@ -14,7 +14,7 @@ func TestNormalizeCharacterID(t *testing.T) {
 		{name: "int", in: 42, want: "42"},
 		{name: "int64", in: int64(42), want: "42"},
 		{name: "float64", in: float64(42), want: "42"},
-		{name: "json number", in: json.Number("42"), want: "42"},
+		{name: "json number", in: jsontext.Value("42"), want: "42"},
 		{name: "string", in: "42", want: "42"},
 		{name: "nil", in: nil, want: ""},
 	}

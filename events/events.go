@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"io"
 	"math"
 	"net/http"
 	"slices"
@@ -32,12 +31,8 @@ func GetDetailedEvents(eventID string) (C.EventDetailed, error) {
 		return C.EventDetailed{}, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return C.EventDetailed{}, err
-	}
 	var event C.EventDetailed
-	err = json.Unmarshal([]byte(data), &event)
+	err = json.UnmarshalRead(resp.Body, &event)
 	if err != nil {
 		return C.EventDetailed{}, err
 	}
@@ -182,12 +177,9 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 		return nil, 0, 0, 0, 0, 0, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, 0, 0, 0, 0, 0, err
-	}
+
 	var tracker C.EventTracker
-	err = json.Unmarshal(data, &tracker)
+	err = json.UnmarshalRead(resp.Body, &tracker)
 	if err != nil {
 		return nil, 0, 0, 0, 0, 0, err
 	}
@@ -200,12 +192,9 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 				continue
 			}
 			defer resp.Body.Close()
-			data, err := io.ReadAll(resp.Body)
-			if err != nil {
-				continue
-			}
+
 			var newTracker C.EventTracker
-			err = json.Unmarshal(data, &newTracker)
+			err = json.UnmarshalRead(resp.Body, &newTracker)
 			if err != nil {
 				continue
 			}

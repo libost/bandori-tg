@@ -267,11 +267,7 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 		return fmt.Errorf("Unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("Failed to read response body [%s]: %w", url, err)
-	}
-	if err := json.Unmarshal(body, target); err != nil {
+	if err := json.UnmarshalRead(resp.Body, target); err != nil {
 		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
 	}
 

@@ -132,12 +132,8 @@ func GetDetailedCard(cardId string) (C.CardDetailed, error) {
 		return C.CardDetailed{}, err
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return C.CardDetailed{}, err
-	}
 	var cardDetailed C.CardDetailed
-	err = json.Unmarshal(body, &cardDetailed)
+	err = json.UnmarshalRead(resp.Body, &cardDetailed)
 	if err != nil {
 		return C.CardDetailed{}, err
 	}
