@@ -230,14 +230,14 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 
 func httpClientWithProxy(cfg *C.Config) *http.Client {
 	httpClient := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout: time.Second * 30,
 	}
 	if cfg.Proxy.Enabled {
 		switch cfg.Proxy.Type {
 		case "socks5":
 			dialer, _ := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", cfg.Proxy.Host, cfg.Proxy.Port), nil, proxy.Direct)
 			httpClient = &http.Client{
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 30,
 				Transport: &http.Transport{
 					Dial: dialer.Dial,
 				},
@@ -246,7 +246,7 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 		case "http":
 			proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%d", cfg.Proxy.Host, cfg.Proxy.Port))
 			httpClient = &http.Client{
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 30,
 				Transport: &http.Transport{
 					Proxy: http.ProxyURL(proxyUrl),
 				},
