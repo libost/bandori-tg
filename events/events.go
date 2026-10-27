@@ -1,7 +1,7 @@
-﻿package events
+package events
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"image"

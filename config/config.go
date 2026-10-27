@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/creasty/defaults"
@@ -32,6 +33,22 @@ func checkConfig(cf *C.Config) error {
 	}
 	if cf.General.AdminToken == "" {
 		return C.ErrNoAdminToken
+	}
+	if cf.Webhook.Enabled {
+		if cf.Webhook.Cert.SelfSigned {
+			if cf.Webhook.Cert.CertPath == "" || cf.Webhook.Cert.KeyPath == "" {
+				return C.ErrNoCertPath
+			}
+		}
+		if cf.Webhook.URL == "" {
+			return C.ErrNoWebhookURL
+		}
+		if cf.Webhook.Port == 0 {
+			return C.ErrNoWebhookPort
+		}
+		if cf.Webhook.Secret == "" {
+			log.Printf("Warning: Webhook secret is empty. It's recommended to set a secret token for security.")
+		}
 	}
 	return nil
 }

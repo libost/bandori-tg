@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"log"
@@ -42,6 +42,7 @@ var Gacha C.GachaData
 var Rates C.RatesData
 var Songs C.SongsData
 var REventsKeys []string
+var RGachaKeys []string
 var SongsKeysJP []string
 var SongsKeysEN []string
 var SongsKeysCN []string
@@ -108,6 +109,12 @@ func ReadREventsKeys() []string {
 	return append([]string(nil), REventsKeys...)
 }
 
+func ReadRGachasKeys() []string {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return append([]string(nil), RGachaKeys...)
+}
+
 func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
@@ -127,6 +134,12 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 		REventsKeys = append(REventsKeys, k)
 	}
 	sort.Strings(REventsKeys)
+
+	RGachaKeys = make([]string, 0, len(Recent.Gacha))
+	for k := range Recent.Gacha {
+		RGachaKeys = append(RGachaKeys, k)
+	}
+	sort.Strings(RGachaKeys)
 
 	SongsKeysJP = make([]string, 0, len(Songs))
 	SongsKeysCN = make([]string, 0, len(Songs))
@@ -254,7 +267,11 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 		return fmt.Errorf("Unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("Failed to read response body [%s]: %w", url, err)
+	}
+	if err := json.Unmarshal(body, target); err != nil {
 		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
 	}
 

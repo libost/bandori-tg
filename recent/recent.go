@@ -2,6 +2,7 @@ package recent
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/libost/bandori-tg/utils"
 )
@@ -55,4 +56,78 @@ func findLatestOngoingEvent(region int) (string, bool) {
 	}
 
 	return latest, true
+}
+
+type GachaOngoingPerRegion struct {
+	Region string
+	Gacha  []string
+}
+
+// GetOngoingGachas returns a list of ongoing gachas, sorted by jp, en, tw, cn.
+func GetOngoingGachas() ([]GachaOngoingPerRegion, error) {
+	ongoing := make([]GachaOngoingPerRegion, 4)
+	for region, index := range []int{0, 1, 2, 3} {
+		gachaIDs := findLatestOngoingGachas(index)
+		ongoing[region] = GachaOngoingPerRegion{
+			Region: indexHelper(index),
+			Gacha:  gachaIDs,
+		}
+	}
+	return ongoing, nil
+}
+
+func findLatestOngoingGachas(region int) []string {
+	recentData := utils.ReadRecent()
+	keys := utils.ReadRGachasKeys()
+	now := time.Now().Unix() * 1000
+	var candidates []string
+	for _, key := range keys {
+		if _, ok := recentData.Gacha[key]; !ok {
+			continue
+		}
+		endAt := recentData.Gacha[key].ClosedAt
+		startAt := recentData.Gacha[key].PublishedAt
+		if region >= len(endAt) || region >= len(startAt) {
+			continue
+		}
+		value := endAt[region]
+		valueStart := startAt[region]
+		if value == "" || value == "null" || valueStart == "" || valueStart == "null" {
+			continue
+		}
+		endTime, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			continue
+		}
+		if endTime < now {
+			continue
+		}
+		startTime, err := strconv.ParseInt(valueStart, 10, 64)
+		if err != nil {
+			continue
+		}
+		if startTime > now {
+			continue
+		}
+		candidates = append(candidates, key)
+	}
+
+	return candidates
+}
+
+func indexHelper(index int) string {
+	switch index {
+	case 0:
+		return "jp"
+	case 1:
+		return "en"
+	case 2:
+		return "tw"
+	case 3:
+		return "cn"
+	case 4:
+		return "kr"
+	default:
+		return "jp"
+	}
 }

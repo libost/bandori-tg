@@ -14,9 +14,12 @@ var (
 )
 
 var (
-	ErrNoBotToken   = fmt.Errorf("no bot token was provided in the config file")
-	ErrNoAdminToken = fmt.Errorf("no admin token was provided in the config file")
-	ErrNoPicDepot   = fmt.Errorf("no pic depot was provided in the config file")
+	ErrNoBotToken    = fmt.Errorf("no bot token was provided in the config file")
+	ErrNoAdminToken  = fmt.Errorf("no admin token was provided in the config file")
+	ErrNoPicDepot    = fmt.Errorf("no pic depot was provided in the config file")
+	ErrNoCertPath    = fmt.Errorf("self-signed certificate is enabled, but no certificate or key path was provided in the config file")
+	ErrNoWebhookURL  = fmt.Errorf("webhook is enabled, but no webhook URL was provided in the config file")
+	ErrNoWebhookPort = fmt.Errorf("webhook is enabled, but no webhook port was provided in the config file")
 )
 
 const (
@@ -120,7 +123,6 @@ var ENTierList = [...]int{
 	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 2000, 2500, 3000, 4000, 5000, 10000,
 }
 
-// 真有人会查死了的KR吗... Bestdori上都查不到KR档线，给那些在意的人留个念想吧
 var KRTierList = [...]int{
 	100,
 }
@@ -135,7 +137,7 @@ type Config struct {
 		AdminToken string `yaml:"admin_token"`
 	} `yaml:"general"`
 	Proxy struct {
-		Enabled  bool   `yaml:"enabled"`
+		Enabled  bool   `yaml:"enabled" default:"false"`
 		Type     string `yaml:"type"`
 		Host     string `yaml:"host"`
 		Port     int    `yaml:"port"`
@@ -143,7 +145,7 @@ type Config struct {
 		Password string `yaml:"password"`
 	} `yaml:"proxy"`
 	Webhook struct {
-		Enabled      bool   `yaml:"enabled"`
+		Enabled      bool   `yaml:"enabled" default:"false"`
 		NginxEnabled bool   `yaml:"nginx_enabled"`
 		URL          string `yaml:"url"`
 		Port         int    `yaml:"port"`
@@ -370,20 +372,20 @@ type Gacha struct {
 type GachaData map[string]Gacha
 
 type GachaDetailed struct {
-	Details               []any            `json:"details"`
-	Rates                 []any            `json:"rates"`
-	PaymentMethods        []PaymentMethods `json:"paymentMethods"`
-	ResourceName          string           `json:"resourceName"`
-	BannerAssetBundleName string           `json:"bannerAssetBundleName"`
-	GachaName             []string         `json:"gachaName"`
-	PublishedAt           []string         `json:"publishedAt"`
-	ClosedAt              []string         `json:"closedAt"`
-	Description           []string         `json:"description"`
-	Annotation            []string         `json:"annotation"`
-	GachaPeriod           []string         `json:"gachaPeriod"`
-	GachaType             string           `json:"gachaType"`
-	Type                  string           `json:"type"`
-	NewCards              []int            `json:"newCards"`
+	Details               []GachaDetailedData `json:"details"`
+	Rates                 []GachaRatesData    `json:"rates"`
+	PaymentMethods        []PaymentMethods    `json:"paymentMethods"`
+	ResourceName          string              `json:"resourceName"`
+	BannerAssetBundleName string              `json:"bannerAssetBundleName"`
+	GachaName             []string            `json:"gachaName"`
+	PublishedAt           []string            `json:"publishedAt"`
+	ClosedAt              []string            `json:"closedAt"`
+	Description           []string            `json:"description"`
+	Annotation            []string            `json:"annotation"`
+	GachaPeriod           []string            `json:"gachaPeriod"`
+	GachaType             string              `json:"gachaType"`
+	Type                  string              `json:"type"`
+	NewCards              []int               `json:"newCards"`
 	Information           struct {
 		Description   []string `json:"description"`
 		Term          []string `json:"term"`
@@ -392,8 +394,23 @@ type GachaDetailed struct {
 	} `json:"information"`
 }
 
+type DetailsGacha struct {
+	RarityIndex int  `json:"rarityIndex"`
+	Weight      int  `json:"weight"`
+	Pickup      bool `json:"pickup"`
+}
+
+type GachaDetailedData map[string]DetailsGacha
+
+type GachaRates struct {
+	Rate        float32 `json:"rate"`
+	WeightTotal int     `json:"weightTotal"`
+}
+
+type GachaRatesData map[string]GachaRates
+
 type PaymentMethods struct {
-	GachaID          string `json:"gachaId"`
+	GachaID          int    `json:"gachaId"`
 	PaymentMethod    string `json:"paymentMethod"`
 	Quantity         int    `json:"quantity"`
 	PaymentMethodID  int    `json:"paymentMethodId"`
@@ -401,7 +418,7 @@ type PaymentMethods struct {
 	Behavior         string `json:"behavior"`
 	Pickup           bool   `json:"pickup"`
 	CostItemQuantity int    `json:"costItemQuantity"`
-	DiscountType     string `json:"discountType"`
+	DiscountType     int    `json:"discountType"`
 }
 
 type EventTracker struct {
@@ -610,7 +627,7 @@ var RarityEmoji = [...]int64{
 	6048597808687095847, // After Training
 }
 
-var AcceptedRegions = []string{"jp", "en", "tw", "kr", "cn"}
+var AcceptedRegions = []string{"jp", "en", "tw", "cn", "kr"}
 
 // These cards are known to have issues with their data, so they are excluded from the bot's responses.
 // Maybe they fixed now, but I will leave them here just in case. If you find any other cards with issues, please report them to me.
