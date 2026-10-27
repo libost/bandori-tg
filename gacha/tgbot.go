@@ -295,8 +295,9 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 
 	_, err = b.SendPhoto(ctx.EffectiveChat.Id, gotgbot.InputFileByReader("image.png", &buf), &gotgbot.SendPhotoOpts{
-		Caption:   fmt.Sprintf(I.GetLocalisedString("gacha.results_caption", langCode), html.EscapeString(ctx.EffectiveSender.FirstName()), html.EscapeString(ctx.EffectiveSender.LastName()), ctx.EffectiveUser.Id),
-		ParseMode: "HTML",
+		ShowCaptionAboveMedia: true,
+		Caption:               fmt.Sprintf(I.GetLocalisedString("gacha.results_caption", langCode), html.EscapeString(ctx.EffectiveSender.FirstName()), html.EscapeString(ctx.EffectiveSender.LastName()), ctx.EffectiveUser.Id),
+		ParseMode:             "HTML",
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},

@@ -85,7 +85,13 @@ func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
 
 func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 	members := event.Members
-	dc := gg.NewContext(len(members)*180+20*len(members)+20, 300)
+	width := len(members)*180 + 20*len(members) + 20
+	length := 300
+	if len(members) >= 5 {
+		width = 5*180 + 20*5 + 20
+		length = 300 * ((len(members) + 4) / 5)
+	}
+	dc := gg.NewContext(width, length)
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, member := range members {
@@ -93,14 +99,22 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		dc.DrawImageAnchored(memberImage, 200*i+20, 25, 0, 0)
+		x := 200*(i%5) + 20
+		y := 25 + (i/5)*300
+		dc.DrawImageAnchored(memberImage, x, y, 0, 0)
 	}
 	return dc.Image(), nil
 }
 
 func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 	bonusCards := event.RewardCards
-	dc := gg.NewContext(len(bonusCards)*180+20*len(bonusCards)+20, 300)
+	width := len(bonusCards)*180 + 20*len(bonusCards) + 20
+	length := 300
+	if len(bonusCards) >= 5 {
+		width = 5*180 + 20*5 + 20
+		length = 300 * ((len(bonusCards) + 4) / 5)
+	}
+	dc := gg.NewContext(width, length)
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, card := range bonusCards {
@@ -108,7 +122,9 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		dc.DrawImageAnchored(cardImage, 200*i+20, 25, 0, 0)
+		x := 200*(i%5) + 20
+		y := 25 + (i/5)*300
+		dc.DrawImageAnchored(cardImage, x, y, 0, 0)
 	}
 	return dc.Image(), nil
 }
