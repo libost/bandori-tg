@@ -154,6 +154,8 @@ func setFont(fontFile string) (*opentype.Font, error) {
 }
 
 func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, int64, error) {
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	eventMap := utils.ReadEvents()
 	event, exists := eventMap[eventID]
 	if !exists {
@@ -180,7 +182,11 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	}
 
 	url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, 0, 0, 0, 0, 0, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return nil, 0, 0, 0, 0, 0, err
 	}
@@ -195,14 +201,18 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 		for _, tier := range tierList {
 			// Process each tier
 			url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
-			resp, err := http.Get(url)
+			reqTier, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 			if err != nil {
 				continue
 			}
-			defer resp.Body.Close()
+			respTier, err := utils.HttpClient.Do(reqTier)
+			if err != nil {
+				continue
+			}
+			defer respTier.Body.Close()
 
 			var newTracker C.EventTracker
-			err = json.UnmarshalRead(resp.Body, &newTracker)
+			err = json.UnmarshalRead(respTier.Body, &newTracker)
 			if err != nil {
 				continue
 			}
