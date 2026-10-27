@@ -202,6 +202,7 @@
         "ongoing_en": "国际服 🇺🇸 正在进行的招募",
         "ongoing_tw": "台服 🇹🇼 正在进行的招募",
         "ongoing_cn": "国服 🇨🇳 正在进行的招募",
-        "ongoing_kr": "韩服 🇰🇷 正在进行的招募"
+        "ongoing_kr": "韩服 🇰🇷 正在进行的招募",
+        "results_caption": "以下是由<a href=\"tg://user?id=%[3]d\">%[1]s %[2]s</a>模拟的招募结果。"
     }
 }
