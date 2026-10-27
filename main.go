@@ -202,6 +202,15 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		SecretToken:        webhookOpts.SecretToken,
 		DropPendingUpdates: true,
 	}
+	if cfg.Webhook.Cert.SelfSigned {
+		pubCert, err := os.Open(cfg.Webhook.Cert.CertPath)
+		if err != nil {
+			log.Printf("failed to open certificate file: %v", err)
+			panic(err)
+		}
+		defer pubCert.Close()
+		setWebhookOpts.Certificate = gotgbot.InputFileByReader("public.pem", pubCert)
+	}
 
 	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts, cfg.Webhook.Port) {
 		log.Printf("Warning: The webhook port %d is one of the ports accepted by Telegram. If you are running this bot behind a reverse proxy (like Nginx), please ensure that the proxy forwards requests to this port correctly.", cfg.Webhook.Port)
