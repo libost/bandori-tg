@@ -120,7 +120,6 @@ var ENTierList = [...]int{
 	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 2000, 2500, 3000, 4000, 5000, 10000,
 }
 
-// 真有人会查死了的KR吗... Bestdori上都查不到KR档线，给那些在意的人留个念想吧
 var KRTierList = [...]int{
 	100,
 }
@@ -135,7 +134,7 @@ type Config struct {
 		AdminToken string `yaml:"admin_token"`
 	} `yaml:"general"`
 	Proxy struct {
-		Enabled  bool   `yaml:"enabled"`
+		Enabled  bool   `yaml:"enabled" default:"false"`
 		Type     string `yaml:"type"`
 		Host     string `yaml:"host"`
 		Port     int    `yaml:"port"`
@@ -143,7 +142,7 @@ type Config struct {
 		Password string `yaml:"password"`
 	} `yaml:"proxy"`
 	Webhook struct {
-		Enabled      bool   `yaml:"enabled"`
+		Enabled      bool   `yaml:"enabled" default:"false"`
 		NginxEnabled bool   `yaml:"nginx_enabled"`
 		URL          string `yaml:"url"`
 		Port         int    `yaml:"port"`
