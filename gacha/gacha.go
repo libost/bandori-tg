@@ -1,12 +1,14 @@
 package gacha
 
 import (
+	"context"
 	"encoding/json/v2"
 	"fmt"
 	"image"
 	"math"
 	"math/rand/v2"
 	"net/http"
+	"time"
 
 	"github.com/fogleman/gg"
 	"github.com/libost/bandori-tg/cards"
@@ -31,12 +33,18 @@ func GetGacha(gachaId string) (C.Gacha, error) {
 }
 
 func GetGachaDetails(gachaId string) (C.GachaDetailed, error) {
+	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	gachaMap := utils.ReadGacha()
 	_, exists := gachaMap[gachaId]
 	if !exists {
 		return C.GachaDetailed{}, fmt.Errorf("gacha with ID %s not found", gachaId)
 	}
-	resp, err := http.Get("https://bestdori.com/api/gacha/" + gachaId + ".json")
+	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/gacha/"+gachaId+".json", nil)
+	if err != nil {
+		return C.GachaDetailed{}, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return C.GachaDetailed{}, err
 	}

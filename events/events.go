@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json/v2"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fogleman/gg"
 	"github.com/libost/bandori-tg/cards"
@@ -26,7 +28,13 @@ import (
 )
 
 func GetDetailedEvents(eventID string) (C.EventDetailed, error) {
-	resp, err := http.Get("https://bestdori.com/api/events/" + eventID + ".json")
+	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/events/"+eventID+".json", nil)
+	if err != nil {
+		return C.EventDetailed{}, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return C.EventDetailed{}, err
 	}

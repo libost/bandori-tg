@@ -22,11 +22,8 @@ import (
 	"github.com/libost/bandori-tg/events"
 	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/recent"
+	"github.com/libost/bandori-tg/utils"
 )
-
-var httpClient = &http.Client{
-	Timeout: 10 * time.Second,
-}
 
 func indexHelper(code string) int {
 	switch code {
@@ -621,7 +618,7 @@ func isValidPNGUrl(url string) bool {
 		return false
 	}
 
-	resp, err := httpClient.Do(req)
+	resp, err := utils.HttpClient.Do(req)
 
 	if err != nil {
 		return false

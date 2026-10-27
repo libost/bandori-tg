@@ -1,11 +1,13 @@
 package songs
 
 import (
+	"context"
 	"encoding/json/v2"
 	"fmt"
 	"image"
 	"net/http"
 	"strconv"
+	"time"
 
 	"golang.org/x/image/font"
 
@@ -25,13 +27,19 @@ func GetSongs(songId string) (C.Songs, error) {
 }
 
 func GetDetailedSong(songId string) (C.SongsDetailed, error) {
+	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	songsMap := utils.ReadSongs()
 	_, exists := songsMap[songId]
 	if !exists {
 		return C.SongsDetailed{}, nil
 	}
 	url := "https://bestdori.com/api/songs/" + songId + ".json"
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
+	if err != nil {
+		return C.SongsDetailed{}, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return C.SongsDetailed{}, err
 	}

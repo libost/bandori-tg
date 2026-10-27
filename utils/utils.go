@@ -25,6 +25,8 @@ import (
 //go:embed fonts/*.zip
 var fontFS embed.FS
 
+var HttpClient *http.Client
+
 type fetchTask struct {
 	URL    string
 	Target any
@@ -169,12 +171,10 @@ func InitLists() error {
 	defer cancel()
 	config := config.AppConfig
 
-	var httpClient *http.Client
-
 	if config.Proxy.Enabled {
 		switch config.Proxy.Type {
 		case "http":
-			httpClient = &http.Client{
+			HttpClient = &http.Client{
 				Timeout: 5 * time.Second,
 				Transport: &http.Transport{
 					MaxIdleConnsPerHost: 10,
@@ -193,7 +193,7 @@ func InitLists() error {
 			if err != nil {
 				return fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
 			}
-			httpClient = &http.Client{
+			HttpClient = &http.Client{
 				Timeout: 5 * time.Second,
 				Transport: &http.Transport{
 					MaxIdleConnsPerHost: 10,
@@ -204,7 +204,7 @@ func InitLists() error {
 			log.Fatalf("Unsupported proxy type: %s", config.Proxy.Type)
 		}
 	} else {
-		httpClient = &http.Client{
+		HttpClient = &http.Client{
 			Timeout: 5 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConnsPerHost: 10,
@@ -238,7 +238,7 @@ func InitLists() error {
 	for _, task := range data {
 		t := task
 		eg.Go(func() error {
-			return fetchAndDecode(gCtx, httpClient, t.URL, t.Target)
+			return fetchAndDecode(gCtx, HttpClient, t.URL, t.Target)
 		})
 	}
 	if err := eg.Wait(); err != nil {

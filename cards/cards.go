@@ -2,6 +2,7 @@ package cards
 
 import (
 	"bytes"
+	"context"
 	"encoding/json/v2"
 	"encoding/xml"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
@@ -127,7 +129,13 @@ func GetCard(cardId string) (string, string, error) {
 }
 
 func GetDetailedCard(cardId string) (C.CardDetailed, error) {
-	resp, err := http.Get("https://bestdori.com/api/cards/" + cardId + ".json")
+	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/cards/"+cardId+".json", nil)
+	if err != nil {
+		return C.CardDetailed{}, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return C.CardDetailed{}, err
 	}
@@ -245,6 +253,8 @@ func frameHelper(rarity int, attribute string) string {
 }
 
 func ThumbGenerate(cardId string, percent int) (image.Image, error) {
+	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	cardMap := utils.ReadCards()
 	card, exists := cardMap[cardId]
 	if !exists {
@@ -264,41 +274,66 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	dc := gg.NewContext(180, 250)
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
-	resp, err := http.Get(thumbPath)
+	reqThumb, err := http.NewRequestWithContext(context, http.MethodGet, thumbPath, nil)
 	if err != nil {
 		return nil, err
 	}
-	baseImg, _ := png.Decode(resp.Body)
+	respThumb, err := utils.HttpClient.Do(reqThumb)
+	if err != nil {
+		return nil, err
+	}
+	defer respThumb.Body.Close()
+	baseImg, _ := png.Decode(respThumb.Body)
 	drawScaledImage(dc, baseImg, 0, 0, 180, 180)
-	resp, err = http.Get(frame)
+	reqFrame, err := http.NewRequestWithContext(context, http.MethodGet, frame, nil)
 	if err != nil {
 		return nil, err
 	}
-	frameImg, _ := png.Decode(resp.Body)
+	respFrame, err := utils.HttpClient.Do(reqFrame)
+	if err != nil {
+		return nil, err
+	}
+	defer respFrame.Body.Close()
+	frameImg, _ := png.Decode(respFrame.Body)
 	drawScaledImage(dc, frameImg, 0, 0, 180, 180)
-	resp, err = http.Get(attrFrame)
+	reqAttrFrame, err := http.NewRequestWithContext(context, http.MethodGet, attrFrame, nil)
 	if err != nil {
 		return nil, err
 	}
-	attrFrameImg, err := loadSVG(46, 46, resp.Body)
+	respAttrFrame, err := utils.HttpClient.Do(reqAttrFrame)
+	if err != nil {
+		return nil, err
+	}
+	defer respAttrFrame.Body.Close()
+	attrFrameImg, err := loadSVG(46, 46, respAttrFrame.Body)
 	if err != nil {
 		return nil, err
 	}
 	drawScaledImage(dc, attrFrameImg, 132, 2, 46, 46)
-	resp, err = http.Get(starImg)
+	reqStar, err := http.NewRequestWithContext(context, http.MethodGet, starImg, nil)
 	if err != nil {
 		return nil, err
 	}
-	starImgDecoded, _ := png.Decode(resp.Body)
+	respStar, err := utils.HttpClient.Do(reqStar)
+	if err != nil {
+		return nil, err
+	}
+	defer respStar.Body.Close()
+	starImgDecoded, _ := png.Decode(respStar.Body)
 	for i := 0; i < card.Rarity; i++ {
 		drawScaledImage(dc, starImgDecoded, 8, float64(147-i*25), 26, 26)
 	}
 	if isValidRemoteAssetURL(bandFrame) {
-		resp, err = http.Get(bandFrame)
+		reqBandFrame, err := http.NewRequestWithContext(context, http.MethodGet, bandFrame, nil)
 		if err != nil {
 			return nil, err
 		}
-		bandFrameImg, err := loadSVG(50, 50, resp.Body)
+		respBandFrame, err := utils.HttpClient.Do(reqBandFrame)
+		if err != nil {
+			return nil, err
+		}
+		defer respBandFrame.Body.Close()
+		bandFrameImg, err := loadSVG(50, 50, respBandFrame.Body)
 		if err != nil {
 			return nil, err
 		}
