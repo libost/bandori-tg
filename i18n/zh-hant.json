@@ -165,6 +165,7 @@
         "start_time": "實裝日期: ",
         "end_time": "結束時間: ",
         "description": "描述: ",
+        "id": "ID: ",
         "countdown_future": "開始於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
         "countdown_now": "結束於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
         "countdown_ended": "已結束",
@@ -191,6 +192,13 @@
         "invalid_argument": "不存在的轉蛋 ID，請檢查輸入是否正確。",
         "api_error": "查詢轉蛋信息時發生錯誤，請稍後再試。",
         "invalid_callback_data": "無效的回調數據。請重新使用命令 /gacha 。",
-        "invalid_payment_index": "無效的支付索引。請重新使用命令 /gacha 。"
+        "invalid_payment_index": "無效的支付索引。請重新使用命令 /gacha 。",
+        "random_result": "未指定轉蛋 ID，將隨機選擇一個轉蛋 ID 進行查詢。",
+        "ongoing_gachas": "當前進行中的轉蛋",
+        "ongoing_jp": "日服 🇯🇵 正在進行的轉蛋",
+        "ongoing_en": "國際服 🇺🇸 正在進行的轉蛋",
+        "ongoing_tw": "台服 🇹🇼 正在進行的轉蛋",
+        "ongoing_cn": "中國服 🇨🇳 正在進行的轉蛋",
+        "ongoing_kr": "韓服 🇰🇷 正在進行的轉蛋"
     }
 }

@@ -168,6 +168,7 @@
         "start_time": "开始时间: ",
         "end_time": "结束时间: ",
         "description": "描述: ",
+        "id": "ID: ",
         "countdown_future": "开始于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
         "countdown_now": "结束于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒",
         "countdown_ended": "已结束",
@@ -194,6 +195,13 @@
         "invalid_argument": "不存在的招募 ID，请检查输入是否正确。",
         "api_error": "查询招募信息时发生错误，请稍后再试。",
         "invalid_callback_data": "无效的回调数据。请重新使用命令 /gacha 。",
-        "invalid_payment_index": "无效的支付索引。请重新使用命令 /gacha 。"
+        "invalid_payment_index": "无效的支付索引。请重新使用命令 /gacha 。",
+        "random_result": "未指定招募 ID，将随机选择一个招募 ID 进行查询。",
+        "ongoing_gachas": "当前进行中的招募",
+        "ongoing_jp": "日服 🇯🇵 正在进行的招募",
+        "ongoing_en": "国际服 🇺🇸 正在进行的招募",
+        "ongoing_tw": "台服 🇹🇼 正在进行的招募",
+        "ongoing_cn": "国服 🇨🇳 正在进行的招募",
+        "ongoing_kr": "韩服 🇰🇷 正在进行的招募"
     }
 }

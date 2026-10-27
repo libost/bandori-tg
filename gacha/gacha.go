@@ -1,9 +1,10 @@
 package gacha
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"image"
+	"io"
 	"math"
 	"math/rand/v2"
 	"net/http"
@@ -42,7 +43,11 @@ func GetGachaDetails(gachaId string) (C.GachaDetailed, error) {
 	}
 	defer resp.Body.Close()
 	var gachaDetailed C.GachaDetailed
-	if err := json.NewDecoder(resp.Body).Decode(&gachaDetailed); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return C.GachaDetailed{}, err
+	}
+	if err := json.Unmarshal(body, &gachaDetailed); err != nil {
 		return C.GachaDetailed{}, err
 	}
 	return gachaDetailed, nil

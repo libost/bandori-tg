@@ -1,9 +1,10 @@
 package songs
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"image"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -36,9 +37,12 @@ func GetDetailedSong(songId string) (C.SongsDetailed, error) {
 		return C.SongsDetailed{}, err
 	}
 	defer resp.Body.Close()
-	songDetails := json.NewDecoder(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return C.SongsDetailed{}, err
+	}
 	var detailedSong C.SongsDetailed
-	err = songDetails.Decode(&detailedSong)
+	err = json.Unmarshal(body, &detailedSong)
 	if err != nil {
 		return C.SongsDetailed{}, err
 	}

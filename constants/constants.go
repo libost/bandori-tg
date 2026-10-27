@@ -625,7 +625,7 @@ var RarityEmoji = [...]int64{
 	6048597808687095847, // After Training
 }
 
-var AcceptedRegions = []string{"jp", "en", "tw", "kr", "cn"}
+var AcceptedRegions = []string{"jp", "en", "tw", "cn", "kr"}
 
 // These cards are known to have issues with their data, so they are excluded from the bot's responses.
 // Maybe they fixed now, but I will leave them here just in case. If you find any other cards with issues, please report them to me.
