@@ -114,7 +114,8 @@ func main() {
 		startWebhookCommunication(config.AppConfig, updater, b)
 	} else {
 		updater.StartPolling(b, &ext.PollingOpts{
-			DropPendingUpdates: true,
+			DropPendingUpdates:    true,
+			EnableWebhookDeletion: true,
 		})
 	}
 
