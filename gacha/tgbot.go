@@ -468,12 +468,34 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	}
 	bannerUrl := "https://bestdori.com/assets/" + regionCode + "/homebanner_rip/" + gachaDetailed.BannerAssetBundleName + ".png"
 	if !isValidPNGUrl(bannerUrl) {
+		foundValid := false
 		regionList := C.AcceptedRegions
 		for _, region := range regionList {
 			tempBannerUrl := "https://bestdori.com/assets/" + region + "/homebanner_rip/" + gachaDetailed.BannerAssetBundleName + ".png"
 			if isValidPNGUrl(tempBannerUrl) {
 				bannerUrl = tempBannerUrl
+				foundValid = true
 				break
+			}
+		}
+		if !foundValid {
+			log.Printf("No valid banner found for gacha %s in any region. Attempting to use logo as fallback.", gachaId)
+			tempBannerUrl := "https://bestdori.com/assets/" + regionCode + "/gacha/screen/" + gachaDetailed.ResourceName + "_rip/logo.png"
+			if isValidPNGUrl(tempBannerUrl) {
+				bannerUrl = tempBannerUrl
+				foundValid = true
+			} else {
+				for _, region := range regionList {
+					tempBannerUrl := "https://bestdori.com/assets/" + region + "/gacha/screen/" + gachaDetailed.ResourceName + "_rip/logo.png"
+					if isValidPNGUrl(tempBannerUrl) {
+						bannerUrl = tempBannerUrl
+						foundValid = true
+						break
+					}
+				}
+			}
+			if !foundValid {
+				log.Printf("No valid logo found for gacha %s in any region. Skipping.", gachaId)
 			}
 		}
 	}
