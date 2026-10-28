@@ -84,13 +84,12 @@ type difficultyData struct {
 
 // generateDifficultyImg generates an image representing the difficulty levels of a song.
 // We may use this function later.
-// WARNING: THIS FUNCTION IS NOT TESTED. A TEST IS REQUIRED BEFORE USING IT.
 func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
-	dc := gg.NewContext(len(diffData.level)*20, 20)
+	dc := gg.NewContext(len(diffData.level)*30, 30)
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, level := range diffData.level {
-		dc.DrawCircle(float64(10+i*20), 10, 20)
+		dc.DrawCircle(float64(15+i*30), 15, 15)
 		dc.SetHexColor(C.DifficultyColors[i])
 		dc.Fill()
 		font, err := utils.GetFontsFile("NotoSans-Regular.ttf")
@@ -104,7 +103,7 @@ func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
 		dc.SetFontFace(ttfont)
 		dc.SetHexColor("#000000")
 		inputStr := strconv.Itoa(level)
-		dc.DrawStringAnchored(inputStr, float64(10+i*20), 10, 0.5, 0.5)
+		dc.DrawStringAnchored(inputStr, float64(15+i*30), 15, 0.5, 0.5)
 	}
 	return dc.Image(), nil
 }

@@ -276,6 +276,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
+	ctx.EffectiveMessage.Reply(b, "Commands set successfully for all supported languages.", nil)
 	return nil
 }
 func isTelegramLanguageCode(code string) bool {
