@@ -51,6 +51,11 @@ func TestIsSpecifiedError(t *testing.T) {
 			},
 			want: false,
 		},
+		{
+			name: "no error",
+			err:  nil,
+			want: false,
+		},
 	}
 
 	for _, tt := range tests {

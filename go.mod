@@ -13,7 +13,7 @@ require (
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c
 	golang.org/x/image v0.47.0
-	golang.org/x/net v0.61.0
+	golang.org/x/net v0.62.0
 	golang.org/x/sync v0.24.0
 	gonum.org/v1/plot v0.17.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1

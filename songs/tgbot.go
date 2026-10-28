@@ -439,7 +439,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	})
 	if err != nil {
 		if isSpecifiedError(err) {
-			fmt.Println("triggered specified error")
+			log.Printf("Handling specified error for song %s", detailedSong.MusicTitle[regionIndex])
 			httpClient := utils.HttpClient
 			httpClient.Timeout = 30 * time.Second
 			reqSong, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, bgmURL, nil)
