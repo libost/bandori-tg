@@ -439,7 +439,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	})
 	if err != nil {
 		if isSpecifiedError(err) {
-			log.Printf("Handling specified error for song %s", detailedSong.MusicTitle[regionIndex])
+			log.Printf("Handling specified error for song %s, Id: %s", detailedSong.MusicTitle[regionIndex], songId)
 			httpClient := utils.HttpClient
 			httpClient.Timeout = 30 * time.Second
 			reqSong, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, bgmURL, nil)
@@ -472,12 +472,12 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 					Title:     detailedSong.MusicTitle[regionIndex],
 				},
 			}
-			_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+			_, errAgain := b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 				ReplyParameters: &gotgbot.ReplyParameters{
 					MessageId: ctx.EffectiveMessage.MessageId,
 				},
 			})
-			if err == nil {
+			if errAgain == nil {
 				log.Printf("Successfully handled malformed song %s query", detailedSong.MusicTitle[regionIndex])
 				return nil
 			} else {
