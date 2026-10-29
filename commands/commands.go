@@ -241,6 +241,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
+			{Command: "gacha", Description: I.GetLocalisedString("commands.setcommands_desc_list[10]", code)},
 			{Command: "lang", Description: I.GetLocalisedString("commands.setcommands_desc_list[4]", code)},
 			{Command: "about", Description: I.GetLocalisedString("commands.setcommands_desc_list[5]", code)},
 		}
@@ -262,6 +263,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
+			{Command: "gacha", Description: I.GetLocalisedString("commands.setcommands_desc_list[10]", code)},
 			{Command: "help", Description: I.GetLocalisedString("commands.setcommands_desc_list[1]", code)},
 			{Command: "about", Description: I.GetLocalisedString("commands.setcommands_desc_list[5]", code)},
 		}
@@ -274,6 +276,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			return err
 		}
 	}
+	ctx.EffectiveMessage.Reply(b, "Commands set successfully for all supported languages.", nil)
 	return nil
 }
 func isTelegramLanguageCode(code string) bool {

@@ -7,7 +7,7 @@
     },
     "commands": {
         "start_desc": "歡迎使用 Bandori Bot！使用 /help 查看幫助信息。\n\n當前語言不是您的首選語言？使用 /lang 設置您喜歡的語言。\n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
-        "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/lang - 設置語言。\n/cards <card_id> - 根據 ID 查詢特定卡片的信息。\n/cards <card_id> <region> - 根據 ID 和伺服器代碼查詢特定卡片的信息。\n/events - 查詢當前進行中的活動。\n/events <event_id> - 根據 ID 查詢特定活動的信息。\n/events <event_id> <region> - 根據 ID 和伺服器代碼查詢特定活動的信息。\n/cutoff <event_id> - 根據 ID 查詢特定活動的分數線預測。\n/cutoff <event_id> <tier> <region> - 根據 ID 和伺服器代碼查詢特定活動的特定排名的分數線預測。\n/song <song_name> - 根據歌曲名稱查詢歌曲信息。\n/search <keyword> - 根據關鍵詞搜索歌曲。",
+        "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/lang - 設置語言。\n/cards <card_id> - 根據 ID 查詢特定卡片的信息。\n/cards <card_id> <region> - 根據 ID 和伺服器代碼查詢特定卡片的信息。\n/events - 查詢當前進行中的活動。\n/events <event_id> - 根據 ID 查詢特定活動的信息。\n/events <event_id> <region> - 根據 ID 和伺服器代碼查詢特定活動的信息。\n/cutoff <event_id> - 根據 ID 查詢特定活動的分數線預測。\n/cutoff <event_id> <tier> <region> - 根據 ID 和伺服器代碼查詢特定活動的特定排名的分數線預測。\n/song <song_name> - 根據歌曲名稱查詢歌曲信息。\n/search <keyword> - 根據關鍵詞搜索歌曲。\n/song <song_name> - 根據歌曲名稱查詢歌曲信息。\n/gacha - 查詢當前進行中的招募。\n/gacha <gacha_id> - 根據招募 ID 查詢招募信息。",
         "lang_desc": "選擇你要設置的語言類型。",
         "lang_desc_group": "請在私聊中使用 /lang 命令設置語言類型。",
         "lang_dlang": "設置顯示語言",
@@ -29,7 +29,8 @@
             "啟動 Bandori 機器人並獲取歡迎消息。",
             "根據 ID 查詢特定活動的分數線預測。",
             "根據歌曲名稱查詢歌曲信息。",
-            "根據關鍵詞搜索歌曲。"
+            "根據關鍵詞搜索歌曲。",
+            "查詢當前進行中的轉蛋。"
         ]
     },
     "cards": {
@@ -156,5 +157,49 @@
     },
     "generic": {
         "error": "發生錯誤，請稍後再試。錯誤信息: \n<code>%[1]s</code>"
+    },
+    "gacha": {
+        "title": "標題: ",
+        "type": "類型: ",
+        "countdown": "倒數: ",
+        "start_time": "實裝日期: ",
+        "end_time": "結束時間: ",
+        "description": "描述: ",
+        "id": "ID: ",
+        "countdown_future": "開始於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
+        "countdown_now": "結束於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒",
+        "countdown_ended": "已結束",
+        "not_in_specified_region": "當前伺服器 (%[1]s) 暫無該轉蛋數據，將顯示伺服器 (%[2]s) 的轉蛋數據。",
+        "payment_button": "模擬使用 %[1]d個%[2]s轉蛋%[3]d次",
+        "payment_button_free": "模擬使用免費轉蛋%[1]d次",
+        "free_star": "Star (免費)",
+        "paid_star": "Star (付費) ",
+        "normal_ticket": "星石招募券",
+        "over_the_3_star_ticket": "★3以上稀有度必出招募券",
+        "over_the_4_star_ticket": "4.5周年紀念★4以上確認招募券",
+        "fixed_5_star_ticket": "4.5周年紀念★５確認招募券",
+        "permanent": "常駐",
+        "limited": "期間限定",
+        "dreamfes": "夢幻祭典",
+        "kirafes": "閃耀祭典",
+        "birthday": "生日",
+        "miracle": "奇蹟",
+        "special": 	"特殊",
+       	"free": "免費",
+		"processing": "處理中...",
+		"pickup_cards": "機率加倍卡片",
+        "missing_argument": "缺少參數，請提供轉蛋 ID。使用方法： /gacha <gacha_id>。",
+        "invalid_argument": "不存在的轉蛋 ID，請檢查輸入是否正確。",
+        "api_error": "查詢轉蛋信息時發生錯誤，請稍後再試。",
+        "invalid_callback_data": "無效的回調數據。請重新使用命令 /gacha 。",
+        "invalid_payment_index": "無效的支付索引。請重新使用命令 /gacha 。",
+        "random_result": "未指定轉蛋 ID，將隨機選擇一個轉蛋 ID 進行查詢。",
+        "ongoing_gachas": "當前進行中的轉蛋",
+        "ongoing_jp": "日服 🇯🇵 正在進行的轉蛋",
+        "ongoing_en": "國際服 🇺🇸 正在進行的轉蛋",
+        "ongoing_tw": "台服 🇹🇼 正在進行的轉蛋",
+        "ongoing_cn": "中國服 🇨🇳 正在進行的轉蛋",
+        "ongoing_kr": "韓服 🇰🇷 正在進行的轉蛋",
+        "results_caption": "以下是由<a href=\"tg://user?id=%[3]d\">%[1]s %[2]s</a>模擬的轉蛋結果。"
     }
 }

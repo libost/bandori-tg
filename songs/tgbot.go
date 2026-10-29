@@ -2,7 +2,10 @@ package songs
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"slices"
 	"strconv"
 	"strings"
@@ -186,7 +189,7 @@ func regionHelper(region string) (int, string) {
 }
 
 func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, langCode string) error {
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	regionIndex, tz := regionHelper(region)
 	songMap := utils.ReadSongs()
@@ -435,6 +438,52 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		},
 	})
 	if err != nil {
+		if isSpecifiedError(err) {
+			log.Printf("Handling specified error for song %s, Id: %s", detailedSong.MusicTitle[regionIndex], songId)
+			httpClient := utils.HttpClient
+			httpClient.Timeout = 30 * time.Second
+			reqSong, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, bgmURL, nil)
+			if err != nil {
+				return err
+			}
+			respSong, err := httpClient.Do(reqSong)
+			if err != nil {
+				return err
+			}
+			defer respSong.Body.Close()
+			reqJacket, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, jacketURL, nil)
+			if err != nil {
+				return err
+			}
+			respJacket, err := httpClient.Do(reqJacket)
+			if err != nil {
+				return err
+			}
+			defer respJacket.Body.Close()
+			richMessage.Blocks[1] = gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByReader("jacket.png", respJacket.Body),
+				},
+			}
+			richMessage.Blocks[2] = gotgbot.InputRichBlockAudio{
+				Audio: gotgbot.InputMediaAudio{
+					Media:     gotgbot.InputFileByReader(fmt.Sprintf("%s.mp3", detailedSong.MusicTitle[regionIndex]), respSong.Body),
+					Performer: bandName,
+					Title:     detailedSong.MusicTitle[regionIndex],
+				},
+			}
+			_, errAgain := b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+				ReplyParameters: &gotgbot.ReplyParameters{
+					MessageId: ctx.EffectiveMessage.MessageId,
+				},
+			})
+			if errAgain == nil {
+				log.Printf("Successfully handled malformed song %s query", detailedSong.MusicTitle[regionIndex])
+				return nil
+			} else {
+				log.Printf("Failed to send rich message for song %s: %v", detailedSong.MusicTitle[regionIndex], err)
+			}
+		}
 		if ctx.EffectiveChat.Type == "private" {
 			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
 				ParseMode: "HTML",
@@ -449,4 +498,18 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		}
 	}
 	return err
+}
+
+func isSpecifiedError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if tgErr, ok := errors.AsType[*gotgbot.TelegramError](err); ok {
+		if tgErr.Code == 400 &&
+			tgErr.Method == "sendRichMessage" &&
+			strings.Contains(tgErr.Description, "failed to get HTTP URL content") {
+			return true
+		}
+	}
+	return false
 }

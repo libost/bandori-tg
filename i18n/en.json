@@ -7,7 +7,7 @@
     },
     "commands": {
         "start_desc": "Welcome to the Bandori Bot! Use /help to view the help message. \n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
-        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.\n/cutoff <event_id> - Query the predicted cutoff for a specific event by its ID.\n/cutoff <event_id> <tier> <region> - Query the predicted cutoff for a specific event by its ID, tier, and server code.\ns/song <song_name> - Query information about a specific song by its name.\n/search <keyword> - Search for songs by keyword.",
+        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.\n/cutoff <event_id> - Query the predicted cutoff for a specific event by its ID.\n/cutoff <event_id> <tier> <region> - Query the predicted cutoff for a specific event by its ID, tier, and server code.\n/song <song_name> - Query information about a specific song by its name.\n/search <keyword> - Search for songs by keyword.\n/song <song_name> - Query information about a specific song by its name.\n/gacha - Query ongoing gacha.\n/gacha <gacha_id> - Query information about a specific gacha by its ID.",
         "lang_desc": "Select the language you want to set.",
         "lang_desc_group": "Please use the /lang command in a private chat to set the language.",
         "lang_dlang": "Set Display Language",
@@ -29,7 +29,8 @@
             "Start the Bandori bot and get a welcome message.",
             "Query the cutoff scores for a specific event.",
             "Query information about a specific song by its name.",
-            "Search for songs by keyword."
+            "Search for songs by keyword.",
+            "Query ongoing gacha."
         ]
     },
     "cards": {
@@ -156,5 +157,49 @@
     },
     "generic": {
         "error": "An error occurred. Please try again later. Error message: \n<code>%[1]s</code>"
+    },
+    "gacha": {
+        "title": "Title: ",
+        "type": "Type: ",
+        "countdown": "Countdown: ",
+        "start_time": "Release Time: ",
+        "end_time": "Close Time: ",
+        "description": "Description: ",
+        "id": "ID: ",
+        "countdown_future": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "countdown_now": "Closes in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "countdown_ended": "Completed",
+        "not_in_specified_region": "The current server (%[1]s) does not have this gacha data. Displaying data from server (%[2]s).",
+        "payment_button": "Simulate using %[1]d % [2]s to gacha %[3]d times",
+        "payment_button_free": "Simulate using free gacha %[1]d times",
+        "free_star": "Star (Free)",
+        "paid_star": "Star (Paid)",
+        "normal_ticket": "Normal Ticket",
+        "over_the_3_star_ticket": ">3 Star Ticket",
+        "over_the_4_star_ticket": ">4 Star Ticket",
+        "fixed_5_star_ticket": "=5 Star Ticket",
+        "permanent": "Permanent",
+       	"limited":	"Limited",
+		"dreamfes":	"Dream Fes",
+		"kirafes":	"Kira Fes",
+		"birthday":	"Birthday",
+		"miracle":	"Miracle",
+		"special":	"Special",
+		"free":	"Free",
+		"processing":"Processing...",
+		"pickup_cards":"Spotlight Cards",
+        "missing_argument": "Missing argument. Please provide a gacha ID. Usage: /gacha <gacha_id>.",
+        "invalid_argument": "Invalid gacha ID. Please check your input.",
+        "api_error": "An error occurred while querying gacha information. Please try again later.",
+        "invalid_callback_data": "Invalid callback data. Please re-use the command /gacha .",
+        "invalid_payment_index": "Invalid payment index. Please re-use the command /gacha .",
+        "random_result": "No gacha ID specified. Randomly selecting a gacha ID for query.",
+        "ongoing_gachas": "Ongoing Gachas",
+        "ongoing_jp": "Japan 🇯🇵 Ongoing Gacha",
+        "ongoing_en": "International 🇺🇸 Ongoing Gacha",
+        "ongoing_tw": "Taiwan 🇹🇼 Ongoing Gacha",
+        "ongoing_cn": "China 🇨🇳 Ongoing Gacha",
+        "ongoing_kr": "Korea 🇰🇷 Ongoing Gacha",
+        "results_caption": "Gacha results simulated by <a href=\"tg://user?id=%[3]d\">%[1]s %[2]s</a>."
     }
 }

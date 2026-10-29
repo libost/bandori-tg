@@ -19,6 +19,7 @@ import (
 	C "github.com/libost/bandori-tg/constants"
 	DB "github.com/libost/bandori-tg/database"
 	"github.com/libost/bandori-tg/events"
+	"github.com/libost/bandori-tg/gacha"
 	"github.com/libost/bandori-tg/songs"
 	"github.com/libost/bandori-tg/text"
 	"github.com/libost/bandori-tg/utils"
@@ -106,13 +107,15 @@ func main() {
 	events.AddHandlers(dispatcher)
 	cards.AddHandlers(dispatcher)
 	songs.AddHandlers(dispatcher)
+	gacha.AddHandlers(dispatcher)
 	text.AddHandlers(dispatcher)
 
 	if config.AppConfig.Webhook.Enabled {
 		startWebhookCommunication(config.AppConfig, updater, b)
 	} else {
 		updater.StartPolling(b, &ext.PollingOpts{
-			DropPendingUpdates: true,
+			DropPendingUpdates:    true,
+			EnableWebhookDeletion: true,
 		})
 	}
 
@@ -158,7 +161,10 @@ func cronTasks(c *cron.Cron) {
 
 func startWebhookCommunication(cfg *C.Config, updater *ext.Updater, b *gotgbot.Bot) {
 	webhookURL := mustParseWebhookURL(cfg.Webhook.URL)
-	webhookOpts, setWebhookOpts := buildWebhookOptions(cfg)
+	webhookOpts, setWebhookOpts, pubCert := buildWebhookOptions(cfg)
+	if pubCert != nil {
+		defer pubCert.Close()
+	}
 
 	if err := updater.StartWebhook(b, webhookURL.Path, webhookOpts); err != nil {
 		log.Printf("failed to start webhook: %v", err)
@@ -189,7 +195,7 @@ func mustParseWebhookURL(rawURL string) *url.URL {
 	return webhookURL
 }
 
-func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpts) {
+func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpts, *os.File) {
 	listenAddr := fmt.Sprintf("0.0.0.0:%d", cfg.Webhook.Port)
 	webhookOpts := ext.WebhookOpts{
 		ListenAddr:  listenAddr,
@@ -199,6 +205,17 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		SecretToken:        webhookOpts.SecretToken,
 		DropPendingUpdates: true,
 	}
+	var pubCert *os.File
+	if cfg.Webhook.Cert.SelfSigned {
+		pubCert, err := os.Open(cfg.Webhook.Cert.CertPath)
+		if err != nil {
+			log.Printf("failed to open certificate file: %v", err)
+			panic(err)
+		}
+		setWebhookOpts.Certificate = gotgbot.InputFileByReader("public.pem", pubCert)
+		webhookOpts.CertFile = cfg.Webhook.Cert.CertPath
+		webhookOpts.KeyFile = cfg.Webhook.Cert.KeyPath
+	}
 
 	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts, cfg.Webhook.Port) {
 		log.Printf("Warning: The webhook port %d is one of the ports accepted by Telegram. If you are running this bot behind a reverse proxy (like Nginx), please ensure that the proxy forwards requests to this port correctly.", cfg.Webhook.Port)
@@ -206,21 +223,21 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 
 	if cfg.Webhook.NginxEnabled && os.Getenv("IN_DOCKER") != "true" {
 		webhookOpts.ListenAddr = fmt.Sprintf("127.0.0.1:%d", cfg.Webhook.Port)
-		return webhookOpts, setWebhookOpts
+		return webhookOpts, setWebhookOpts, pubCert
 	}
-	return webhookOpts, setWebhookOpts
+	return webhookOpts, setWebhookOpts, pubCert
 }
 
 func httpClientWithProxy(cfg *C.Config) *http.Client {
 	httpClient := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout: time.Second * 30,
 	}
 	if cfg.Proxy.Enabled {
 		switch cfg.Proxy.Type {
 		case "socks5":
 			dialer, _ := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", cfg.Proxy.Host, cfg.Proxy.Port), nil, proxy.Direct)
 			httpClient = &http.Client{
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 30,
 				Transport: &http.Transport{
 					Dial: dialer.Dial,
 				},
@@ -229,7 +246,7 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 		case "http":
 			proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%d", cfg.Proxy.Host, cfg.Proxy.Port))
 			httpClient = &http.Client{
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 30,
 				Transport: &http.Transport{
 					Proxy: http.ProxyURL(proxyUrl),
 				},

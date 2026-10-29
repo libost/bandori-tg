@@ -1,17 +1,18 @@
-﻿package events
+package events
 
 import (
-	"encoding/json"
+	"context"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"image"
 	"image/color"
-	"io"
 	"math"
 	"net/http"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/fogleman/gg"
 	"github.com/libost/bandori-tg/cards"
@@ -27,17 +28,19 @@ import (
 )
 
 func GetDetailedEvents(eventID string) (C.EventDetailed, error) {
-	resp, err := http.Get("https://bestdori.com/api/events/" + eventID + ".json")
+	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/events/"+eventID+".json", nil)
+	if err != nil {
+		return C.EventDetailed{}, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return C.EventDetailed{}, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return C.EventDetailed{}, err
-	}
 	var event C.EventDetailed
-	err = json.Unmarshal([]byte(data), &event)
+	err = json.UnmarshalRead(resp.Body, &event)
 	if err != nil {
 		return C.EventDetailed{}, err
 	}
@@ -85,7 +88,13 @@ func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
 
 func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 	members := event.Members
-	dc := gg.NewContext(len(members)*180+20*len(members)+20, 300)
+	width := len(members)*180 + 20*len(members) + 20
+	length := 300
+	if len(members) >= 5 {
+		width = 5*180 + 20*5 + 20
+		length = 300 * ((len(members) + 4) / 5)
+	}
+	dc := gg.NewContext(width, length)
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, member := range members {
@@ -93,14 +102,22 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		dc.DrawImageAnchored(memberImage, 200*i+20, 25, 0, 0)
+		x := 200*(i%5) + 20
+		y := 25 + (i/5)*300
+		dc.DrawImageAnchored(memberImage, x, y, 0, 0)
 	}
 	return dc.Image(), nil
 }
 
 func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 	bonusCards := event.RewardCards
-	dc := gg.NewContext(len(bonusCards)*180+20*len(bonusCards)+20, 300)
+	width := len(bonusCards)*180 + 20*len(bonusCards) + 20
+	length := 300
+	if len(bonusCards) >= 5 {
+		width = 5*180 + 20*5 + 20
+		length = 300 * ((len(bonusCards) + 4) / 5)
+	}
+	dc := gg.NewContext(width, length)
 	dc.SetHexColor("#FFFFFF")
 	dc.Clear()
 	for i, card := range bonusCards {
@@ -108,7 +125,9 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		dc.DrawImageAnchored(cardImage, 200*i+20, 25, 0, 0)
+		x := 200*(i%5) + 20
+		y := 25 + (i/5)*300
+		dc.DrawImageAnchored(cardImage, x, y, 0, 0)
 	}
 	return dc.Image(), nil
 }
@@ -135,6 +154,8 @@ func setFont(fontFile string) (*opentype.Font, error) {
 }
 
 func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, int64, error) {
+	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	eventMap := utils.ReadEvents()
 	event, exists := eventMap[eventID]
 	if !exists {
@@ -161,17 +182,18 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	}
 
 	url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, 0, 0, 0, 0, 0, err
+	}
+	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
 		return nil, 0, 0, 0, 0, 0, err
 	}
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, 0, 0, 0, 0, 0, err
-	}
+
 	var tracker C.EventTracker
-	err = json.Unmarshal(data, &tracker)
+	err = json.UnmarshalRead(resp.Body, &tracker)
 	if err != nil {
 		return nil, 0, 0, 0, 0, 0, err
 	}
@@ -179,17 +201,18 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 		for _, tier := range tierList {
 			// Process each tier
 			url := fmt.Sprintf("https://bestdori.com/api/tracker/data?server=%d&event=%s&tier=%d", region, eventID, tier)
-			resp, err := http.Get(url)
+			reqTier, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 			if err != nil {
 				continue
 			}
-			defer resp.Body.Close()
-			data, err := io.ReadAll(resp.Body)
+			respTier, err := utils.HttpClient.Do(reqTier)
 			if err != nil {
 				continue
 			}
+			defer respTier.Body.Close()
+
 			var newTracker C.EventTracker
-			err = json.Unmarshal(data, &newTracker)
+			err = json.UnmarshalRead(respTier.Body, &newTracker)
 			if err != nil {
 				continue
 			}

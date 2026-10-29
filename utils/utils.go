@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"log"
@@ -25,6 +25,8 @@ import (
 //go:embed fonts/*.zip
 var fontFS embed.FS
 
+var HttpClient *http.Client
+
 type fetchTask struct {
 	URL    string
 	Target any
@@ -42,6 +44,7 @@ var Gacha C.GachaData
 var Rates C.RatesData
 var Songs C.SongsData
 var REventsKeys []string
+var RGachaKeys []string
 var SongsKeysJP []string
 var SongsKeysEN []string
 var SongsKeysCN []string
@@ -108,6 +111,12 @@ func ReadREventsKeys() []string {
 	return append([]string(nil), REventsKeys...)
 }
 
+func ReadRGachasKeys() []string {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return append([]string(nil), RGachaKeys...)
+}
+
 func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
@@ -127,6 +136,12 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 		REventsKeys = append(REventsKeys, k)
 	}
 	sort.Strings(REventsKeys)
+
+	RGachaKeys = make([]string, 0, len(Recent.Gacha))
+	for k := range Recent.Gacha {
+		RGachaKeys = append(RGachaKeys, k)
+	}
+	sort.Strings(RGachaKeys)
 
 	SongsKeysJP = make([]string, 0, len(Songs))
 	SongsKeysCN = make([]string, 0, len(Songs))
@@ -156,12 +171,10 @@ func InitLists() error {
 	defer cancel()
 	config := config.AppConfig
 
-	var httpClient *http.Client
-
 	if config.Proxy.Enabled {
 		switch config.Proxy.Type {
 		case "http":
-			httpClient = &http.Client{
+			HttpClient = &http.Client{
 				Timeout: 5 * time.Second,
 				Transport: &http.Transport{
 					MaxIdleConnsPerHost: 10,
@@ -180,7 +193,7 @@ func InitLists() error {
 			if err != nil {
 				return fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
 			}
-			httpClient = &http.Client{
+			HttpClient = &http.Client{
 				Timeout: 5 * time.Second,
 				Transport: &http.Transport{
 					MaxIdleConnsPerHost: 10,
@@ -191,7 +204,7 @@ func InitLists() error {
 			log.Fatalf("Unsupported proxy type: %s", config.Proxy.Type)
 		}
 	} else {
-		httpClient = &http.Client{
+		HttpClient = &http.Client{
 			Timeout: 5 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConnsPerHost: 10,
@@ -225,7 +238,7 @@ func InitLists() error {
 	for _, task := range data {
 		t := task
 		eg.Go(func() error {
-			return fetchAndDecode(gCtx, httpClient, t.URL, t.Target)
+			return fetchAndDecode(gCtx, HttpClient, t.URL, t.Target)
 		})
 	}
 	if err := eg.Wait(); err != nil {
@@ -254,7 +267,7 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 		return fmt.Errorf("Unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+	if err := json.UnmarshalRead(resp.Body, target); err != nil {
 		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
 	}
 

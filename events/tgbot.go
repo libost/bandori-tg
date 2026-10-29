@@ -3,7 +3,7 @@ package events
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"image/png"
@@ -82,7 +82,7 @@ func normalizeCharacterID(value any) string {
 		return strconv.FormatFloat(float64(v), 'f', -1, 32)
 	case float64:
 		return strconv.FormatFloat(v, 'f', -1, 64)
-	case json.Number:
+	case jsontext.Value:
 		return v.String()
 	default:
 		return fmt.Sprint(v)
@@ -561,10 +561,14 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	now := time.Now().Unix() * 1000
 	startAt, err := strconv.ParseInt(event.StartAt[regionCode], 10, 64)
 	if err != nil {
+		log.Printf("Error parsing start time for event ID %s: %v", eventID, err)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 	endAt, err := strconv.ParseInt(event.EndAt[regionCode], 10, 64)
 	if err != nil {
+		log.Printf("Error parsing end time for event ID %s: %v", eventID, err)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 	if now > endAt {
