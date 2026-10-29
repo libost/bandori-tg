@@ -279,7 +279,7 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	img, err := generateGachaImage(results)
 	if err != nil {
 		log.Printf("Error generating gacha image for ID %s: %v", gachaId, err)
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.image_generation_error", langCode), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 
@@ -287,7 +287,7 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err = png.Encode(&buf, img)
 	if err != nil {
 		log.Printf("Error encoding gacha image for ID %s: %v", gachaId, err)
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.image_encoding_error", langCode), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 
