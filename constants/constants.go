@@ -3,6 +3,7 @@ package constants
 import "fmt"
 
 const (
+	BaseDir      = "./res/"
 	ConfigPath   = "./config.yaml"
 	DatabaseFile = "./res/bandori.db"
 )

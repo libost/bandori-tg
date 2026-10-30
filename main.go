@@ -84,6 +84,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize lists: %v", err)
 	}
+	if utils.FontsDetached {
+		log.Printf("Fonts are in detached mode. Initializing font files...")
+		err = utils.InitFontsFiles()
+		if err != nil {
+			log.Fatalf("Failed to initialize font files: %v", err)
+		}
+	}
 	token := config.AppConfig.General.Token
 	httpClient := httpClientWithProxy(config.AppConfig)
 	b, err := gotgbot.NewBot(token, &gotgbot.BotOpts{

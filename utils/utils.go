@@ -1,18 +1,13 @@
 package utils
 
 import (
-	"archive/zip"
-	"bytes"
 	"context"
-	"embed"
 	"encoding/json/v2"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -21,9 +16,6 @@ import (
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 )
-
-//go:embed fonts/*.zip
-var fontFS embed.FS
 
 var HttpClient *http.Client
 
@@ -316,33 +308,4 @@ func CronInit() {
 			time.Sleep(delay)
 		}
 	}
-}
-
-func GetFontsFile(fontName string) ([]byte, error) {
-	fontName = strings.TrimSuffix(fontName, ".ttf")
-	fontName += ".zip"
-	zipFilePath := "fonts/" + fontName
-	fontData, err := fontFS.ReadFile(zipFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read font file %s: %w", zipFilePath, err)
-	}
-	reader, err := zip.NewReader(bytes.NewReader(fontData), int64(len(fontData)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create zip reader for file %s: %w", zipFilePath, err)
-	}
-	for _, file := range reader.File {
-		if strings.HasSuffix(file.Name, ".ttf") {
-			rc, err := file.Open()
-			if err != nil {
-				return nil, fmt.Errorf("failed to open font file %s inside zip: %w", file.Name, err)
-			}
-			defer rc.Close()
-			fontBytes, err := io.ReadAll(rc)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read font file %s inside zip: %w", file.Name, err)
-			}
-			return fontBytes, nil
-		}
-	}
-	return nil, fmt.Errorf("font file not found in zip: %s", zipFilePath)
 }
