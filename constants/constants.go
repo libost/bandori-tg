@@ -518,6 +518,16 @@ type BpmData []struct {
 	End   float64 `json:"end"`
 }
 
+type ComicData map[string]Comic
+
+type Comic struct {
+	AssetBundleName string   `json:"assetBundleName"`
+	Title           []string `json:"title"`
+	SubTitle        []string `json:"subTitle"`
+	PublicStartAt   []any    `json:"publicStartAt"`
+	CharacterId     []int    `json:"characterId"`
+}
+
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
 var CharaEmoji = [...]int64{
 	6046130500299398386,

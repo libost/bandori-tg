@@ -204,5 +204,16 @@
         "ongoing_cn": "国服 🇨🇳 正在进行的招募",
         "ongoing_kr": "韩服 🇰🇷 正在进行的招募",
         "results_caption": "以下是由<a href=\"tg://user?id=%[3]d\">%[1]s %[2]s</a>模拟的招募结果。"
+    },
+    "comic": {
+        "not_in_specified_region": "当前服务器 (%[1]s) 暂无该漫画数据，将显示服务器 (%[2]s) 的漫画数据。",
+        "title": "标题: ",
+        "subtitle": "副标题: ",
+        "public_start_at": "发布日期: ",
+        "type": "种类: ",
+        "characters": "角色: ",
+        "id": "ID: ",
+        "type_fourframe": "四格",
+        "type_singleframe": "单格"
     }
 }

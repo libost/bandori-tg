@@ -201,5 +201,16 @@
         "ongoing_cn": "China 🇨🇳 Ongoing Gacha",
         "ongoing_kr": "Korea 🇰🇷 Ongoing Gacha",
         "results_caption": "Gacha results simulated by <a href=\"tg://user?id=%[3]d\">%[1]s %[2]s</a>."
+    },
+    "comic": {
+        "not_in_specified_region": "The current server (%[1]s) does not have this comic data. Displaying data from server (%[2]s).",
+        "title": "Title: ",
+        "subtitle": "Subtitle: ",
+        "public_start_at": "Release Time: ",
+        "type": "Type: ",
+        "characters": "Character: ",
+        "id": "ID: ",
+        "type_fourframe": "Four-frame",
+        "type_singleframe": "Single-frame"
     }
 }

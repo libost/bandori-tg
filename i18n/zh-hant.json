@@ -201,5 +201,16 @@
         "ongoing_cn": "中國服 🇨🇳 正在進行的轉蛋",
         "ongoing_kr": "韓服 🇰🇷 正在進行的轉蛋",
         "results_caption": "以下是由<a href=\"tg://user?id=%[3]d\">%[1]s %[2]s</a>模擬的轉蛋結果。"
+    },
+    "comic": {
+        "not_in_specified_region": "當前伺服器 (%[1]s) 暫無該漫畫數據，將顯示伺服器 (%[2]s) 的漫畫數據。",
+        "title": "標題: ",
+        "subtitle": "副標題: ",
+        "public_start_at": "實裝日期: ",
+        "type": "類型: ",
+        "characters": "角色: ",
+        "id": "ID: ",
+        "type_fourframe": "四格",
+        "type_singleframe": "一格"
     }
 }

@@ -43,6 +43,8 @@ var Skills C.SkillData
 var Gacha C.GachaData
 var Rates C.RatesData
 var Songs C.SongsData
+var Comic C.ComicData
+var ComicKeys []string
 var REventsKeys []string
 var RGachaKeys []string
 var SongsKeysJP []string
@@ -105,6 +107,12 @@ func ReadSongs() C.SongsData {
 	return Songs
 }
 
+func ReadComic() C.ComicData {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return Comic
+}
+
 func ReadREventsKeys() []string {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
@@ -117,7 +125,13 @@ func ReadRGachasKeys() []string {
 	return append([]string(nil), RGachaKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData) {
+func ReadComicKeys() []string {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return append([]string(nil), ComicKeys...)
+}
+
+func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData, snapshotComic C.ComicData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
@@ -130,6 +144,7 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	Gacha = snapshotGacha
 	Rates = snapshotRates
 	Songs = snapshotSongs
+	Comic = snapshotComic
 
 	REventsKeys = make([]string, 0, len(Recent.Events))
 	for k := range Recent.Events {
@@ -164,6 +179,13 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	sort.Strings(SongsKeysKR)
 
 	sort.Strings(SongsKeysTW)
+
+	ComicKeys = make([]string, 0, len(Comic))
+	for k := range Comic {
+		ComicKeys = append(ComicKeys, k)
+	}
+
+	sort.Strings(ComicKeys)
 }
 
 func InitLists() error {
@@ -221,6 +243,7 @@ func InitLists() error {
 	var snapshotGacha C.GachaData
 	var snapshotRates C.RatesData
 	var snapshotSongs C.SongsData
+	var snapshotComic C.ComicData
 
 	data := []fetchTask{
 		{URL: "https://bestdori.com/api/bands/all.1.json", Target: &snapshotBand},
@@ -232,6 +255,7 @@ func InitLists() error {
 		{URL: "https://bestdori.com/api/gacha/all.5.json", Target: &snapshotGacha},
 		{URL: "https://bestdori.com/api/tracker/rates.json", Target: &snapshotRates},
 		{URL: "https://bestdori.com/api/songs/all.5.json", Target: &snapshotSongs},
+		{URL: "https://bestdori.com/api/comics/all.5.json", Target: &snapshotComic},
 	}
 
 	eg, gCtx := errgroup.WithContext(ctx)
@@ -246,7 +270,7 @@ func InitLists() error {
 		return err
 	}
 
-	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs)
+	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotComic)
 	fmt.Println("All lists initialized successfully.")
 	return nil
 }
