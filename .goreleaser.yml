@@ -64,6 +64,70 @@ builds:
       {{ if eq .Env.RELEASE_CHANNEL "stable" }}-s -w{{ end }}
     binary: bandori-tg
 
+  - id: linux_fonts_detached
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    goamd64:
+      - v3
+    flags:
+      - -tags=fonts_detached
+    main: ./main.go
+    ldflags: |
+      -X github.com/libost/bandori-tg/version.Version={{ if eq .Env.RELEASE_CHANNEL "dev" }}{{ .ShortCommit }}{{ else }}{{ .Version }}{{ end }}
+      -X github.com/libost/bandori-tg/version.BuildTime={{.Date}} 
+      -X github.com/libost/bandori-tg/version.GitCommit={{.ShortCommit}} 
+      -X github.com/libost/bandori-tg/version.Branch={{.Branch}} 
+      {{ if eq .Env.RELEASE_CHANNEL "stable" }}-s -w{{ end }}
+    binary: bandori-tg
+
+  - id: windows_fonts_detached
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    goamd64:
+      - v3
+    flags:
+      - -tags=fonts_detached
+    main: ./main.go
+    ldflags: |
+      -X github.com/libost/bandori-tg/version.Version={{ if eq .Env.RELEASE_CHANNEL "dev" }}{{ .ShortCommit }}{{ else }}{{ .Version }}{{ end }}
+      -X github.com/libost/bandori-tg/version.BuildTime={{.Date}} 
+      -X github.com/libost/bandori-tg/version.GitCommit={{.ShortCommit}} 
+      -X github.com/libost/bandori-tg/version.Branch={{.Branch}} 
+      {{ if eq .Env.RELEASE_CHANNEL "stable" }}-s -w{{ end }}
+    binary: bandori-tg
+
+  - id: macos_fonts_detached
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    goamd64:
+      - v3
+    flags:
+      - -tags=fonts_detached
+    main: ./main.go
+    ldflags: |
+      -X github.com/libost/bandori-tg/version.Version={{ if eq .Env.RELEASE_CHANNEL "dev" }}{{ .ShortCommit }}{{ else }}{{ .Version }}{{ end }}
+      -X github.com/libost/bandori-tg/version.BuildTime={{.Date}} 
+      -X github.com/libost/bandori-tg/version.GitCommit={{.ShortCommit}} 
+      -X github.com/libost/bandori-tg/version.Branch={{.Branch}} 
+      {{ if eq .Env.RELEASE_CHANNEL "stable" }}-s -w{{ end }}
+    binary: bandori-tg
+
+
 archives:
   - id: binaries
     formats: [binary]
