@@ -410,7 +410,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 						{
 							Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button_free", langCode), method.Count)),
 							Style:        "primary",
-							CallbackData: "gacha_" + gachaId + "_" + strconv.Itoa(i) + "_" + regionCode,
+							CallbackData: "gachaPay_" + gachaId + "_" + strconv.Itoa(i) + "_" + regionCode,
 						},
 					},
 					Align: "center",
