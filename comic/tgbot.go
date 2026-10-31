@@ -1,10 +1,12 @@
 package comic
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -20,13 +22,34 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 }
 
 func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
-	// TODO: Implement the comic command functionality here.
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	args := ctx.Args()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	qidx := indexHelper(regionCode)
 	if len(args) == 1 {
-		// TODO: Randomly select a comic ID from the available comics in the specified region and return it.
 		comicKeys := utils.ReadComicKeys()
 		if len(comicKeys) == 0 {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("comic.no_comics_available", langCode), nil)
@@ -39,7 +62,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				return err
 			}
 			if comicData.Title[qidx] != "" {
-				err = sendComic(b, ctx, comicData, comicId, langCode, regionCode)
+				err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
 				if err != nil {
 					return err
 				}
@@ -73,11 +96,11 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	regionCode = reverseIndexHelper(qidx)
 
-	err = sendComic(b, ctx, comicData, comicId, langCode, regionCode)
+	err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
 	return err
 }
 
-func sendComic(b *gotgbot.Bot, ctx *ext.Context, comic C.Comic, comicId string, langCode string, regionCode string) error {
+func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, comic C.Comic, comicId string, langCode string, regionCode string) error {
 	url, err := getComicUrl(comic, regionCode)
 	if err != nil {
 		return err
@@ -185,7 +208,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, comic C.Comic, comicId string, 
 		},
 	}
 
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
