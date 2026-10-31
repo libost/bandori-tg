@@ -14,6 +14,7 @@ import (
 
 	"github.com/libost/bandori-tg/callback"
 	"github.com/libost/bandori-tg/cards"
+	"github.com/libost/bandori-tg/characters"
 	"github.com/libost/bandori-tg/comic"
 	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
@@ -118,6 +119,7 @@ func main() {
 	songs.AddHandlers(dispatcher)
 	gacha.AddHandlers(dispatcher)
 	comic.AddHandlers(dispatcher)
+	characters.AddHandlers(dispatcher)
 	text.AddHandlers(dispatcher) // text handlers must be added after all other handlers to avoid conflicts
 
 	if config.AppConfig.Webhook.Enabled {

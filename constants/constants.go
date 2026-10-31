@@ -171,6 +171,34 @@ type Character struct {
 
 type CharacterData map[string]Character
 
+type CharacterDetailed struct {
+	CharacterType        string   `json:"characterType"`
+	CharacterName        []string `json:"characterName"`
+	FirstName            []string `json:"firstName"`
+	LastName             []string `json:"lastName"`
+	Nickname             []string `json:"nickname"`
+	BandID               int      `json:"bandId"`
+	ColorCode            string   `json:"colorCode"`
+	SdAssetBundleName    string   `json:"sdAssetBundleName"`
+	DefaultCostumeId     int      `json:"defaultCostumeId"`
+	SeasonCostumeListMap any      `json:"seasonCostumeListMap"`
+	Ruby                 []string `json:"ruby"`
+	Profile              struct {
+		CharacterVoice   []string `json:"characterVoice"`
+		FavoriteFood     []string `json:"favoriteFood"`
+		HatedFood        []string `json:"hatedFood"`
+		Hobby            []string `json:"hobby"`
+		SelfIntroduction []string `json:"selfIntroduction"`
+		School           []string `json:"school"`
+		SchoolCls        []string `json:"schoolCls"`
+		SchoolYear       []any    `json:"schoolYear"` // It can be int or string, what a dumb design
+		Part             string   `json:"part"`
+		Birthday         string   `json:"birthday"`
+		Constellation    string   `json:"constellation"`
+		Height           string   `json:"height"`
+	} `json:"profile"`
+}
+
 type Card struct {
 	CharacterID     int      `json:"characterId"`
 	Rarity          int      `json:"rarity"`
