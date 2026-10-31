@@ -60,15 +60,16 @@ func main() {
 		switch args[1] {
 		case "version":
 			fmt.Printf("bandori-tg version: %s\n", version.Version)
+			if utils.FontsDetached {
+				fmt.Println("Build tags: fonts_detached")
+			}
 			return
 		case "help":
 			fmt.Println("Usage: bandori-tg [command]")
 			fmt.Println("Commands:")
 			fmt.Println("  help    Show this help message")
-			fmt.Println("  run     Run the bot (default)")
+			fmt.Println("  version Show the version of the bot")
 			return
-		case "run":
-			// Continue to run the bot
 		default:
 			fmt.Printf("Unknown command: %s\n", args[1])
 			return
@@ -145,7 +146,7 @@ func main() {
 			}
 		}
 	}()
-	fmt.Println("Bot is running. Press Ctrl+C to stop.")
+	log.Printf("Bot is running.")
 	cronTasks(c)
 
 	updater.Idle()

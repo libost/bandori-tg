@@ -65,9 +65,20 @@ func InitFontsFiles() error {
 		return fmt.Errorf("failed to create fonts directory: %w", err)
 	}
 	for _, font := range fontStruct {
+		_, err := os.Stat(FontsDir + font.fontName)
+		if os.IsNotExist(err) {
+			log.Printf("Font file %s not found, downloading...", font.fontName)
+			errDl := downloadFontFile(font.fontName, font.fontUrl, font.fontSHA)
+			if errDl != nil {
+				log.Printf("Failed to download font file %s: %v", font.fontName, errDl)
+				return errDl
+			}
+			continue
+		}
 		file, err := os.Open(FontsDir + font.fontName)
 		if err != nil {
 			log.Printf("Failed to open font file %s: %v", font.fontName, err)
+			log.Printf("Attempting to download font file %s...", font.fontName)
 			errDl := downloadFontFile(font.fontName, font.fontUrl, font.fontSHA)
 			if errDl != nil {
 				log.Printf("Failed to download font file %s: %v", font.fontName, errDl)
@@ -95,6 +106,7 @@ func InitFontsFiles() error {
 			}
 		}
 	}
+	log.Printf("All font files initialized successfully.")
 	return nil
 }
 

@@ -263,7 +263,7 @@ func InitLists() error {
 	}
 
 	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotComic)
-	fmt.Println("All lists initialized successfully.")
+	log.Printf("All lists initialized successfully.")
 	return nil
 }
 
