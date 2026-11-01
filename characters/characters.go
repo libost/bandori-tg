@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json/v2"
 	"fmt"
+	"image"
+	"image/png"
 	"net/http"
 	"time"
 
+	"github.com/fogleman/gg"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
 )
@@ -53,6 +56,39 @@ func getCharacterDetails(characterId string) (C.CharacterDetailed, error) {
 	}
 
 	return characterDetails, nil
+}
+
+func generateCharacterBackground(url string, color string, ctx context.Context) (image.Image, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := utils.HttpClient.Do(req)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	img, err := png.Decode(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode image: %w", err)
+	}
+
+	dc := gg.NewContext(img.Bounds().Dx(), img.Bounds().Dy())
+
+	dc.SetHexColor(color)
+
+	dc.Clear()
+
+	dc.DrawImage(img, 0, 0)
+
+	return dc.Image(), nil
 }
 
 func convertAnyToString(value any) string {

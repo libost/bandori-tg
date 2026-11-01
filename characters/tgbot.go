@@ -1,7 +1,10 @@
 package characters
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"image/png"
 	"strconv"
 	"sync"
 	"time"
@@ -36,7 +39,8 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 }
 
 func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
-	// Implementation of the character command goes here
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	stopAction := make(chan struct{})
 	var stopActionOnce sync.Once
 	stopActionLoop := func() {
@@ -60,15 +64,22 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	defer stopActionLoop()
 	if len(ctx.Args()) == 1 {
 		// TODO
-		return fmt.Errorf("please provide a character ID")
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
+		return fmt.Errorf("no character parameter provided")
 	}
 	characterId := ctx.Args()[1]
 	idNum, err := strconv.Atoi(characterId)
 	if err != nil {
-		return fmt.Errorf("failed to convert character ID to number: %w", err)
+		index := C.NewSearchIndex(C.CharaSearch)
+		matches := index.Search(characterId)
+		if len(matches) == 0 {
+			return fmt.Errorf("invalid character ID or name: %s", characterId)
+		}
+		idNum = matches[0].Item.ID
+		characterId = fmt.Sprintf("%d", idNum)
 	}
 	if idNum < 1 || idNum > 40 {
-		return fmt.Errorf("character ID must be between 1 and 100")
+		return fmt.Errorf("character ID invalid, expected to be between 1 and 40, got %d", idNum)
 	}
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
@@ -76,19 +87,28 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	url := "https://bestdori.com/assets/" + qlangCode + "/ui/character_kv_image/" + fmt.Sprintf("%03d", idNum) + "_rip/image.png"
 	characterDetails, err := getCharacterDetails(characterId)
 	if err != nil {
-		return fmt.Errorf("failed to get character details: %w", err)
+		return fmt.Errorf("failed to get character details for %s: %w", characterId, err)
 	}
 	bandData, err := band.GetBand(fmt.Sprintf("%d", characterDetails.BandID))
 	if err != nil {
-		return fmt.Errorf("failed to get band data: %w", err)
+		return fmt.Errorf("failed to get band data for %s: %w", characterId, err)
 	}
 	schoolYear := convertAnyToString(characterDetails.Profile.SchoolYear[qidx])
 	birthdayInt, err := strconv.Atoi(characterDetails.Profile.Birthday)
 	if err != nil {
-		return fmt.Errorf("failed to convert birthday to int: %w", err)
+		return fmt.Errorf("failed to convert birthday for %s to int: %w", characterId, err)
 	}
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 	bdStr := time.UnixMilli(int64(birthdayInt)).In(loc).Format("01-02")
+	img, err := generateCharacterBackground(url, characterDetails.ColorCode, ctxTimeout)
+	if err != nil {
+		return fmt.Errorf("failed to generate character background for %s: %w", characterId, err)
+	}
+	var buf bytes.Buffer
+	err = png.Encode(&buf, img)
+	if err != nil {
+		return fmt.Errorf("failed to encode image for %s: %w", characterId, err)
+	}
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
@@ -97,7 +117,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
-					Media: gotgbot.InputFileByURL(url),
+					Media: gotgbot.InputFileByReader("image.png", &buf),
 				},
 			},
 			gotgbot.InputRichBlockTable{
@@ -184,7 +204,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%dcm", characterDetails.Profile.Height)),
+							Text:  gotgbot.RichTextString(fmt.Sprintf("%d cm", characterDetails.Profile.Height)),
 							Align: "right",
 						},
 					},
@@ -262,7 +282,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
