@@ -176,7 +176,7 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 	}
 
 	var results []string
-	index := indexHelper(regionCode)
+	index := utils.IndexHelper(regionCode)
 	if index >= len(gachaDetailed.Details) || index >= len(gachaDetailed.Rates) {
 		return nil, fmt.Errorf("no gacha data found for region code: %s", regionCode)
 	}

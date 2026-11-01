@@ -14,6 +14,8 @@ import (
 
 	"github.com/libost/bandori-tg/callback"
 	"github.com/libost/bandori-tg/cards"
+	"github.com/libost/bandori-tg/characters"
+	"github.com/libost/bandori-tg/comic"
 	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
@@ -59,15 +61,16 @@ func main() {
 		switch args[1] {
 		case "version":
 			fmt.Printf("bandori-tg version: %s\n", version.Version)
+			if utils.FontsDetached {
+				fmt.Println("Build tags: fonts_detached")
+			}
 			return
 		case "help":
 			fmt.Println("Usage: bandori-tg [command]")
 			fmt.Println("Commands:")
 			fmt.Println("  help    Show this help message")
-			fmt.Println("  run     Run the bot (default)")
+			fmt.Println("  version Show the version of the bot")
 			return
-		case "run":
-			// Continue to run the bot
 		default:
 			fmt.Printf("Unknown command: %s\n", args[1])
 			return
@@ -82,6 +85,13 @@ func main() {
 	err = utils.InitLists()
 	if err != nil {
 		log.Fatalf("Failed to initialize lists: %v", err)
+	}
+	if utils.FontsDetached {
+		log.Printf("Fonts are in detached mode. Initializing font files...")
+		err = utils.InitFontsFiles()
+		if err != nil {
+			log.Fatalf("Failed to initialize font files: %v", err)
+		}
 	}
 	token := config.AppConfig.General.Token
 	httpClient := httpClientWithProxy(config.AppConfig)
@@ -108,7 +118,9 @@ func main() {
 	cards.AddHandlers(dispatcher)
 	songs.AddHandlers(dispatcher)
 	gacha.AddHandlers(dispatcher)
-	text.AddHandlers(dispatcher)
+	comic.AddHandlers(dispatcher)
+	characters.AddHandlers(dispatcher)
+	text.AddHandlers(dispatcher) // text handlers must be added after all other handlers to avoid conflicts
 
 	if config.AppConfig.Webhook.Enabled {
 		startWebhookCommunication(config.AppConfig, updater, b)
@@ -136,7 +148,7 @@ func main() {
 			}
 		}
 	}()
-	fmt.Println("Bot is running. Press Ctrl+C to stop.")
+	log.Printf("Bot is running.")
 	cronTasks(c)
 
 	updater.Idle()
@@ -217,7 +229,7 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		webhookOpts.KeyFile = cfg.Webhook.Cert.KeyPath
 	}
 
-	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts, cfg.Webhook.Port) {
+	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts[:], cfg.Webhook.Port) {
 		log.Printf("Warning: The webhook port %d is one of the ports accepted by Telegram. If you are running this bot behind a reverse proxy (like Nginx), please ensure that the proxy forwards requests to this port correctly.", cfg.Webhook.Port)
 	}
 
