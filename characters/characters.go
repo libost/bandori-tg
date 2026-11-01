@@ -54,3 +54,20 @@ func getCharacterDetails(characterId string) (C.CharacterDetailed, error) {
 
 	return characterDetails, nil
 }
+
+func convertAnyToString(value any) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case float64:
+		return fmt.Sprintf("%.0f", v)
+	case int:
+		return fmt.Sprintf("%d", v)
+	case int64:
+		return fmt.Sprintf("%d", v)
+	case bool:
+		return fmt.Sprintf("%t", v)
+	default:
+		return ""
+	}
+}

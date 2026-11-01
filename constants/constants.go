@@ -195,7 +195,7 @@ type CharacterDetailed struct {
 		Part             string   `json:"part"`
 		Birthday         string   `json:"birthday"`
 		Constellation    string   `json:"constellation"`
-		Height           string   `json:"height"`
+		Height           int      `json:"height"`
 	} `json:"profile"`
 }
 
