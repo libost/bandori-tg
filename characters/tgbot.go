@@ -33,6 +33,22 @@ func indexHelper(langCode string) int {
 	return 0
 }
 
+func reverseIndexHelper(index int) string {
+	switch index {
+	case 0:
+		return "jp"
+	case 1:
+		return "en"
+	case 2:
+		return "tw"
+	case 3:
+		return "cn"
+	case 4:
+		return "kr"
+	}
+	return "jp"
+}
+
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("character", characterCommand))
 	dispatcher.AddHandler(handlers.NewCommand("char", characterCommand))
@@ -84,11 +100,19 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	qidx := indexHelper(qlangCode)
-	url := "https://bestdori.com/assets/" + qlangCode + "/ui/character_kv_image/" + fmt.Sprintf("%03d", idNum) + "_rip/image.png"
 	characterDetails, err := getCharacterDetails(characterId)
 	if err != nil {
 		return fmt.Errorf("failed to get character details for %s: %w", characterId, err)
 	}
+	if characterDetails.CharacterName[qidx] == "" {
+		for i, name := range characterDetails.CharacterName {
+			if name != "" {
+				qidx = i
+				break
+			}
+		}
+	}
+	qlangCode = reverseIndexHelper(qidx)
 	bandData, err := band.GetBand(fmt.Sprintf("%d", characterDetails.BandID))
 	if err != nil {
 		return fmt.Errorf("failed to get band data for %s: %w", characterId, err)
@@ -100,6 +124,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 	bdStr := time.UnixMilli(int64(birthdayInt)).In(loc).Format("01-02")
+	url := "https://bestdori.com/assets/jp/ui/character_kv_image/" + fmt.Sprintf("%03d", idNum) + "_rip/image.png"
 	img, err := generateCharacterBackground(url, characterDetails.ColorCode, ctxTimeout)
 	if err != nil {
 		return fmt.Errorf("failed to generate character background for %s: %w", characterId, err)
