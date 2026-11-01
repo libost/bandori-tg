@@ -58,10 +58,17 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	idNum, err := strconv.Atoi(characterId)
 	if err != nil {
 		index := C.NewSearchIndex(C.CharaSearch)
-		matches := index.Search(characterId)
+		var queryString strings.Builder
+		for i := range len(ctx.Args()) - 1 {
+			queryString.WriteString(ctx.Args()[i+1])
+			if i < len(ctx.Args())-2 {
+				queryString.WriteString(" ")
+			}
+		}
+		matches := index.Search(queryString.String())
 		if len(matches) == 0 {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.character_not_found", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
-			return fmt.Errorf("invalid character ID or name: %s", characterId)
+			return fmt.Errorf("invalid character ID or name: %s", queryString.String())
 		}
 		idNum = matches[0].Item.ID
 		characterId = fmt.Sprintf("%d", idNum)
