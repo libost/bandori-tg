@@ -12,42 +12,11 @@ import (
 	"github.com/libost/bandori-tg/band"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
+	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
 )
-
-func indexHelper(langCode string) int {
-	switch langCode {
-	case "jp":
-		return 0
-	case "en":
-		return 1
-	case "tw":
-		return 2
-	case "cn":
-		return 3
-	case "kr":
-		return 4
-	}
-	return 0
-}
-
-func reverseIndexHelper(index int) string {
-	switch index {
-	case 0:
-		return "jp"
-	case 1:
-		return "en"
-	case 2:
-		return "tw"
-	case 3:
-		return "cn"
-	case 4:
-		return "kr"
-	}
-	return "jp"
-}
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("character", characterCommand))
@@ -99,7 +68,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	qidx := indexHelper(qlangCode)
+	qidx := utils.IndexHelper(qlangCode)
 	characterDetails, err := getCharacterDetails(characterId)
 	if err != nil {
 		return fmt.Errorf("failed to get character details for %s: %w", characterId, err)
@@ -112,7 +81,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 		}
 	}
-	qlangCode = reverseIndexHelper(qidx)
+	qlangCode = utils.ReverseIndexHelper(qidx)
 	bandData, err := band.GetBand(fmt.Sprintf("%d", characterDetails.BandID))
 	if err != nil {
 		return fmt.Errorf("failed to get band data for %s: %w", characterId, err)

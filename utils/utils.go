@@ -309,3 +309,53 @@ func CronInit() {
 		}
 	}
 }
+
+func IndexHelper(str string) int {
+	switch str {
+	case "jp", "powerful":
+		return 0
+	case "en", "cool":
+		return 1
+	case "tw", "happy":
+		return 2
+	case "cn", "pure":
+		return 3
+	case "kr":
+		return 4
+	default:
+		return 0
+	}
+}
+
+func ReverseIndexHelper(index int) string {
+	switch index {
+	case 0:
+		return "jp"
+	case 1:
+		return "en"
+	case 2:
+		return "tw"
+	case 3:
+		return "cn"
+	case 4:
+		return "kr"
+	}
+	return "jp"
+}
+
+func TzHelper(region string) string {
+	switch region {
+	case "jp":
+		return "Asia/Tokyo"
+	case "en":
+		return "UTC"
+	case "tw":
+		return "Asia/Taipei"
+	case "cn":
+		return "Asia/Shanghai"
+	case "kr":
+		return "Asia/Seoul"
+	default:
+		return "Asia/Tokyo"
+	}
+}

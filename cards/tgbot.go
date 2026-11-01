@@ -47,23 +47,6 @@ func selectLocaleString(strings []string, index int) string {
 	return selected
 }
 
-func indexHelper(code string) int {
-	switch code {
-	case "jp", "powerful":
-		return 0
-	case "en", "cool":
-		return 1
-	case "tw", "happy":
-		return 2
-	case "cn", "pure":
-		return 3
-	case "kr":
-		return 4
-	default:
-		return 0
-	}
-}
-
 func tzHelper(code string) string {
 	switch code {
 	case "jp":
@@ -152,7 +135,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 	// Process the card and send the response
-	index := indexHelper(qlangCode)
+	index := utils.IndexHelper(qlangCode)
 	regionCode := regionCodeFromCard(card, qlangCode)
 	if regionCode != qlangCode {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("cards.region_no_data", dlangCode), qlangCode, regionCode), nil)
@@ -212,7 +195,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, index), "\n", "")
 	attribute := card.Attribute
-	aindex := indexHelper(attribute)
+	aindex := utils.IndexHelper(attribute)
 	attribute = strings.ToUpper(attribute)
 	releasedAt := selectLocaleString(card.ReleasedAt, index)
 	releasedAtInt, _ := strconv.Atoi(releasedAt)

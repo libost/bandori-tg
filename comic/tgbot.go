@@ -48,7 +48,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	args := ctx.Args()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	qidx := indexHelper(regionCode)
+	qidx := utils.IndexHelper(regionCode)
 	if len(args) == 1 {
 		comicKeys := utils.ReadComicKeys()
 		if len(comicKeys) == 0 {
@@ -87,14 +87,14 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				break
 			}
 		}
-		_, err = ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("comic.not_in_specified_region", langCode), regionCode, reverseIndexHelper(qidx)), nil)
+		_, err = ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("comic.not_in_specified_region", langCode), regionCode, utils.ReverseIndexHelper(qidx)), nil)
 		if err != nil {
 			log.Printf("Comic: Failed to send reply message: %v", err)
 			return err
 		}
 	}
 
-	regionCode = reverseIndexHelper(qidx)
+	regionCode = utils.ReverseIndexHelper(qidx)
 
 	err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
 	return err
@@ -117,7 +117,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 		}
 	}
 
-	idx := indexHelper(regionCode)
+	idx := utils.IndexHelper(regionCode)
 	cells := [][]gotgbot.RichBlockTableCell{
 		{
 			{

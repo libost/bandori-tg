@@ -25,57 +25,6 @@ import (
 	"github.com/libost/bandori-tg/utils"
 )
 
-func indexHelper(code string) int {
-	switch code {
-	case "jp", "powerful":
-		return 0
-	case "en", "cool":
-		return 1
-	case "tw", "happy":
-		return 2
-	case "cn", "pure":
-		return 3
-	case "kr":
-		return 4
-	default:
-		return 0
-	}
-}
-
-func reverseIndexHelper(index int) string {
-	switch index {
-	case 0:
-		return "jp"
-	case 1:
-		return "en"
-	case 2:
-		return "tw"
-	case 3:
-		return "cn"
-	case 4:
-		return "kr"
-	default:
-		return "jp"
-	}
-}
-
-func tzHelper(code string) string {
-	switch code {
-	case "jp":
-		return "Asia/Tokyo"
-	case "en":
-		return "UTC"
-	case "tw":
-		return "Asia/Taipei"
-	case "cn":
-		return "Asia/Shanghai"
-	case "kr":
-		return "Asia/Seoul"
-	default:
-		return "UTC"
-	}
-}
-
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("gacha", gachaHandler))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("gacha_"), gachaOngoingCallbackHandler))
@@ -108,7 +57,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	qindex := indexHelper(regionCode)
+	qindex := utils.IndexHelper(regionCode)
 	if len(ctx.Args()) == 1 {
 		/*
 			gachaMap := utils.ReadGacha()
@@ -212,9 +161,9 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				break
 			}
 		}
-		region := reverseIndexHelper(qindex)
+		region := utils.ReverseIndexHelper(qindex)
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("gacha.not_in_specified_region", langCode), regionCode, region), nil)
-		regionCode = reverseIndexHelper(qindex)
+		regionCode = utils.ReverseIndexHelper(qindex)
 	}
 
 	err := sendGachaDetails(b, ctx, context, gachaId, regionCode, langCode)
@@ -370,7 +319,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 		return err
 	}
 
-	qindex := indexHelper(regionCode)
+	qindex := utils.IndexHelper(regionCode)
 
 	now := time.Now().Unix() * 1000 // Convert to milliseconds
 	var countdownStr string
@@ -397,7 +346,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	} else {
 		countdownStr = I.GetLocalisedString("gacha.countdown_ended", langCode)
 	}
-	tz := tzHelper(regionCode)
+	tz := utils.TzHelper(regionCode)
 	loc, _ := time.LoadLocation(tz)
 	startTimeStr := time.Unix(publishedAt/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	endTimeStr := time.Unix(endAt/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")

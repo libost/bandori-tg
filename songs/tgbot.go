@@ -171,27 +171,11 @@ func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func regionHelper(region string) (int, string) {
-	switch region {
-	case "jp":
-		return 0, "Asia/Tokyo"
-	case "en":
-		return 1, "UTC"
-	case "tw":
-		return 2, "Asia/Taipei"
-	case "cn":
-		return 3, "Asia/Shanghai"
-	case "kr":
-		return 4, "Asia/Seoul"
-	default:
-		return 0, "Asia/Tokyo"
-	}
-}
-
 func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, langCode string) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	regionIndex, tz := regionHelper(region)
+	tz := utils.TzHelper(region)
+	regionIndex := utils.IndexHelper(region)
 	songMap := utils.ReadSongs()
 	var songId string
 	for id, song := range songMap {
