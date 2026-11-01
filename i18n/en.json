@@ -252,6 +252,7 @@
         "voice": "Character Voice",
         "selfintroduction": "Introduction",
         "id": "ID: ",
+        "signature": "Signature",
         "no_character_id": "Please provide a character ID to query.",
         "character_not_found": "Character not found. Please check if the character ID is correct.",
         "error_occurred": "An error occurred while querying character information. Please try again later.",

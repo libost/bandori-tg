@@ -3,6 +3,7 @@ package characters
 import (
 	"bytes"
 	"context"
+	"embed"
 	"fmt"
 	"image/png"
 	"strconv"
@@ -19,6 +20,9 @@ import (
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
 )
+
+//go:embed signature/*.png
+var signatureFS embed.FS
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("character", characterCommand))
@@ -137,11 +141,16 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 		return fmt.Errorf("failed to encode image for %s: %w", characterId, err)
 	}
+	signatureImg, err := signatureFS.ReadFile("signature/" + characterDetails.LastName[1] + "_" + characterDetails.FirstName[1] + "_Signature.png")
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
+		return fmt.Errorf("failed to read signature image for %s: %w", characterId, err)
+	}
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(characterDetails.CharacterName[qidx]),
-				Size: 5,
+				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
@@ -310,6 +319,20 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						{
 							Text:  gotgbot.RichTextString(characterId),
 							Align: "right",
+						},
+					},
+				},
+			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockSectionHeading{
+				Text: gotgbot.RichTextString(I.GetLocalisedString("character.signature", langCode)),
+				Size: 6,
+			},
+			gotgbot.InputRichBlockDetails{
+				Blocks: []gotgbot.InputRichBlock{
+					gotgbot.InputRichBlockPhoto{
+						Photo: gotgbot.InputMediaPhoto{
+							Media: gotgbot.InputFileByReader("signature.png", bytes.NewReader(signatureImg)),
 						},
 					},
 				},

@@ -195,7 +195,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(comic.Title[idx]),
-				Size: 5,
+				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{
 				Photo: gotgbot.InputMediaPhoto{
