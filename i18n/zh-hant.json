@@ -260,6 +260,8 @@
         "invalid_region": "無效的伺服器代碼。請使用以下之一: jp, en, tw, cn, kr。",
         "region_no_data": "当前服务器 (%[1]s) 暂无该角色数据，将显示服务器 (%[2]s) 的角色数据。",
         "request_timeout": "请求超时，请稍后再试。",
+        "error_occurred": "查询角色信息时发生错误，请稍后再试。",
+        "character_not_found": "未找到指定的角色。请检查输入是否正确。",
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。"
     }
 }

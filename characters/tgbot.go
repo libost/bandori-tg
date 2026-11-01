@@ -60,12 +60,14 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		index := C.NewSearchIndex(C.CharaSearch)
 		matches := index.Search(characterId)
 		if len(matches) == 0 {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.character_not_found", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 			return fmt.Errorf("invalid character ID or name: %s", characterId)
 		}
 		idNum = matches[0].Item.ID
 		characterId = fmt.Sprintf("%d", idNum)
 	}
 	if idNum < 1 || idNum > 40 {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.character_not_found", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 		return fmt.Errorf("character ID invalid, expected to be between 1 and 40, got %d", idNum)
 	}
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
@@ -91,6 +93,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	schoolYear := convertAnyToString(characterDetails.Profile.SchoolYear[qidx])
 	birthdayInt, err := strconv.Atoi(characterDetails.Profile.Birthday)
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 		return fmt.Errorf("failed to convert birthday for %s to int: %w", characterId, err)
 	}
 	loc, _ := time.LoadLocation("Asia/Tokyo")
@@ -103,11 +106,13 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		// Convert month and day to English format
 		month, err := strconv.Atoi(bdParts[0])
 		if err != nil {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 			return fmt.Errorf("failed to convert birthday month for %s to int: %w", characterId, err)
 		}
 		bdParts[0] = time.Month(month).String()
 		day, err := strconv.Atoi(bdParts[1])
 		if err != nil {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 			return fmt.Errorf("failed to convert birthday day for %s to int: %w", characterId, err)
 		}
 		bdParts[1] = humanize.Ordinal(day)
@@ -116,11 +121,13 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	url := "https://bestdori.com/assets/jp/ui/character_kv_image/" + fmt.Sprintf("%03d", idNum) + "_rip/image.png"
 	img, err := generateCharacterBackground(url, characterDetails.ColorCode, ctxTimeout)
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 		return fmt.Errorf("failed to generate character background for %s: %w", characterId, err)
 	}
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 		return fmt.Errorf("failed to encode image for %s: %w", characterId, err)
 	}
 	richMessage := gotgbot.InputRichMessage{
@@ -307,5 +314,8 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
+	}
 	return err
 }

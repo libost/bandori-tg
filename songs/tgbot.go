@@ -213,7 +213,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	bandStr := fmt.Sprintf("%d", detailedSong.BandID)
 	bandName := bandMap[bandStr].BandName[regionIndex]
 	bandNameTable := gotgbot.RichTextArray{gotgbot.RichTextString(bandName)}
-	if slices.Contains(C.BandWithEmoji, detailedSong.BandID) {
+	if slices.Contains(C.BandWithEmoji[:], detailedSong.BandID) {
 		bandNameTable = gotgbot.RichTextArray{
 			gotgbot.RichTextString(bandName + " "),
 			gotgbot.RichTextCustomEmoji{

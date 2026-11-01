@@ -229,7 +229,7 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		webhookOpts.KeyFile = cfg.Webhook.Cert.KeyPath
 	}
 
-	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts, cfg.Webhook.Port) {
+	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts[:], cfg.Webhook.Port) {
 		log.Printf("Warning: The webhook port %d is one of the ports accepted by Telegram. If you are running this bot behind a reverse proxy (like Nginx), please ensure that the proxy forwards requests to this port correctly.", cfg.Webhook.Port)
 	}
 
