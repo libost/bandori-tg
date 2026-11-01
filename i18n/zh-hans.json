@@ -231,6 +231,7 @@
         "dj": "DJ",
         "violin": "小提琴",
         "birthday": "生日: ",
+        "birthday_format": "%[1]s月%[2]s日",
         "constellation": "星座: ",
         "cancer": "巨蟹座",
         "leo": "狮子座",

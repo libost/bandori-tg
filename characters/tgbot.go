@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"image/png"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/libost/bandori-tg/band"
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
@@ -92,7 +94,25 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("failed to convert birthday for %s to int: %w", characterId, err)
 	}
 	loc, _ := time.LoadLocation("Asia/Tokyo")
-	bdStr := time.UnixMilli(int64(birthdayInt)).In(loc).Format("01-02")
+	bdTimeStr := time.UnixMilli(int64(birthdayInt)).In(loc).Format("01-02")
+	bdParts := strings.Split(bdTimeStr, "-")
+	for i, part := range bdParts {
+		bdParts[i] = strings.TrimPrefix(part, "0")
+	}
+	if langCode == "en" {
+		// Convert month and day to English format
+		month, err := strconv.Atoi(bdParts[0])
+		if err != nil {
+			return fmt.Errorf("failed to convert birthday month for %s to int: %w", characterId, err)
+		}
+		bdParts[0] = time.Month(month).String()
+		day, err := strconv.Atoi(bdParts[1])
+		if err != nil {
+			return fmt.Errorf("failed to convert birthday day for %s to int: %w", characterId, err)
+		}
+		bdParts[1] = humanize.Ordinal(day)
+	}
+	bdStr := fmt.Sprintf(I.GetLocalisedString("character.birthday_format", langCode), bdParts[0], bdParts[1])
 	url := "https://bestdori.com/assets/jp/ui/character_kv_image/" + fmt.Sprintf("%03d", idNum) + "_rip/image.png"
 	img, err := generateCharacterBackground(url, characterDetails.ColorCode, ctxTimeout)
 	if err != nil {
@@ -122,7 +142,13 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.CharacterName[qidx]),
+							Text: gotgbot.RichTextArray{
+								gotgbot.RichTextString(characterDetails.CharacterName[qidx] + " "),
+								gotgbot.RichTextCustomEmoji{
+									CustomEmojiId:   fmt.Sprintf("%d", C.CharaEmoji[idNum-1]),
+									AlternativeText: "",
+								},
+							},
 							Align: "right",
 						},
 					},

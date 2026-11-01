@@ -677,11 +677,11 @@ var AcceptedRegions = []string{"jp", "en", "tw", "cn", "kr"}
 // Symptom: when send rich message, the telegram api will return 400 Bad Request with message "wrong type of the web page content".
 var BadCards = []string{"2309"}
 
-var TelegramAcceptPorts = []int{80, 88, 443, 8443}
+var TelegramAcceptPorts = [...]int{80, 88, 443, 8443}
 
-var BandWithEmoji = []int{1, 2, 3, 4, 5, 18, 21, 45}
+var BandWithEmoji = [...]int{1, 2, 3, 4, 5, 18, 21, 45}
 
-var DifficultyColors = []string{
+var DifficultyColors = [...]string{
 	"#3076F8", // Easy
 	"#188A28", // Normal
 	"#D1861A", // Hard
