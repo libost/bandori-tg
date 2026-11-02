@@ -50,14 +50,14 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	qidx := utils.IndexHelper(regionCode)
 	if len(args) == 1 {
-		comicKeys := utils.ReadComicKeys()
+		comicKeys := getAllComicIDsForSpecifiedRegion(regionCode)
 		if len(comicKeys) == 0 {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("comic.no_comics_available", langCode), nil)
 			return fmt.Errorf("no comics available")
 		}
 		for range comicKeys {
 			comicId := comicKeys[rand.Intn(len(comicKeys))]
-			comicData, err := GetComicData(comicId)
+			comicData, err := getComicData(comicId)
 			if err != nil {
 				return err
 			}
@@ -74,8 +74,9 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 	comicId := args[1]
-	comicData, err := GetComicData(comicId)
+	comicData, err := getComicData(comicId)
 	if err != nil {
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("comic.comic_not_found", langCode), nil)
 		return err
 	}
 	comicTitle := comicData.Title[qidx]

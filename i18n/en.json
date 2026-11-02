@@ -213,7 +213,8 @@
         "characters": "Character: ",
         "id": "ID: ",
         "type_fourframe": "Four-frame",
-        "type_singleframe": "Single-frame"
+        "type_singleframe": "Single-frame",
+        "comic_not_found": "Comic not found. Please check if the comic ID is correct."
     },
     "character": {
         "name": "Name: ",

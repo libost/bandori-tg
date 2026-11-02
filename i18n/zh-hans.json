@@ -216,7 +216,8 @@
         "characters": "角色: ",
         "id": "ID: ",
         "type_fourframe": "四格",
-        "type_singleframe": "单格"
+        "type_singleframe": "单格",
+        "comic_not_found": "未找到指定的漫画。请检查输入是否正确。"
     },
     "character": {
         "name": "名字: ",
