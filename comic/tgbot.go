@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/rand/v2"
 	"strings"
 	"sync"
 	"time"
@@ -56,14 +56,16 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			return fmt.Errorf("no comics available")
 		}
 		for range comicKeys {
-			comicId := comicKeys[rand.Intn(len(comicKeys))]
+			comicId := comicKeys[rand.N(len(comicKeys))]
 			comicData, err := getComicData(comicId)
 			if err != nil {
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 				return err
 			}
 			if comicData.Title[qidx] != "" {
 				err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
 				if err != nil {
+					ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 					return err
 				}
 				return err
@@ -98,6 +100,9 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	regionCode = utils.ReverseIndexHelper(qidx)
 
 	err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+	}
 	return err
 }
 
