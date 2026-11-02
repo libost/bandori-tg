@@ -2,9 +2,10 @@
 
 一个用于手游 **《BanG Dream! 少女乐团派对！》**（邦多利 / Bandori）的 Telegram 机器人，提供查卡、查活动、档线预测等实用功能，支持多服务区、多语言，数据来源于 [Bestdori](https://bestdori.com)。
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![GitHub License](https://img.shields.io/github/license/libost/bandori-tg)
 [![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
-
+[![GitHub Downloads](https://img.shields.io/github/downloads/libost/bandori-tg/total.svg)](https://github.com/libost/bandori-tg/releases)
+![GitHub Release](https://img.shields.io/github/v/release/libost/bandori-tg)
 ---
 
 试用机器人：[@gbp_hina_bot](https://t.me/gbp_hina_bot)
@@ -187,13 +188,24 @@ go build ./...
 ## 开发路线
 
 - [ ] 新闻页面
-- [ ] 招募信息查询
+- [x] 招募信息查询
 - [ ] 更多语言支持（需要帮助！）
 
 ## 📄 许可证
 
 [MIT](LICENSE) © libost
 
+### 🏷️ 可选的构建标签
+
+构建时可使用以下标签启用/禁用特定功能：
+- `fonts_detached`: 使用分离的字体文件（优点：构建产物体积更小），会在启动时检查 `res/fonts/` 目录是否存在字体文件，若不存在则自动下载。  
+
+用法：
+
+```bash
+# 构建时启用字体分离
+go build -tags fonts_detached ./...
+```
 
 > [!IMPORTANT]
 > 本项目与 **BanG Dream! 少女乐团派对！** 官方无关，`Bandori`、`BanG Dream!` 均为其所有者的商标，数据来源于 [Bestdori](https://bestdori.com)。
