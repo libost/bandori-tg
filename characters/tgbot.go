@@ -113,7 +113,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	for i, part := range bdParts {
 		bdParts[i] = strings.TrimPrefix(part, "0")
 	}
-	if langCode == "en" {
+	if langCode != "zh" && langCode != "zh-hans" && langCode != "zh-hant" {
 		// Convert month and day to English format
 		month, err := strconv.Atoi(bdParts[0])
 		if err != nil {
