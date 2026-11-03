@@ -59,31 +59,6 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	qindex := utils.IndexHelper(regionCode)
 	if len(ctx.Args()) == 1 {
-		/*
-			gachaMap := utils.ReadGacha()
-
-			gachaIDs := make([]string, 0, len(gachaMap))
-			for gachaID := range gachaMap {
-				gachaIDs = append(gachaIDs, gachaID)
-			}
-			for range gachaIDs {
-				randomGachaIndex, err := randomNumGen(0, len(gachaMap)-1)
-				if err != nil {
-					ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
-					return err
-				}
-				gachaId = gachaIDs[randomGachaIndex]
-				// Make sure the randomly selected gacha is available in the specified region
-				if gachaMap[gachaId].PublishedAt[qindex] != "" && gachaMap[gachaId].ClosedAt[qindex] != "" {
-					break
-				}
-			}
-
-			_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.random_result", langCode), nil)
-			if err != nil {
-				return err
-			}*/
-
 		ongoingGachas, err := recent.GetOngoingGachas()
 		if err != nil {
 			log.Printf("Error fetching ongoing gachas: %v", err)

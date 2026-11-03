@@ -169,7 +169,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 	publicStartAt := convertAnyToInt(comic.PublicStartAt[idx])
 	if publicStartAt != 1 {
 		timestamp := int64(publicStartAt) / 1000
-		timezone := tzHelper(regionCode)
+		timezone := utils.TzHelper(regionCode)
 		loc, _ := time.LoadLocation(timezone)
 		timeStr := time.Unix(timestamp, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 		cells = append(cells, []gotgbot.RichBlockTableCell{
@@ -220,21 +220,4 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 		},
 	})
 	return err
-}
-
-func tzHelper(region string) string {
-	switch region {
-	case "jp":
-		return "Asia/Tokyo"
-	case "en":
-		return "UTC"
-	case "tw":
-		return "Asia/Taipei"
-	case "cn":
-		return "Asia/Shanghai"
-	case "kr":
-		return "Asia/Seoul"
-	default:
-		return "Asia/Tokyo"
-	}
 }

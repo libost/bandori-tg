@@ -36,7 +36,6 @@ var Gacha C.GachaData
 var Rates C.RatesData
 var Songs C.SongsData
 var Comic C.ComicData
-var ComicKeys []string
 var REventsKeys []string
 var RGachaKeys []string
 var SongsKeysJP []string
@@ -117,12 +116,6 @@ func ReadRGachasKeys() []string {
 	return append([]string(nil), RGachaKeys...)
 }
 
-func ReadComicKeys() []string {
-	dataMu.RLock()
-	defer dataMu.RUnlock()
-	return append([]string(nil), ComicKeys...)
-}
-
 func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData, snapshotComic C.ComicData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
@@ -172,12 +165,6 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 
 	sort.Strings(SongsKeysTW)
 
-	ComicKeys = make([]string, 0, len(Comic))
-	for k := range Comic {
-		ComicKeys = append(ComicKeys, k)
-	}
-
-	sort.Strings(ComicKeys)
 }
 
 func InitLists() error {

@@ -76,7 +76,7 @@ func main() {
 			return
 		}
 	}
-	initAll()
+	initDB()
 
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger), cron.SkipIfStillRunning(cron.DefaultLogger)))
@@ -155,7 +155,7 @@ func main() {
 
 }
 
-func initAll() {
+func initDB() {
 	_, err := DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
