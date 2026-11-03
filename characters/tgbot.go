@@ -21,7 +21,7 @@ import (
 	"github.com/libost/gotgbot/v2/ext/handlers"
 )
 
-//go:embed signature/*.png
+//go:embed signatures/*.png
 var signatureFS embed.FS
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
@@ -141,7 +141,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 		return fmt.Errorf("failed to encode image for %s: %w", characterId, err)
 	}
-	signatureImg, err := signatureFS.ReadFile("signature/" + characterDetails.LastName[1] + "_" + characterDetails.FirstName[1] + "_Signature.png")
+	signatureImg, err := signatureFS.ReadFile("signatures/" + characterDetails.LastName[1] + "_" + characterDetails.FirstName[1] + "_Signature.png")
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
 		return fmt.Errorf("failed to read signature image for %s: %w", characterId, err)

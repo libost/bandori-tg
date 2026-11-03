@@ -89,40 +89,6 @@ func normalizeCharacterID(value any) string {
 	}
 }
 
-func indexHelper(code string) int {
-	switch code {
-	case "jp", "powerful":
-		return 0
-	case "en", "cool":
-		return 1
-	case "tw", "happy":
-		return 2
-	case "cn", "pure":
-		return 3
-	case "kr":
-		return 4
-	default:
-		return 0
-	}
-}
-
-func tzHelper(code string) string {
-	switch code {
-	case "jp":
-		return "Asia/Tokyo"
-	case "en":
-		return "UTC"
-	case "tw":
-		return "Asia/Taipei"
-	case "cn":
-		return "Asia/Shanghai"
-	case "kr":
-		return "Asia/Seoul"
-	default:
-		return "UTC"
-	}
-}
-
 func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *time.Location) (int64, string) {
 	if field == "start" {
 		timeR := eventDetailed.StartAt[index]
@@ -181,20 +147,19 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		qlangCode = I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	}
 	eventType := eventDetailed.EventType
-	qindex := indexHelper(qlangCode)
+	qindex := utils.IndexHelper(qlangCode)
 	eventName := selectLocaleString(eventDetailed.EventName, qindex)
 	regionCode := regionCodeFromEvent(eventDetailed, qlangCode)
 	if regionCode != qlangCode {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("events.region_no_data", langCode), qlangCode, regionCode), nil)
 	}
-	rindex := indexHelper(regionCode)
+	rindex := utils.IndexHelper(regionCode)
 	bannerUrl := "https://bestdori.com/assets/" + regionCode + "/event/" + eventDetailed.AssetBundleName + "/images_rip/banner.png"
 	attribute := eventDetailed.Attributes[0].Attribute
-	aindex := indexHelper(attribute)
+	aindex := utils.IndexHelper(attribute)
 	attribute = strings.ToUpper(attribute)
 
-	var tz string
-	tz = tzHelper(regionCode)
+	tz := utils.TzHelper(regionCode)
 	loc, _ := time.LoadLocation(tz)
 	startAtUnix, startAtTime := getTimeHelper(eventDetailed, "start", rindex, loc)
 	endAtUnix, endAtTime := getTimeHelper(eventDetailed, "end", rindex, loc)
@@ -515,7 +480,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		qlangCode = region
 	}
 	eventID := ctx.Args()[1]
-	regionCode := indexHelper(qlangCode)
+	regionCode := utils.IndexHelper(qlangCode)
 	if eventID == "now" || eventID == "当前" {
 		ongoingEvents, err := recent.GetOngoingEventsID()
 		if err != nil {
@@ -584,7 +549,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if predicted == 0 {
 		predictedStr = I.GetLocalisedString("events.not_enough_data", langCode)
 	}
-	tz := tzHelper(qlangCode)
+	tz := utils.TzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
 	lastTimeStr := time.Unix(latestTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	allTimeSpeedStr := humanize.Comma(allTimeSpeed)

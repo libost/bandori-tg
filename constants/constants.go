@@ -797,7 +797,7 @@ var CharaSearch = []*Item{
 	{ID: 32, Name: "Rokka Asahi", Aliases: []string{"あさひ ろっか", "아사히 롯카", "朝日 六花", "LOCK", "asahi rokka", "rokka", "ロック", "록"}},
 	{ID: 33, Name: "Masuki Sato", Aliases: []string{"さとう ますき", "사토 마스키", "佐藤 ますき", "MASKING", "佐藤 益木", "satou masuki", "masuki", "マスキング", "마스킹"}},
 	{ID: 34, Name: "Reona Nyubara", Aliases: []string{"にゅうばら れおな", "뉴바라 레오나", "鳰原 令王那", "PAREO", "nyubara reona", "reona", "パレオ", "파레오"}},
-	{ID: 35, Name: "Chiyu Tamade", Aliases: []string{"たまで ちゆ", "타마데 치유", "Chiyu-tan", "珠手 ちゆ", "珠手 知由", "CHU²", "tamade chiyu", "chiyu", "chuchu", "チュチュ", "츄츄"}},
+	{ID: 35, Name: "Chiyu Tamade", Aliases: []string{"たまで ちゆ", "타마데 치유", "Chiyu-tan", "珠手 ちゆ", "珠手 知由", "CHU²", "tamade chiyu", "chiyu", "chuchu", "chu2", "チュチュ", "츄츄"}},
 	{ID: 36, Name: "Tomori Takamatsu", Aliases: []string{"たかまつ ともり", "高松 燈", "Takamatsu Tomori", "tomori", "tomorin"}},
 	{ID: 37, Name: "Anon Chihaya", Aliases: []string{"ちはや あのん", "千早 愛音", "Chihaya anon", "Anon"}},
 	{ID: 38, Name: "Rana Kaname", Aliases: []string{"かなめ らーな", "要 楽奈", "要 樂奈", "要 乐奈", "raana", "kaname rana", "kaname raana"}},

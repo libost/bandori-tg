@@ -44,7 +44,7 @@ func getComicUrl(comic C.Comic, region string) (string, error) {
 	if parts[1] == "fourframe" {
 		return fmt.Sprintf("https://bestdori.com/assets/%s/comic/comic_fourframe/%s_rip/%s.png", region, comic.AssetBundleName, comic.AssetBundleName), nil
 	}
-	return fmt.Sprintf("https://bestdori.com/assets/%s//comic/comic_singleframe/%s_rip/%s.png", region, comic.AssetBundleName, comic.AssetBundleName), nil
+	return fmt.Sprintf("https://bestdori.com/assets/%s/comic/comic_singleframe/%s_rip/%s.png", region, comic.AssetBundleName, comic.AssetBundleName), nil
 }
 
 func convertAnyToInt(value any) int {
