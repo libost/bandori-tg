@@ -17,7 +17,7 @@ require (
 	golang.org/x/sync v0.24.0
 	gonum.org/v1/plot v0.17.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	modernc.org/sqlite v1.61.0
+	modernc.org/sqlite v1.61.1
 )
 
 require (
@@ -45,11 +45,11 @@ require (
 	github.com/tdewolff/font v0.0.0-20261010204837-88a7f6b56918 // indirect
 	github.com/tdewolff/minify/v2 v2.24.24 // indirect
 	github.com/tdewolff/parse/v2 v2.8.20 // indirect
-	github.com/yuin/goldmark v1.8.6 // indirect
+	github.com/yuin/goldmark v1.8.7 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	modernc.org/knuth v0.6.0 // indirect
-	modernc.org/libc v1.79.1 // indirect
+	modernc.org/libc v1.80.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 	modernc.org/token v1.1.0 // indirect
