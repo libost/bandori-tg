@@ -507,6 +507,9 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.no_cutoff_data", langCode), nil)
 			return nil
 		}
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+		log.Printf("Error fetching event tracker data for event ID %s: %v", eventID, err)
+		return err
 	}
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
@@ -551,7 +554,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	tz := utils.TzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
-	lastTimeStr := time.Unix(latestTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	lastTimeStr := time.UnixMilli(latestTime).In(loc).Format("2006-01-02 15:04:05 MST")
 	allTimeSpeedStr := humanize.Comma(allTimeSpeed)
 	speedStr := humanize.Comma(speed)
 
@@ -763,8 +766,8 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 			}
 
-			eStartTime := time.Unix(int64(eStart)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
-			eEndTime := time.Unix(int64(eEnd)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+			eStartTime := time.UnixMilli(int64(eStart)).In(loc).Format("2006-01-02 15:04:05 MST")
+			eEndTime := time.UnixMilli(int64(eEnd)).In(loc).Format("2006-01-02 15:04:05 MST")
 
 			richMessage.Blocks = append(richMessage.Blocks,
 				gotgbot.InputRichBlockPhoto{
