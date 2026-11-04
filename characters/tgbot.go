@@ -54,7 +54,6 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}()
 	defer stopActionLoop()
 	if len(ctx.Args()) == 1 {
-		// TODO
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 		return fmt.Errorf("no character parameter provided")
 	}

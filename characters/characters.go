@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fogleman/gg"
+	"github.com/gogpu/gg"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
 )
@@ -81,13 +81,12 @@ func generateCharacterBackground(url string, color string, ctx context.Context) 
 	}
 
 	dc := gg.NewContext(img.Bounds().Dx(), img.Bounds().Dy())
+	defer dc.Close()
 
-	dc.SetHexColor(color)
+	dc.ClearWithColor(gg.Hex(color))
 
-	dc.Clear()
-
-	dc.DrawImage(img, 0, 0)
-
+	newImg := gg.ImageBufFromImage(img)
+	dc.DrawImage(newImg, 0, 0)
 	return dc.Image(), nil
 }
 

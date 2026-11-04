@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fogleman/gg"
+	"github.com/gogpu/gg"
 	"github.com/libost/bandori-tg/cards"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
@@ -95,8 +95,8 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 		length = 300 * ((len(members) + 4) / 5)
 	}
 	dc := gg.NewContext(width, length)
-	dc.SetHexColor("#FFFFFF")
-	dc.Clear()
+	defer dc.Close()
+	dc.ClearWithColor(gg.Hex("#FFFFFF"))
 	for i, member := range members {
 		memberImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", member.SituationID), member.Percent)
 		if err != nil {
@@ -104,7 +104,8 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 		}
 		x := 200*(i%5) + 20
 		y := 25 + (i/5)*300
-		dc.DrawImageAnchored(memberImage, x, y, 0, 0)
+		newImg := gg.ImageBufFromImage(memberImage)
+		dc.DrawImage(newImg, math.Round(float64(x)), math.Round(float64(y)))
 	}
 	return dc.Image(), nil
 }
@@ -118,8 +119,8 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 		length = 300 * ((len(bonusCards) + 4) / 5)
 	}
 	dc := gg.NewContext(width, length)
-	dc.SetHexColor("#FFFFFF")
-	dc.Clear()
+	defer dc.Close()
+	dc.ClearWithColor(gg.Hex("#FFFFFF"))
 	for i, card := range bonusCards {
 		cardImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", card), 0)
 		if err != nil {
@@ -127,7 +128,8 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 		}
 		x := 200*(i%5) + 20
 		y := 25 + (i/5)*300
-		dc.DrawImageAnchored(cardImage, x, y, 0, 0)
+		newImg := gg.ImageBufFromImage(cardImage)
+		dc.DrawImage(newImg, math.Round(float64(x)), math.Round(float64(y)))
 	}
 	return dc.Image(), nil
 }
