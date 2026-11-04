@@ -248,7 +248,7 @@ func generateGachaImage(results []string) (image.Image, error) {
 	}
 	dc := gg.NewContext(width, length)
 	defer dc.Close()
-	dc.ClearWithColor(gg.Hex("#FFFFFF"))
+	dc.ClearWithColor(gg.White)
 	for i, result := range results {
 		cardImage, err := cards.ThumbGenerate(result, 0)
 		if err != nil {

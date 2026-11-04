@@ -8,7 +8,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gogpu/gg v0.52.5
 	github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm
-	github.com/robfig/cron/v3 v3.0.1
+	github.com/netresearch/go-cron v0.19.0
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c
 	golang.org/x/image v0.47.0

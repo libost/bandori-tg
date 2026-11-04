@@ -28,7 +28,7 @@ import (
 	"github.com/libost/bandori-tg/version"
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
-	"github.com/robfig/cron/v3"
+	"github.com/netresearch/go-cron"
 	"golang.org/x/net/proxy"
 	"gopkg.in/natefinch/lumberjack.v2"
 

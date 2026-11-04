@@ -96,7 +96,7 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 	}
 	dc := gg.NewContext(width, length)
 	defer dc.Close()
-	dc.ClearWithColor(gg.Hex("#FFFFFF"))
+	dc.ClearWithColor(gg.White)
 	for i, member := range members {
 		memberImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", member.SituationID), member.Percent)
 		if err != nil {
@@ -120,7 +120,7 @@ func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
 	}
 	dc := gg.NewContext(width, length)
 	defer dc.Close()
-	dc.ClearWithColor(gg.Hex("#FFFFFF"))
+	dc.ClearWithColor(gg.White)
 	for i, card := range bonusCards {
 		cardImage, err := cards.ThumbGenerate(fmt.Sprintf("%d", card), 0)
 		if err != nil {

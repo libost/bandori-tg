@@ -85,8 +85,7 @@ type difficultyData struct {
 func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
 	dc := gg.NewContext(len(diffData.level)*30, 30)
 	defer dc.Close()
-	dc.SetHexColor("#FFFFFF")
-	dc.Clear()
+	dc.ClearWithColor(gg.White)
 	for i, level := range diffData.level {
 		dc.DrawCircle(float64(15+i*30), 15, 15)
 		dc.SetHexColor(C.DifficultyColors[i])
@@ -99,7 +98,7 @@ func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		dc.SetFont(fontSrc.Face(32))
+		dc.SetFont(fontSrc.Face(22))
 		dc.SetHexColor("#000000")
 		inputStr := strconv.Itoa(level)
 		dc.DrawStringAnchored(inputStr, float64(15+i*30), 15, 0.5, 0.5)

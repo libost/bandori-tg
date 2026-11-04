@@ -65,7 +65,6 @@ func generateCharacterBackground(url string, color string, ctx context.Context) 
 	}
 
 	resp, err := utils.HttpClient.Do(req)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}

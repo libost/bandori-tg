@@ -286,7 +286,7 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	bandFrame := C.BandFrames[character.BandID-1]
 	dc := gg.NewContext(180, 250)
 	defer dc.Close()
-	dc.ClearWithColor(gg.Hex("#FFFFFF"))
+	dc.ClearWithColor(gg.White)
 	reqThumb, err := http.NewRequestWithContext(context, http.MethodGet, thumbPath, nil)
 	if err != nil {
 		return nil, err
@@ -296,7 +296,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respThumb.Body.Close()
-	baseImg, _ := png.Decode(respThumb.Body)
+	baseImg, err := png.Decode(respThumb.Body)
+	if err != nil {
+		return nil, err
+	}
 	drawScaledImage(dc, baseImg, 0, 0, 180, 180)
 	reqFrame, err := http.NewRequestWithContext(context, http.MethodGet, frame, nil)
 	if err != nil {
@@ -307,7 +310,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respFrame.Body.Close()
-	frameImg, _ := png.Decode(respFrame.Body)
+	frameImg, err := png.Decode(respFrame.Body)
+	if err != nil {
+		return nil, err
+	}
 	drawScaledImage(dc, frameImg, 0, 0, 180, 180)
 	reqAttrFrame, err := http.NewRequestWithContext(context, http.MethodGet, attrFrame, nil)
 	if err != nil {
@@ -332,7 +338,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respStar.Body.Close()
-	starImgDecoded, _ := png.Decode(respStar.Body)
+	starImgDecoded, err := png.Decode(respStar.Body)
+	if err != nil {
+		return nil, err
+	}
 	for i := range card.Rarity {
 		drawScaledImage(dc, starImgDecoded, 8, float64(147-i*25), 26, 26)
 	}
