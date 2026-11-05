@@ -82,6 +82,10 @@ func main() {
 	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger), cron.SkipIfStillRunning(cron.DefaultLogger)))
 
 	config.InitConfig()
+	err = utils.InitHttpClient()
+	if err != nil {
+		log.Fatalf("Failed to initialize HTTP client: %v", err)
+	}
 	err = utils.InitLists()
 	if err != nil {
 		log.Fatalf("Failed to initialize lists: %v", err)
@@ -152,7 +156,6 @@ func main() {
 	cronTasks(c)
 
 	updater.Idle()
-
 }
 
 func initDB() {

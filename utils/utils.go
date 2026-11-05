@@ -170,57 +170,6 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 func InitLists() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	config := config.AppConfig
-
-	if config.Proxy.Enabled {
-		switch config.Proxy.Type {
-		case "http":
-			HttpClient = &http.Client{
-				Timeout: 5 * time.Second,
-				Transport: &UATransport{
-					Base: &http.Transport{
-						MaxIdleConnsPerHost: 10,
-						Proxy: http.ProxyURL(&url.URL{
-							Scheme: "http",
-							Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
-							User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
-						}),
-					},
-					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
-				},
-			}
-		case "socks5":
-			dialer, err := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port), &proxy.Auth{
-				User:     config.Proxy.Username,
-				Password: config.Proxy.Password,
-			}, proxy.Direct)
-			if err != nil {
-				return fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
-			}
-			HttpClient = &http.Client{
-				Timeout: 5 * time.Second,
-				Transport: &UATransport{
-					Base: &http.Transport{
-						MaxIdleConnsPerHost: 10,
-						Dial:                dialer.Dial,
-					},
-					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
-				},
-			}
-		default:
-			log.Fatalf("Unsupported proxy type: %s", config.Proxy.Type)
-		}
-	} else {
-		HttpClient = &http.Client{
-			Timeout: 5 * time.Second,
-			Transport: &UATransport{
-				Base: &http.Transport{
-					MaxIdleConnsPerHost: 10,
-				},
-				UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
-			},
-		}
-	}
 
 	var snapshotBand C.BandData
 	var snapshotCards C.CardData
@@ -283,6 +232,61 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
 	}
 
+	return nil
+}
+
+func InitHttpClient() error {
+	config := config.AppConfig
+
+	if config.Proxy.Enabled {
+		switch config.Proxy.Type {
+		case "http":
+			HttpClient = &http.Client{
+				Timeout: 5 * time.Second,
+				Transport: &UATransport{
+					Base: &http.Transport{
+						MaxIdleConnsPerHost: 10,
+						Proxy: http.ProxyURL(&url.URL{
+							Scheme: "http",
+							Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
+							User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
+						}),
+					},
+					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+				},
+			}
+		case "socks5":
+			dialer, err := proxy.SOCKS5("tcp", fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port), &proxy.Auth{
+				User:     config.Proxy.Username,
+				Password: config.Proxy.Password,
+			}, proxy.Direct)
+			if err != nil {
+				return fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
+			}
+			HttpClient = &http.Client{
+				Timeout: 5 * time.Second,
+				Transport: &UATransport{
+					Base: &http.Transport{
+						MaxIdleConnsPerHost: 10,
+						Dial:                dialer.Dial,
+					},
+					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+				},
+			}
+		default:
+			return fmt.Errorf("Unsupported proxy type: %s", config.Proxy.Type)
+		}
+	} else {
+		HttpClient = &http.Client{
+			Timeout: 5 * time.Second,
+			Transport: &UATransport{
+				Base: &http.Transport{
+					MaxIdleConnsPerHost: 10,
+				},
+				UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+			},
+		}
+	}
 	return nil
 }
 
