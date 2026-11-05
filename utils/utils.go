@@ -177,13 +177,16 @@ func InitLists() error {
 		case "http":
 			HttpClient = &http.Client{
 				Timeout: 5 * time.Second,
-				Transport: &http.Transport{
-					MaxIdleConnsPerHost: 10,
-					Proxy: http.ProxyURL(&url.URL{
-						Scheme: "http",
-						Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
-						User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
-					}),
+				Transport: &UATransport{
+					Base: &http.Transport{
+						MaxIdleConnsPerHost: 10,
+						Proxy: http.ProxyURL(&url.URL{
+							Scheme: "http",
+							Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
+							User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
+						}),
+					},
+					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
 				},
 			}
 		case "socks5":
@@ -196,9 +199,12 @@ func InitLists() error {
 			}
 			HttpClient = &http.Client{
 				Timeout: 5 * time.Second,
-				Transport: &http.Transport{
-					MaxIdleConnsPerHost: 10,
-					Dial:                dialer.Dial,
+				Transport: &UATransport{
+					Base: &http.Transport{
+						MaxIdleConnsPerHost: 10,
+						Dial:                dialer.Dial,
+					},
+					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
 				},
 			}
 		default:
@@ -207,8 +213,11 @@ func InitLists() error {
 	} else {
 		HttpClient = &http.Client{
 			Timeout: 5 * time.Second,
-			Transport: &http.Transport{
-				MaxIdleConnsPerHost: 10,
+			Transport: &UATransport{
+				Base: &http.Transport{
+					MaxIdleConnsPerHost: 10,
+				},
+				UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
 			},
 		}
 	}
@@ -345,4 +354,23 @@ func TzHelper(region string) string {
 	default:
 		return "Asia/Tokyo"
 	}
+}
+
+func (t *UATransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	reqCopy := req.Clone(req.Context())
+
+	if reqCopy.Header.Get("User-Agent") == "" {
+		reqCopy.Header.Set("User-Agent", t.UserAgent)
+	}
+
+	base := t.Base
+	if base == nil {
+		base = http.DefaultTransport
+	}
+	return base.RoundTrip(reqCopy)
+}
+
+type UATransport struct {
+	Base      http.RoundTripper
+	UserAgent string
 }
