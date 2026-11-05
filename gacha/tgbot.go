@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html"
 	"image/png"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -61,7 +61,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if len(ctx.Args()) == 1 {
 		ongoingGachas, err := recent.GetOngoingGachas()
 		if err != nil {
-			log.Printf("Error fetching ongoing gachas: %v", err)
+			slog.Error(fmt.Sprintf("Error fetching ongoing gachas: %v", err))
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 			return err
 		}
@@ -92,7 +92,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			for _, gachaID := range gacha.Gacha {
 				gacha, err := GetGacha(gachaID)
 				if err != nil {
-					log.Printf("Error fetching gacha details for ID %s: %v", gachaID, err)
+					slog.Error(fmt.Sprintf("Error fetching gacha details for ID %s: %v", gachaID, err))
 					ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 					return err
 				}
@@ -124,7 +124,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 	gacha, ok := GetGacha(gachaId)
 	if ok != nil {
-		log.Printf("Invalid gacha ID: %s", gachaId)
+		slog.Error(fmt.Sprintf("Invalid gacha ID: %s", gachaId))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.invalid_argument", langCode), nil)
 		return err
 	}
@@ -195,14 +195,14 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	results, err := gachaHelper(gachaDetailed, regionCode, gachaDetailed.PaymentMethods[paymentIndex])
 	if err != nil {
-		log.Printf("Error generating gacha results for ID %s: %v", gachaId, err)
+		slog.Error(fmt.Sprintf("Error generating gacha results for ID %s: %v", gachaId, err))
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
 
 	img, err := generateGachaImage(results)
 	if err != nil {
-		log.Printf("Error generating gacha image for ID %s: %v", gachaId, err)
+		slog.Error(fmt.Sprintf("Error generating gacha image for ID %s: %v", gachaId, err))
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
@@ -210,7 +210,7 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
 	if err != nil {
-		log.Printf("Error encoding gacha image for ID %s: %v", gachaId, err)
+		slog.Error(fmt.Sprintf("Error encoding gacha image for ID %s: %v", gachaId, err))
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
@@ -258,7 +258,7 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
 			ShowAlert: true,
 		})
-		log.Printf("Invalid callback data: %s", callbackData)
+		slog.Error(fmt.Sprintf("Invalid callback data: %s", callbackData))
 		return fmt.Errorf("invalid callback data")
 	}
 	gachaId := parts[1]
@@ -283,13 +283,13 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context, gachaId string, regionCode string, langCode string) error {
 	_, ok := GetGacha(gachaId)
 	if ok != nil {
-		log.Printf("Invalid gacha ID: %s", gachaId)
+		slog.Error(fmt.Sprintf("Invalid gacha ID: %s", gachaId))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.invalid_argument", langCode), nil)
 		return err
 	}
 	gachaDetailed, err := GetGachaDetails(gachaId)
 	if err != nil {
-		log.Printf("Error fetching gacha details for ID %s: %v", gachaId, err)
+		slog.Error(fmt.Sprintf("Error fetching gacha details for ID %s: %v", gachaId, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
@@ -300,13 +300,13 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	var countdownStr string
 	publishedAt, parseErr := strconv.ParseInt(gachaDetailed.PublishedAt[qindex], 10, 64)
 	if parseErr != nil {
-		log.Printf("Error parsing published time for gacha %s: %v", gachaId, parseErr)
+		slog.Error(fmt.Sprintf("Error parsing published time for gacha %s: %v", gachaId, parseErr))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
 	endAt, parseErr := strconv.ParseInt(gachaDetailed.ClosedAt[qindex], 10, 64)
 	if parseErr != nil {
-		log.Printf("Error parsing end time for gacha %s: %v", gachaId, parseErr)
+		slog.Error(fmt.Sprintf("Error parsing end time for gacha %s: %v", gachaId, parseErr))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
@@ -366,7 +366,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 
 	img, err := generateGachaImage(pickupCards)
 	if err != nil {
-		log.Printf("Error generating gacha(%s) image: %v", gachaId, err)
+		slog.Error(fmt.Sprintf("Error generating gacha(%s) image: %v", gachaId, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
@@ -374,7 +374,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
 	if err != nil {
-		log.Printf("Error encoding image(%s): %v", gachaId, err)
+		slog.Error(fmt.Sprintf("Error encoding image(%s): %v", gachaId, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
@@ -404,7 +404,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 			}
 		}
 		if !foundValid {
-			log.Printf("No valid banner found for gacha %s in any region. Attempting to use logo as fallback.", gachaId)
+			slog.Error(fmt.Sprintf("No valid banner found for gacha %s in any region. Attempting to use logo as fallback.", gachaId))
 			tempBannerUrl := "https://bestdori.com/assets/" + regionCode + "/gacha/screen/" + gachaDetailed.ResourceName + "_rip/logo.png"
 			if isValidPNGUrl(tempBannerUrl) {
 				bannerUrl = tempBannerUrl
@@ -420,7 +420,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 				}
 			}
 			if !foundValid {
-				log.Printf("No valid logo found for gacha %s in any region. Skipping.", gachaId)
+				slog.Error(fmt.Sprintf("No valid logo found for gacha %s in any region. Skipping.", gachaId))
 			}
 		}
 	}

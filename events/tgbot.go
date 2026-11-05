@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"image/png"
-	"log"
+	"log/slog"
 	"slices"
 	"strconv"
 	"strings"
@@ -139,7 +139,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	}
 	eventDetailed, err := GetDetailedEvents(eventID)
 	if err != nil {
-		log.Printf("Error fetching detailed event data for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error fetching detailed event data for event ID %s: %v", eventID, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_fetch_error", langCode), nil)
 		return err
 	}
@@ -291,14 +291,14 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 
 	img, err := generateEventMembers(eventDetailed)
 	if err != nil {
-		log.Printf("Error generating event members image for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error generating event members image for event ID %s: %v", eventID, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
 		return err
 	}
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
 	if err != nil {
-		log.Printf("Error encoding event members image for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error encoding event members image for event ID %s: %v", eventID, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
 		return err
 	}
@@ -306,7 +306,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 	var buf2 bytes.Buffer
 	err = png.Encode(&buf2, img2)
 	if err != nil {
-		log.Printf("Error encoding event bonus cards image for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error encoding event bonus cards image for event ID %s: %v", eventID, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
 		return err
 	}
@@ -373,7 +373,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCod
 		},
 	})
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
-		log.Printf("Request timed out while sending event details to user %d", ctx.EffectiveUser.Id)
+		slog.Warn(fmt.Sprintf("Request timed out while sending event details to user %d", ctx.EffectiveUser.Id))
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
 		return err
 	}
@@ -484,7 +484,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if eventID == "now" || eventID == "当前" {
 		ongoingEvents, err := recent.GetOngoingEventsID()
 		if err != nil {
-			log.Printf("Error fetching ongoing events: %v", err)
+			slog.Warn(fmt.Sprintf("Error fetching ongoing events: %v", err))
 			if ctx.EffectiveChat.Type == "private" {
 				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 			} else {
@@ -508,13 +508,13 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			return nil
 		}
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
-		log.Printf("Error fetching event tracker data for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error fetching event tracker data for event ID %s: %v", eventID, err))
 		return err
 	}
 	var buf bytes.Buffer
 	err = png.Encode(&buf, img)
 	if err != nil {
-		log.Printf("Error encoding event tracker image for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error encoding event tracker image for event ID %s: %v", eventID, err))
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 		return err
 	}
@@ -529,13 +529,13 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	now := time.Now().Unix() * 1000
 	startAt, err := strconv.ParseInt(event.StartAt[regionCode], 10, 64)
 	if err != nil {
-		log.Printf("Error parsing start time for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error parsing start time for event ID %s: %v", eventID, err))
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
 	endAt, err := strconv.ParseInt(event.EndAt[regionCode], 10, 64)
 	if err != nil {
-		log.Printf("Error parsing end time for event ID %s: %v", eventID, err)
+		slog.Warn(fmt.Sprintf("Error parsing end time for event ID %s: %v", eventID, err))
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
@@ -676,7 +676,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		},
 	})
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
-		log.Printf("Request timed out while sending event tracker to user %d", ctx.EffectiveUser.Id)
+		slog.Warn(fmt.Sprintf("Request timed out while sending event tracker to user %d", ctx.EffectiveUser.Id))
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
 	} else if err != nil {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
@@ -813,10 +813,10 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
 		})
-		log.Printf("Sent ongoing events to user %d", ctx.EffectiveUser.Id)
+		slog.Info(fmt.Sprintf("Sent ongoing events to user %d", ctx.EffectiveUser.Id))
 		if err != nil && errors.Is(err, context.DeadlineExceeded) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.request_timeout", langCode), nil)
-			log.Printf("Request timed out while sending ongoing events to user %d", ctx.EffectiveUser.Id)
+			slog.Info(fmt.Sprintf("Request timed out while sending ongoing events to user %d", ctx.EffectiveUser.Id))
 		}
 		return err
 	} else {
@@ -868,7 +868,7 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	timeThen, err := strconv.ParseInt(parts[3], 10, 64)
 	if err != nil {
-		log.Printf("Error parsing timestamp from callback data: %v", err)
+		slog.Error(fmt.Sprintf("Error parsing timestamp from callback data: %v", err))
 		return fmt.Errorf("invalid timestamp in callback data")
 	}
 
@@ -884,7 +884,7 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			ShowAlert: false,
 		})
 		if err != nil {
-			log.Printf("Error answering callback query: %v", err)
+			slog.Error(fmt.Sprintf("Error answering callback query: %v", err))
 		}
 	}
 	return SendDetailedEvent(b, ctx, parts[1], langCode, parts[2])

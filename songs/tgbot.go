@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strconv"
@@ -423,7 +423,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	})
 	if err != nil {
 		if isSpecifiedError(err) {
-			log.Printf("Handling specified error for song %s, Id: %s", detailedSong.MusicTitle[regionIndex], songId)
+			slog.Error(fmt.Sprintf("Handling specified error for song %s, Id: %s", detailedSong.MusicTitle[regionIndex], songId))
 			httpClient := utils.HttpClient
 			httpClient.Timeout = 30 * time.Second
 			reqSong, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, bgmURL, nil)
@@ -462,10 +462,10 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 				},
 			})
 			if errAgain == nil {
-				log.Printf("Successfully handled malformed song %s query", detailedSong.MusicTitle[regionIndex])
+				slog.Info(fmt.Sprintf("Successfully handled malformed song %s query", detailedSong.MusicTitle[regionIndex]))
 				return nil
 			} else {
-				log.Printf("Failed to send rich message for song %s: %v", detailedSong.MusicTitle[regionIndex], err)
+				slog.Error(fmt.Sprintf("Failed to send rich message for song %s: %v", detailedSong.MusicTitle[regionIndex], err))
 			}
 		}
 		if ctx.EffectiveChat.Type == "private" {

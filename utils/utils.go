@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json/v2"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"sort"
@@ -203,12 +203,12 @@ func InitLists() error {
 		})
 	}
 	if err := eg.Wait(); err != nil {
-		log.Printf("Error occurred while fetching and decoding data: %v", err)
+		slog.Error(fmt.Sprintf("Error occurred while fetching and decoding data: %v", err))
 		return err
 	}
 
 	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotComic)
-	log.Printf("All lists initialized successfully.")
+	slog.Info("All lists initialized successfully.")
 	return nil
 }
 
@@ -293,18 +293,18 @@ func InitHttpClient() error {
 func CronInit() {
 	maxRetries := 5
 	baseDelay := 30 * time.Second
-	log.Printf("Starting CronInit with maxRetries=%d and baseDelay=%s", maxRetries, baseDelay)
+	slog.Info(fmt.Sprintf("Starting CronInit with maxRetries=%d and baseDelay=%s", maxRetries, baseDelay))
 	for i := range maxRetries {
 		err := InitLists()
 		if err == nil {
-			log.Println("InitLists completed successfully.")
+			slog.Info("InitLists completed successfully.")
 			break
 		}
 		delay := baseDelay * time.Duration(1<<i)
 		if i == maxRetries-1 {
-			log.Printf("InitLists failed after %d attempts: %v. No more retries.", maxRetries, err)
+			slog.Error(fmt.Sprintf("InitLists failed after %d attempts: %v. No more retries.", maxRetries, err))
 		} else {
-			log.Printf("InitLists failed (attempt %d/%d): %v. Retrying in %s...", i+1, maxRetries, err, delay)
+			slog.Error(fmt.Sprintf("InitLists failed (attempt %d/%d): %v. Retrying in %s...", i+1, maxRetries, err, delay))
 			time.Sleep(delay)
 		}
 	}

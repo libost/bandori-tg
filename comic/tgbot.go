@@ -3,7 +3,7 @@ package comic
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"math/rand/v2"
 	"strings"
 	"sync"
@@ -72,7 +72,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 		}
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("comic.no_comics_available_in_specified_region", langCode), nil)
-		log.Printf("Comic: No comics available in the specified region: %s", regionCode)
+		slog.Warn("Comic: No comics available in the specified region", "regionCode", regionCode)
 		return err
 	}
 	comicId := args[1]
@@ -92,7 +92,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		_, err = ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("comic.not_in_specified_region", langCode), regionCode, utils.ReverseIndexHelper(qidx)), nil)
 		if err != nil {
-			log.Printf("Comic: Failed to send reply message: %v", err)
+			slog.Error("Comic: Failed to send reply message", "err", err)
 			return err
 		}
 	}

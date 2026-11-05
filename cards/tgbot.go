@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"slices"
 	"strconv"
 	"strings"
@@ -111,8 +111,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	if len(ctx.Args()) == 1 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("User %d did not provide a card ID for query command.", ctx.EffectiveUser.Id)
+		slog.Info(fmt.Sprintf("User %d did not provide a card ID for query command.", ctx.EffectiveUser.Id))
 		return nil
 	}
 	param := ctx.Args()[1]
@@ -120,8 +119,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		qlangCode = ctx.Args()[2]
 		if !slices.Contains(C.AcceptedRegions, qlangCode) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", dlangCode), nil)
-			stopActionLoop()
-			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, qlangCode)
+			slog.Error(fmt.Sprintf("User %d provided an invalid region code: %s", ctx.EffectiveUser.Id, qlangCode))
 			return nil
 		}
 	}
@@ -130,8 +128,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	card, exists := cardMap[param]
 	if !exists {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("User %d queried a non-existent card with ID %s.", ctx.EffectiveUser.Id, param)
+		slog.Info(fmt.Sprintf("User %d queried a non-existent card: %s", ctx.EffectiveUser.Id, param))
 		return nil
 	}
 	// Process the card and send the response
@@ -144,8 +141,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	cardDetailed, err := GetDetailedCard(param)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("Error fetching detailed card data for card ID %s: %v", param, err)
+		slog.Error(fmt.Sprintf("Error fetching detailed card data for card ID %s: %v", param, err))
 		return nil
 	}
 	gachaText := strings.ReplaceAll(selectLocaleString(cardDetailed.GachaText, index), "\n", "")
@@ -155,24 +151,21 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	char, err := characters.GetCharacter(fmt.Sprint(card.CharacterID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("Error fetching character data for card ID %s: %v", param, err)
+		slog.Error(fmt.Sprintf("Error fetching character data for card ID %s: %v", param, err))
 		return nil
 	}
 	characterName := selectLocaleString(char.CharacterName, index)
 	band, err := band.GetBand(fmt.Sprint(char.BandID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("Error fetching band data for character ID %d: %v", card.CharacterID, err)
+		slog.Error(fmt.Sprintf("Error fetching band data for character %d: %v", card.CharacterID, err))
 		return nil
 	}
 	bandName := selectLocaleString(band.BandName, index)
 	normalPath, trainingPath, err := GetCard(param)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("Error fetching card data for card ID %s: %v", param, err)
+		slog.Error(fmt.Sprintf("Error fetching card data for card ID %s: %v", param, err))
 		return nil
 	}
 	rarityEmoji := fmt.Sprint(C.RarityEmoji[0])
@@ -189,8 +182,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
-		log.Printf("Error fetching skill data for card ID %s: %v", param, err)
+		slog.Error(fmt.Sprintf("Error fetching skill data for card ID %s: %v", param, err))
 		return nil
 	}
 	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, index), "\n", "")
@@ -202,7 +194,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	tz := tzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
 	releasedAtTime := time.Unix(int64(releasedAtInt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
-	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
+	slog.Info(fmt.Sprintf("User %d queried card %s", ctx.EffectiveUser.Id, param))
 	cemojiID := C.CharaEmoji[card.CharacterID-1]
 	bemojiID := C.BandEmoji[char.BandID-1]
 
@@ -412,12 +404,11 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.request_timeout", dlangCode), nil)
-		log.Printf("Request timed out while sending card details to user %d", ctx.EffectiveUser.Id)
+		slog.Error(fmt.Sprintf("Request timed out while sending card details for user %d", ctx.EffectiveUser.Id))
 	} else if err != nil {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), err.Error()), &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
 	}
-	stopActionLoop()
 	return err
 }

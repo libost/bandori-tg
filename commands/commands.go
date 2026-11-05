@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"runtime"
 	"strings"
 
@@ -230,7 +230,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		languageCode, ok := normalizeTelegramLanguageCode(code, codeAlt)
 		if !ok {
-			log.Printf("%s", fmt.Sprintf("Skipping private commands for language %s due to invalid Telegram language code (code=%s, code_alt=%s)", name, code, codeAlt))
+			slog.Warn(fmt.Sprintf("Skipping private commands for language %s due to invalid Telegram language code (code=%s, code_alt=%s)", name, code, codeAlt))
 			continue
 		}
 		privateCommands := []gotgbot.BotCommand{
