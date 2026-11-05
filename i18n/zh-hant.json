@@ -8,6 +8,17 @@
     "commands": {
         "start_desc": "歡迎使用 Bandori Bot！使用 /help 查看幫助信息。\n\n當前語言不是您的首選語言？使用 /lang 設置您喜歡的語言。\n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
         "help_desc": "可用命令：\n/start - 啟動機器人並獲取歡迎消息。\n/help - 顯示此幫助消息。\n/lang - 設置語言。\n/cards <card_id> - 根據 ID 查詢特定卡片的信息。\n/cards <card_id> <region> - 根據 ID 和伺服器代碼查詢特定卡片的信息。\n/events - 查詢當前進行中的活動。\n/events <event_id> - 根據 ID 查詢特定活動的信息。\n/events <event_id> <region> - 根據 ID 和伺服器代碼查詢特定活動的信息。\n/cutoff <event_id> - 根據 ID 查詢特定活動的分數線預測。\n/cutoff <event_id> <tier> <region> - 根據 ID 和伺服器代碼查詢特定活動的特定排名的分數線預測。\n/comic - 抽取隨機漫畫。\n/song <song_name> - 根據歌曲名稱查詢歌曲信息。\n/search <keyword> - 根據關鍵詞搜索歌曲。\n/song <song_name> - 根據歌曲名稱查詢歌曲信息。\n/char <char_id> - 根據角色 ID 查詢角色信息。\n/char <char_name> - 根據角色名稱查詢角色信息。\n/gacha - 查詢當前進行中的招募。\n/gacha <gacha_id> - 根據招募 ID 查詢招募信息。",
+        "lang_desc": "選擇你要設置的語言類型。",
+        "lang_desc_group": "請在私聊中使用 /lang 指令設定語言類型。",
+        "lang_dlang": "設置顯示語言",
+        "lang_qlang": "設置查詢語言",
+        "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
+        "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢地區的內容，不適用於顯示的文本。",
+        "about_desc": "Bandori Bot \n版本: <code>%[1]s</code>\n構建時間: <code>%[2]s</code>\nGit 提交: <code>%[3]s</code>\n分支: <code>%[4]s</code> \n運行環境: <code>%[5]s/%[6]s</code> \nGo 版本: <code>%[7]s</code>\n項目地址: https://github.com/libost/bandori-tg",
+        "setadmin_no_token": "請提供管理員令牌。",
+        "setadmin_invalid_token": "無效的管理員令牌。",
+        "setadmin_success": "管理員設置成功。",
+        "setadmin_error": "設置管理員時發生錯誤，請稍後再試。",
         "setcommands_desc_list": [
             "啟動機器人並獲取歡迎消息。",
             "顯示此幫助消息。",
