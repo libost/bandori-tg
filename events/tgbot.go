@@ -683,7 +683,6 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			ParseMode: "HTML",
 		})
 	}
-	stopActionLoop()
 	return err
 }
 

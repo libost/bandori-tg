@@ -120,7 +120,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		qlangCode = ctx.Args()[2]
 		if !slices.Contains(C.AcceptedRegions, qlangCode) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", dlangCode), nil)
-			stopActionLoop()
 			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, qlangCode)
 			return nil
 		}
@@ -130,7 +129,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	card, exists := cardMap[param]
 	if !exists {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
-		stopActionLoop()
 		log.Printf("User %d queried a non-existent card with ID %s.", ctx.EffectiveUser.Id, param)
 		return nil
 	}
@@ -144,7 +142,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	cardDetailed, err := GetDetailedCard(param)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
 		log.Printf("Error fetching detailed card data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -155,7 +152,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	char, err := characters.GetCharacter(fmt.Sprint(card.CharacterID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
 		log.Printf("Error fetching character data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -163,7 +159,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	band, err := band.GetBand(fmt.Sprint(char.BandID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
 		log.Printf("Error fetching band data for character ID %d: %v", card.CharacterID, err)
 		return nil
 	}
@@ -171,7 +166,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	normalPath, trainingPath, err := GetCard(param)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
 		log.Printf("Error fetching card data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -189,7 +183,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
-		stopActionLoop()
 		log.Printf("Error fetching skill data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -418,6 +411,5 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			ParseMode: "HTML",
 		})
 	}
-	stopActionLoop()
 	return err
 }
