@@ -107,7 +107,7 @@ func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *t
 	return 0, ""
 }
 
-func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID string, langCode string, qlangCode string) error {
+func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlangCode string) error {
 	stopAction := make(chan struct{})
 	var stopActionOnce sync.Once
 	stopActionLoop := func() {

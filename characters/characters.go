@@ -58,7 +58,7 @@ func getCharacterDetails(characterId string) (C.CharacterDetailed, error) {
 	return characterDetails, nil
 }
 
-func generateCharacterBackground(url string, color string, ctx context.Context) (image.Image, error) {
+func generateCharacterBackground(url, color string, ctx context.Context) (image.Image, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)

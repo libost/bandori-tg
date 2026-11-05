@@ -72,7 +72,7 @@ func regionCodeFromCard(card C.Card, preferCode string) string {
 // regionCode: "en" for English, "jp" for Japanese, etc.
 // resourceSetName: The resource set name of the card.
 // cardStat: The card stat, e.g., "normal", "after_training".
-func retrieveCardsPath(regionCode string, resourceSetName string, cardStat string) (string, error) {
+func retrieveCardsPath(regionCode, resourceSetName, cardStat string) (string, error) {
 	// Implementation for retrieving card image paths
 	url := "https://bestdori.com/assets/" + regionCode + "/characters/resourceset/" + resourceSetName + "_rip/card_" + cardStat + ".png"
 	return url, nil

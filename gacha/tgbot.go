@@ -280,7 +280,7 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context, gachaId string, regionCode string, langCode string) error {
+func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context, gachaId, regionCode, langCode string) error {
 	_, ok := GetGacha(gachaId)
 	if ok != nil {
 		log.Printf("Invalid gacha ID: %s", gachaId)

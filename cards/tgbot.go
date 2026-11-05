@@ -47,23 +47,6 @@ func selectLocaleString(strings []string, index int) string {
 	return selected
 }
 
-func tzHelper(code string) string {
-	switch code {
-	case "jp":
-		return "Asia/Tokyo"
-	case "en":
-		return "UTC"
-	case "tw":
-		return "Asia/Taipei"
-	case "cn":
-		return "Asia/Shanghai"
-	case "kr":
-		return "Asia/Seoul"
-	default:
-		return "UTC"
-	}
-}
-
 func isWebPageContentErr(err error) bool {
 	if err == nil {
 		return false
@@ -192,7 +175,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	attribute = strings.ToUpper(attribute)
 	releasedAt := selectLocaleString(card.ReleasedAt, index)
 	releasedAtInt, _ := strconv.Atoi(releasedAt)
-	tz := tzHelper(qlangCode)
+	tz := utils.TzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
 	releasedAtTime := time.Unix(int64(releasedAtInt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
