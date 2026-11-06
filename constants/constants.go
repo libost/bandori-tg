@@ -19,12 +19,13 @@ var (
 )
 
 var (
-	ErrNoBotToken    = fmt.Errorf("no bot token was provided in the config file")
-	ErrNoAdminToken  = fmt.Errorf("no admin token was provided in the config file")
-	ErrNoPicDepot    = fmt.Errorf("no pic depot was provided in the config file")
-	ErrNoCertPath    = fmt.Errorf("self-signed certificate is enabled, but no certificate or key path was provided in the config file")
-	ErrNoWebhookURL  = fmt.Errorf("webhook is enabled, but no webhook URL was provided in the config file")
-	ErrNoWebhookPort = fmt.Errorf("webhook is enabled, but no webhook port was provided in the config file")
+	ErrConfigNotFound = fmt.Errorf("config file not found, a default config file has been created at %s, please edit it and restart the application", ConfigPath)
+	ErrNoBotToken     = fmt.Errorf("no bot token was provided in the config file")
+	ErrNoAdminToken   = fmt.Errorf("no admin token was provided in the config file")
+	ErrNoPicDepot     = fmt.Errorf("no pic depot was provided in the config file")
+	ErrNoCertPath     = fmt.Errorf("self-signed certificate is enabled, but no certificate or key path was provided in the config file")
+	ErrNoWebhookURL   = fmt.Errorf("webhook is enabled, but no webhook URL was provided in the config file")
+	ErrNoWebhookPort  = fmt.Errorf("webhook is enabled, but no webhook port was provided in the config file")
 )
 
 const (

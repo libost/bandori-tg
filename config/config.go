@@ -53,19 +53,41 @@ func checkConfig(cf *C.Config) error {
 	return nil
 }
 
-func InitConfig() {
+func InitConfig() error {
 	var configPath = C.ConfigPath
 	_, err := os.Stat(configPath)
 	if os.IsNotExist(err) {
-		panic(err)
+		err := writeDefaultConfig(configPath)
+		if err != nil {
+			log.Printf("Failed to write default config: %v", err)
+			return err
+		}
+		return C.ErrConfigNotFound
 	}
 	cf, err := loadConfig(configPath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	err = checkConfig(cf)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	AppConfig = cf
+	return nil
+}
+
+func writeDefaultConfig(configPath string) error {
+	defaultConfig := &C.Config{}
+	if err := defaults.Set(defaultConfig); err != nil {
+		return err
+	}
+	data, err := yaml.Marshal(defaultConfig)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(configPath, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -81,7 +81,10 @@ func main() {
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger), cron.SkipIfStillRunning(cron.DefaultLogger)))
 
-	config.InitConfig()
+	err = config.InitConfig()
+	if err != nil {
+		log.Fatalf("Failed to initialize configuration: %v", err)
+	}
 	err = utils.InitHttpClient()
 	if err != nil {
 		log.Fatalf("Failed to initialize HTTP client: %v", err)
@@ -148,7 +151,14 @@ func main() {
 				os.Exit(0)
 			case syscall.SIGHUP:
 				log.Println("Received SIGHUP, reloading configuration...")
-				config.InitConfig()
+				err := config.InitConfig()
+				if err != nil {
+					log.Printf("Failed to reinitialize configuration: %v", err)
+				}
+				err = utils.InitHttpClient()
+				if err != nil {
+					log.Printf("Failed to reinitialize HTTP client: %v", err)
+				}
 			}
 		}
 	}()
