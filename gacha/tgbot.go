@@ -7,7 +7,6 @@ import (
 	"html"
 	"image/png"
 	"log"
-	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -138,6 +137,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		region := utils.ReverseIndexHelper(qindex)
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("gacha.not_in_specified_region", langCode), regionCode, region), nil)
+		b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 		regionCode = utils.ReverseIndexHelper(qindex)
 	}
 
@@ -392,12 +392,12 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 		Size: 5,
 	}
 	bannerUrl := "https://bestdori.com/assets/" + regionCode + "/homebanner_rip/" + gachaDetailed.BannerAssetBundleName + ".png"
-	if !isValidPNGUrl(bannerUrl) {
+	if !utils.IsValidPNGUrl(bannerUrl) {
 		foundValid := false
 		regionList := C.AcceptedRegions
 		for _, region := range regionList {
 			tempBannerUrl := "https://bestdori.com/assets/" + region + "/homebanner_rip/" + gachaDetailed.BannerAssetBundleName + ".png"
-			if isValidPNGUrl(tempBannerUrl) {
+			if utils.IsValidPNGUrl(tempBannerUrl) {
 				bannerUrl = tempBannerUrl
 				foundValid = true
 				break
@@ -406,13 +406,13 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 		if !foundValid {
 			log.Printf("No valid banner found for gacha %s in any region. Attempting to use logo as fallback.", gachaId)
 			tempBannerUrl := "https://bestdori.com/assets/" + regionCode + "/gacha/screen/" + gachaDetailed.ResourceName + "_rip/logo.png"
-			if isValidPNGUrl(tempBannerUrl) {
+			if utils.IsValidPNGUrl(tempBannerUrl) {
 				bannerUrl = tempBannerUrl
 				foundValid = true
 			} else {
 				for _, region := range regionList {
 					tempBannerUrl := "https://bestdori.com/assets/" + region + "/gacha/screen/" + gachaDetailed.ResourceName + "_rip/logo.png"
-					if isValidPNGUrl(tempBannerUrl) {
+					if utils.IsValidPNGUrl(tempBannerUrl) {
 						bannerUrl = tempBannerUrl
 						foundValid = true
 						break
@@ -531,33 +531,4 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 		},
 	})
 	return err
-}
-
-func isValidPNGUrl(url string) bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
-	if err != nil {
-		return false
-	}
-
-	resp, err := utils.HttpClient.Do(req)
-
-	if err != nil {
-		return false
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return false
-	}
-
-	contentType := resp.Header.Get("Content-Type")
-	if contentType != "image/png" {
-		return false
-	}
-
-	return true
 }

@@ -378,3 +378,32 @@ type UATransport struct {
 	Base      http.RoundTripper
 	UserAgent string
 }
+
+func IsValidPNGUrl(url string) bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
+	if err != nil {
+		return false
+	}
+
+	resp, err := HttpClient.Do(req)
+
+	if err != nil {
+		return false
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return false
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if contentType != "image/png" {
+		return false
+	}
+
+	return true
+}

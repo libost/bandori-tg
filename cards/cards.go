@@ -25,10 +25,6 @@ import (
 	"golang.org/x/image/draw"
 )
 
-func cardOrdinaryType(types string) bool {
-	return types == "permanent" || types == "limited" || types == "dreamfes" || types == "event"
-}
-
 func regionCodeFromCard(card C.Card, preferCode string) string {
 	index := 0
 	switch preferCode {
@@ -72,10 +68,10 @@ func regionCodeFromCard(card C.Card, preferCode string) string {
 // regionCode: "en" for English, "jp" for Japanese, etc.
 // resourceSetName: The resource set name of the card.
 // cardStat: The card stat, e.g., "normal", "after_training".
-func retrieveCardsPath(regionCode, resourceSetName, cardStat string) (string, error) {
+func retrieveCardsPath(regionCode, resourceSetName, cardStat string) string {
 	// Implementation for retrieving card image paths
 	url := "https://bestdori.com/assets/" + regionCode + "/characters/resourceset/" + resourceSetName + "_rip/card_" + cardStat + ".png"
-	return url, nil
+	return url
 }
 
 func GetCard(cardId string) (string, string, error) {
@@ -85,45 +81,16 @@ func GetCard(cardId string) (string, string, error) {
 		return "", "", nil
 	}
 	regionCode := regionCodeFromCard(card, "jp")
-	if card.Rarity < 3 || !cardOrdinaryType(card.Type) {
-		if card.Type == "campaign" {
-			if card.Rarity < 3 {
-				normalPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
-				if err != nil {
-					return "", "", err
-				}
-				return normalPath, "", nil
-			}
-			trainingPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-			if err != nil {
-				return "", "", err
-			}
-			return "", trainingPath, nil
-		}
-		if card.Rarity < 3 {
-
-			normalPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
-			if err != nil {
-				return "", "", err
-			}
-			return normalPath, "", nil
-		}
-		if card.Type == "birthday" || card.Type == "others" || card.Type == "kirafes" {
-			trainingPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-			if err != nil {
-				return "", "", err
-			}
-			return "", trainingPath, nil
-		}
-
+	normalPath := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
+	trainingPath := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
+	if !utils.IsValidPNGUrl(normalPath) && !utils.IsValidPNGUrl(trainingPath) {
+		return "", "", errors.New("no valid card image found")
 	}
-	normalPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
-	if err != nil {
-		return "", "", err
+	if !utils.IsValidPNGUrl(normalPath) {
+		normalPath = ""
 	}
-	trainingPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-	if err != nil {
-		return "", "", err
+	if !utils.IsValidPNGUrl(trainingPath) {
+		trainingPath = ""
 	}
 	return normalPath, trainingPath, nil
 }
@@ -160,21 +127,17 @@ func getThumbCard(cardId string) (string, error) {
 	cardPack := fmt.Sprintf("%05d", cardIDint/50)
 	normalPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_normal.png"
 	afterTrainingPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_after_training.png"
-	if card.Rarity < 3 || !cardOrdinaryType(card.Type) {
-		if card.Type == "campaign" {
-			if card.Rarity < 3 {
-				return normalPath, nil
-			}
-			return afterTrainingPath, nil
-		}
-		if card.Rarity < 3 {
-			return normalPath, nil
-		}
-		if card.Type == "birthday" || card.Type == "others" || card.Type == "kirafes" {
-			return afterTrainingPath, nil
-		}
+	var finalPath string
+	if utils.IsValidPNGUrl(normalPath) {
+		finalPath = normalPath
 	}
-	return normalPath, nil
+	if utils.IsValidPNGUrl(afterTrainingPath) {
+		finalPath = afterTrainingPath
+	}
+	if finalPath == "" {
+		return "", errors.New("no valid thumbnail found")
+	}
+	return finalPath, nil
 }
 
 func loadSVG(w, h float64, stream io.Reader) (image.Image, error) {
