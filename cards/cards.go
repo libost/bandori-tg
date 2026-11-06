@@ -64,12 +64,7 @@ func regionCodeFromCard(card C.Card, preferCode string) string {
 	return "jp"
 }
 
-// retrieveCardsPath retrieves the path for a card image based on its region, resource set name, and stat, then returns its url.
-// regionCode: "en" for English, "jp" for Japanese, etc.
-// resourceSetName: The resource set name of the card.
-// cardStat: The card stat, e.g., "normal", "after_training".
 func retrieveCardsPath(regionCode, resourceSetName, cardStat string) string {
-	// Implementation for retrieving card image paths
 	url := "https://bestdori.com/assets/" + regionCode + "/characters/resourceset/" + resourceSetName + "_rip/card_" + cardStat + ".png"
 	return url
 }
@@ -78,19 +73,21 @@ func GetCard(cardId string) (string, string, error) {
 	cardMap := utils.ReadCards()
 	card, exists := cardMap[cardId]
 	if !exists {
-		return "", "", nil
+		return "", "", fmt.Errorf("card %s not found", cardId)
 	}
 	regionCode := regionCodeFromCard(card, "jp")
 	normalPath := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
 	trainingPath := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-	if !utils.IsValidPNGUrl(normalPath) && !utils.IsValidPNGUrl(trainingPath) {
-		return "", "", errors.New("no valid card image found")
-	}
-	if !utils.IsValidPNGUrl(normalPath) {
+	normalValid := utils.IsValidPNGUrl(normalPath)
+	trainingValid := utils.IsValidPNGUrl(trainingPath)
+	if !normalValid {
 		normalPath = ""
 	}
-	if !utils.IsValidPNGUrl(trainingPath) {
+	if !trainingValid {
 		trainingPath = ""
+	}
+	if !normalValid && !trainingValid {
+		return "", "", fmt.Errorf("no valid card image found for card ID %s", cardId)
 	}
 	return normalPath, trainingPath, nil
 }
@@ -127,17 +124,13 @@ func getThumbCard(cardId string) (string, error) {
 	cardPack := fmt.Sprintf("%05d", cardIDint/50)
 	normalPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_normal.png"
 	afterTrainingPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_after_training.png"
-	var finalPath string
 	if utils.IsValidPNGUrl(normalPath) {
-		finalPath = normalPath
+		return normalPath, nil
 	}
 	if utils.IsValidPNGUrl(afterTrainingPath) {
-		finalPath = afterTrainingPath
+		return afterTrainingPath, nil
 	}
-	if finalPath == "" {
-		return "", errors.New("no valid thumbnail found")
-	}
-	return finalPath, nil
+	return "", fmt.Errorf("no valid thumbnail found for card ID %s", cardId)
 }
 
 func loadSVG(w, h float64, stream io.Reader) (image.Image, error) {
