@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fogleman/gg"
+	"github.com/gogpu/gg"
 	"github.com/libost/bandori-tg/cards"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
@@ -162,7 +162,7 @@ func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int, guara
 	return "", fmt.Errorf("failed to generate gacha card result")
 }
 
-func randomNumGen(min int, max int) (int, error) {
+func randomNumGen(min, max int) (int, error) {
 	if min > max {
 		return 0, fmt.Errorf("min cannot be greater than max")
 	}
@@ -176,7 +176,7 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 	}
 
 	var results []string
-	index := indexHelper(regionCode)
+	index := utils.IndexHelper(regionCode)
 	if index >= len(gachaDetailed.Details) || index >= len(gachaDetailed.Rates) {
 		return nil, fmt.Errorf("no gacha data found for region code: %s", regionCode)
 	}
@@ -247,8 +247,8 @@ func generateGachaImage(results []string) (image.Image, error) {
 		length = 300 * ((len(results) + 4) / 5)
 	}
 	dc := gg.NewContext(width, length)
-	dc.SetHexColor("#FFFFFF")
-	dc.Clear()
+	defer dc.Close()
+	dc.ClearWithColor(gg.White)
 	for i, result := range results {
 		cardImage, err := cards.ThumbGenerate(result, 0)
 		if err != nil {
@@ -256,7 +256,8 @@ func generateGachaImage(results []string) (image.Image, error) {
 		}
 		x := 200*(i%5) + 20
 		y := 25 + (i/5)*300
-		dc.DrawImageAnchored(cardImage, x, y, 0, 0)
+		newImg := gg.ImageBufFromImage(cardImage)
+		dc.DrawImage(newImg, float64(x), float64(y))
 	}
 	return dc.Image(), nil
 }

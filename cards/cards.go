@@ -16,13 +16,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fogleman/gg"
-	"github.com/golang/freetype/truetype"
+	"github.com/gogpu/gg"
+	"github.com/gogpu/gg/text"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/renderers/rasterizer"
-	"golang.org/x/image/font"
+	"golang.org/x/image/draw"
 )
 
 func cardOrdinaryType(types string) bool {
@@ -72,7 +72,7 @@ func regionCodeFromCard(card C.Card, preferCode string) string {
 // regionCode: "en" for English, "jp" for Japanese, etc.
 // resourceSetName: The resource set name of the card.
 // cardStat: The card stat, e.g., "normal", "after_training".
-func retrieveCardsPath(regionCode string, resourceSetName string, cardStat string) (string, error) {
+func retrieveCardsPath(regionCode, resourceSetName, cardStat string) (string, error) {
 	// Implementation for retrieving card image paths
 	url := "https://bestdori.com/assets/" + regionCode + "/characters/resourceset/" + resourceSetName + "_rip/card_" + cardStat + ".png"
 	return url, nil
@@ -198,20 +198,33 @@ func loadSVG(w, h float64, stream io.Reader) (image.Image, error) {
 	return img, nil
 }
 
-func drawScaledImage(dc *gg.Context, img image.Image, targetX, targetY, targetW, targetH float64) {
-	bounds := img.Bounds()
-	origW := float64(bounds.Dx())
-	origH := float64(bounds.Dy())
+func drawScaledImage(dc *gg.Context, imgBuf image.Image, targetX, targetY, targetW, targetH float64) {
+	image := scaleImagePNG(imgBuf, int(targetW), int(targetH))
+	img := gg.ImageBufFromImage(image)
+	dc.DrawImage(img, targetX, targetY)
+}
 
-	// 动态计算缩放比例
-	scaleX := targetW / origW
-	scaleY := targetH / origH
+func scaleImagePNG(src image.Image, targetWidth, targetHeight int) image.Image {
+	bounds := src.Bounds()
+	srcW, srcH := bounds.Dx(), bounds.Dy()
 
-	dc.Push()
-	dc.Translate(targetX, targetY)
-	dc.Scale(scaleX, scaleY)
-	dc.DrawImage(img, 0, 0)
-	dc.Pop()
+	ratio := float64(targetWidth) / float64(srcW)
+	if hRatio := float64(targetHeight) / float64(srcH); hRatio < ratio {
+		ratio = hRatio
+	}
+	dstW, dstH := int(float64(srcW)*ratio), int(float64(srcH)*ratio)
+	if dstW < 1 {
+		dstW = 1
+	}
+	if dstH < 1 {
+		dstH = 1
+	}
+
+	dstRect := image.Rect(0, 0, dstW, dstH)
+	dst := image.NewRGBA(dstRect)
+	draw.CatmullRom.Scale(dst, dstRect, src, bounds, draw.Src, nil)
+
+	return dst
 }
 
 func frameHelper(rarity int, attribute string) string {
@@ -272,8 +285,8 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 
 	bandFrame := C.BandFrames[character.BandID-1]
 	dc := gg.NewContext(180, 250)
-	dc.SetRGB(1, 1, 1)
-	dc.Clear()
+	defer dc.Close()
+	dc.ClearWithColor(gg.White)
 	reqThumb, err := http.NewRequestWithContext(context, http.MethodGet, thumbPath, nil)
 	if err != nil {
 		return nil, err
@@ -283,7 +296,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respThumb.Body.Close()
-	baseImg, _ := png.Decode(respThumb.Body)
+	baseImg, err := png.Decode(respThumb.Body)
+	if err != nil {
+		return nil, err
+	}
 	drawScaledImage(dc, baseImg, 0, 0, 180, 180)
 	reqFrame, err := http.NewRequestWithContext(context, http.MethodGet, frame, nil)
 	if err != nil {
@@ -294,7 +310,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respFrame.Body.Close()
-	frameImg, _ := png.Decode(respFrame.Body)
+	frameImg, err := png.Decode(respFrame.Body)
+	if err != nil {
+		return nil, err
+	}
 	drawScaledImage(dc, frameImg, 0, 0, 180, 180)
 	reqAttrFrame, err := http.NewRequestWithContext(context, http.MethodGet, attrFrame, nil)
 	if err != nil {
@@ -319,8 +338,11 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respStar.Body.Close()
-	starImgDecoded, _ := png.Decode(respStar.Body)
-	for i := 0; i < card.Rarity; i++ {
+	starImgDecoded, err := png.Decode(respStar.Body)
+	if err != nil {
+		return nil, err
+	}
+	for i := range card.Rarity {
 		drawScaledImage(dc, starImgDecoded, 8, float64(147-i*25), 26, 26)
 	}
 	if isValidRemoteAssetURL(bandFrame) {
@@ -343,11 +365,8 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	fontFace, err := loadEmbedTTF(font, 32)
-	if err != nil {
-		return nil, err
-	}
-	dc.SetFontFace(fontFace)
+	fontSrc, err := text.NewFontSource(font)
+	dc.SetFont(fontSrc.Face(32))
 	dc.SetHexColor("#000000")
 	var inputStr string
 	if percent > 0 {
@@ -357,18 +376,6 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	}
 	dc.DrawStringAnchored(inputStr, 90, 220, 0.5, 0.5)
 	return dc.Image(), nil
-}
-
-func loadEmbedTTF(data []byte, points float64) (font.Face, error) {
-	f, err := truetype.Parse(data)
-	if err != nil {
-		return nil, err
-	}
-	face := truetype.NewFace(f, &truetype.Options{
-		Size: points,
-		DPI:  72,
-	})
-	return face, nil
 }
 
 func processNode(node XMLNode) *XMLNode {

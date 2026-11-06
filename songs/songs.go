@@ -9,10 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"golang.org/x/image/font"
-
-	"github.com/fogleman/gg"
-	"github.com/golang/freetype/truetype"
+	"github.com/gogpu/gg"
+	"github.com/gogpu/gg/text"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
 )
@@ -86,8 +84,8 @@ type difficultyData struct {
 // We may use this function later.
 func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
 	dc := gg.NewContext(len(diffData.level)*30, 30)
-	dc.SetHexColor("#FFFFFF")
-	dc.Clear()
+	defer dc.Close()
+	dc.ClearWithColor(gg.White)
 	for i, level := range diffData.level {
 		dc.DrawCircle(float64(15+i*30), 15, 15)
 		dc.SetHexColor(C.DifficultyColors[i])
@@ -96,26 +94,14 @@ func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
 		if err != nil {
 			return nil, err
 		}
-		ttfont, err := loadEmbedTTF(font, 12)
+		fontSrc, err := text.NewFontSource(font)
 		if err != nil {
 			return nil, err
 		}
-		dc.SetFontFace(ttfont)
+		dc.SetFont(fontSrc.Face(22))
 		dc.SetHexColor("#000000")
 		inputStr := strconv.Itoa(level)
 		dc.DrawStringAnchored(inputStr, float64(15+i*30), 15, 0.5, 0.5)
 	}
 	return dc.Image(), nil
-}
-
-func loadEmbedTTF(data []byte, points float64) (font.Face, error) {
-	f, err := truetype.Parse(data)
-	if err != nil {
-		return nil, err
-	}
-	face := truetype.NewFace(f, &truetype.Options{
-		Size: points,
-		DPI:  72,
-	})
-	return face, nil
 }

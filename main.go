@@ -14,6 +14,8 @@ import (
 
 	"github.com/libost/bandori-tg/callback"
 	"github.com/libost/bandori-tg/cards"
+	"github.com/libost/bandori-tg/characters"
+	"github.com/libost/bandori-tg/comic"
 	"github.com/libost/bandori-tg/commands"
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
@@ -26,7 +28,7 @@ import (
 	"github.com/libost/bandori-tg/version"
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
-	"github.com/robfig/cron/v3"
+	"github.com/netresearch/go-cron"
 	"golang.org/x/net/proxy"
 	"gopkg.in/natefinch/lumberjack.v2"
 
@@ -59,29 +61,44 @@ func main() {
 		switch args[1] {
 		case "version":
 			fmt.Printf("bandori-tg version: %s\n", version.Version)
+			if utils.FontsDetached {
+				fmt.Println("Build tags: fonts_detached")
+			}
 			return
 		case "help":
 			fmt.Println("Usage: bandori-tg [command]")
 			fmt.Println("Commands:")
 			fmt.Println("  help    Show this help message")
-			fmt.Println("  run     Run the bot (default)")
+			fmt.Println("  version Show the version of the bot")
 			return
-		case "run":
-			// Continue to run the bot
 		default:
 			fmt.Printf("Unknown command: %s\n", args[1])
 			return
 		}
 	}
-	initAll()
+	initDB()
 
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	c := cron.New(cron.WithLocation(loc), cron.WithChain(cron.Recover(cron.DefaultLogger), cron.SkipIfStillRunning(cron.DefaultLogger)))
 
-	config.InitConfig()
+	err = config.InitConfig()
+	if err != nil {
+		log.Fatalf("Failed to initialize configuration: %v", err)
+	}
+	err = utils.InitHttpClient()
+	if err != nil {
+		log.Fatalf("Failed to initialize HTTP client: %v", err)
+	}
 	err = utils.InitLists()
 	if err != nil {
 		log.Fatalf("Failed to initialize lists: %v", err)
+	}
+	if utils.FontsDetached {
+		log.Printf("Fonts are in detached mode. Initializing font files...")
+		err = utils.InitFontsFiles()
+		if err != nil {
+			log.Fatalf("Failed to initialize font files: %v", err)
+		}
 	}
 	token := config.AppConfig.General.Token
 	httpClient := httpClientWithProxy(config.AppConfig)
@@ -108,7 +125,9 @@ func main() {
 	cards.AddHandlers(dispatcher)
 	songs.AddHandlers(dispatcher)
 	gacha.AddHandlers(dispatcher)
-	text.AddHandlers(dispatcher)
+	comic.AddHandlers(dispatcher)
+	characters.AddHandlers(dispatcher)
+	text.AddHandlers(dispatcher) // text handlers must be added after all other handlers to avoid conflicts
 
 	if config.AppConfig.Webhook.Enabled {
 		startWebhookCommunication(config.AppConfig, updater, b)
@@ -132,18 +151,24 @@ func main() {
 				os.Exit(0)
 			case syscall.SIGHUP:
 				log.Println("Received SIGHUP, reloading configuration...")
-				config.InitConfig()
+				err := config.InitConfig()
+				if err != nil {
+					log.Printf("Failed to reinitialize configuration: %v", err)
+				}
+				err = utils.InitHttpClient()
+				if err != nil {
+					log.Printf("Failed to reinitialize HTTP client: %v", err)
+				}
 			}
 		}
 	}()
-	fmt.Println("Bot is running. Press Ctrl+C to stop.")
+	log.Printf("Bot is running.")
 	cronTasks(c)
 
 	updater.Idle()
-
 }
 
-func initAll() {
+func initDB() {
 	_, err := DB.Init("init", 0, nil) // Initialize the database for user ID 0 (default)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
@@ -217,7 +242,7 @@ func buildWebhookOptions(cfg *C.Config) (ext.WebhookOpts, *gotgbot.SetWebhookOpt
 		webhookOpts.KeyFile = cfg.Webhook.Cert.KeyPath
 	}
 
-	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts, cfg.Webhook.Port) {
+	if !cfg.Webhook.NginxEnabled && slices.Contains(C.TelegramAcceptPorts[:], cfg.Webhook.Port) {
 		log.Printf("Warning: The webhook port %d is one of the ports accepted by Telegram. If you are running this bot behind a reverse proxy (like Nginx), please ensure that the proxy forwards requests to this port correctly.", cfg.Webhook.Port)
 	}
 

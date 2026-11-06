@@ -64,6 +64,7 @@ builds:
       {{ if eq .Env.RELEASE_CHANNEL "stable" }}-s -w{{ end }}
     binary: bandori-tg
 
+
 archives:
   - id: binaries
     formats: [binary]
@@ -74,19 +75,6 @@ archives:
 
 checksum:
   name_template: checksums.txt
-
-nfpms:
-  - id: "bandori-tg"
-    maintainer: "libost"
-    vendor: "libost"
-    description: "A Telegram bot for the mobile rhythm game BanG Dream! Girls Band Party!"
-    license: "MIT"
-    file_name_template: "bandori-tg_{{.Version}}_{{.Os}}_{{.Arch}}.deb"
-    formats:
-      - deb
-    contents:
-      - src: ./example.yaml
-        dst: /etc/bandori-tg/config.yaml
 
 release:
   prerelease: auto

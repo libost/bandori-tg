@@ -2,9 +2,10 @@
 
 一个用于手游 **《BanG Dream! 少女乐团派对！》**（邦多利 / Bandori）的 Telegram 机器人，提供查卡、查活动、档线预测等实用功能，支持多服务区、多语言，数据来源于 [Bestdori](https://bestdori.com)。
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![GitHub License](https://img.shields.io/github/license/libost/bandori-tg)
 [![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
-
+[![GitHub Downloads](https://img.shields.io/github/downloads/libost/bandori-tg/total.svg)](https://github.com/libost/bandori-tg/releases)
+![GitHub Release](https://img.shields.io/github/v/release/libost/bandori-tg)
 ---
 
 试用机器人：[@gbp_hina_bot](https://t.me/gbp_hina_bot)
@@ -36,8 +37,8 @@
 | 语言 | Go 1.27 |
 | 框架 | [gotgbot(自有分支)](https://github.com/libost/gotgbot) (v2) |
 | 数据库 | SQLite（[modernc.org/sqlite](https://modernc.org/sqlite)，纯 Go 实现，支持 `CGO_ENABLED=0` 交叉编译） |
-| 图片生成 | [fogleman/gg](https://github.com/fogleman/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
-| 定时任务 | [robfig/cron](https://github.com/robfig/cron) |
+| 图片生成 | [gogpu/gg](https://github.com/gogpu/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
+| 定时任务 | [netresearch/go-cron](https://github.com/netresearch/go-cron) |
 | 日志 | [lumberjack](https://github.com/natefinch/lumberjack)（滚动日志） |
 | 配置 | YAML（[goccy/go-yaml](https://github.com/goccy/go-yaml)） |
 
@@ -51,8 +52,10 @@ bandori-tg/
 ├── band/                # 乐队数据处理
 ├── cards/               # 查卡逻辑 + 卡片图片生成
 ├── characters/          # 角色数据处理
+├── comic/               # 漫画数据处理
 ├── events/              # 活动详情 + 档线预测（/cutoff）
-├── gacha/               # 卡池数据处理（TODO）
+├── songs/               # 歌曲数据处理
+├── gacha/               # 卡池数据处理
 ├── skills/              # 技能数据处理
 ├── recent/              # 最新资讯数据处理
 ├── dynamic/             # 动态资讯转发（TODO）
@@ -107,7 +110,6 @@ go build -o bandori-tg .
 也可以直接使用命令行参数：
 
 ```bash
-./bandori-tg run       # 运行机器人（默认）
 ./bandori-tg version   # 查看版本
 ./bandori-tg help      # 查看帮助
 ```
@@ -129,11 +131,15 @@ go build -o bandori-tg .
 
 | 指令 | 权限 | 说明 |
 | --- | --- | --- |
-| `/start` | 所有人 | 开始使用；支持 `events_<id>_<lang>` 参数直达活动详情 |
+| `/start` | 所有人 | 开始使用 |
 | `/help` | 所有人 | 查看帮助 |
 | `/cards <关键词>` | 所有人 | 查卡（也支持直接发送「查卡 <关键词>」） |
+| `/comics` | 所有人 | 随机查看漫画 |
 | `/events` | 所有人 | 查看各服近期活动 |
-| `/fsx <活动ID>` | 所有人 | 查看活动档线预测图（将在 v1.1 版本推出） |
+| `/cutoff <活动ID>` | 所有人 | 查看活动档线预测图 |
+| `/gacha` | 所有人 | 查看卡池信息 |
+| `/songs` | 所有人 | 查看歌曲信息 |
+| `/search` | 所有人 | 搜索歌曲 |
 | `/lang` | 所有人 | 语言设置（界面语言 / 查询语言） |
 | `/dlang` | 所有人 | 设置界面语言 |
 | `/qlang` | 所有人 | 设置查询语言（数据服务区） |
@@ -164,7 +170,7 @@ webhook:
 
 ## 🔄 数据更新
 
-机器人内置定时任务，每日多次拉取 Bestdori 数据，时间点对齐各服活动开始 / 结束前约 30 分钟，保证档线预测与活动信息及时准确。若拉取失败会自动重试（最多 5 次，指数退避）。
+机器人内置定时任务，每日多次拉取 Bestdori 数据，时间点为每小时的 30 分，保证档线预测与活动信息及时准确。若拉取失败会自动重试（最多 5 次，指数退避）。
 
 ## 🛠️ 开发与构建
 
@@ -188,13 +194,24 @@ go build ./...
 ## 开发路线
 
 - [ ] 新闻页面
-- [ ] 招募信息查询
+- [x] 招募信息查询
 - [ ] 更多语言支持（需要帮助！）
 
 ## 📄 许可证
 
 [MIT](LICENSE) © libost
 
+### 🏷️ 可选的构建标签
+
+构建时可使用以下标签启用/禁用特定功能：
+- `fonts_detached`: 使用分离的字体文件（优点：构建产物体积更小），会在启动时检查 `res/fonts/` 目录是否存在字体文件，若不存在则自动下载。  
+
+用法：
+
+```bash
+# 构建时启用字体分离
+go build -tags fonts_detached ./...
+```
 
 > [!IMPORTANT]
 > 本项目与 **BanG Dream! 少女乐团派对！** 官方无关，`Bandori`、`BanG Dream!` 均为其所有者的商标，数据来源于 [Bestdori](https://bestdori.com)。
