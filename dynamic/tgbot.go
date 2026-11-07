@@ -26,7 +26,6 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 }
 
 func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
-	//TODO: Implement the dynamic command handler logic here
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, "en")
@@ -182,7 +181,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				Buttons: []gotgbot.RichMessageButton{
 					{
 						Text:         gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsButton", langCode)),
-						CallbackData: "event_" + recentEvents[idx] + "_" + regionCode,
+						CallbackData: "events_" + recentEvents[idx] + "_" + regionCode + "_" + strconv.FormatInt(time.Now().Unix(), 10),
 						Style:        "primary",
 					},
 				},

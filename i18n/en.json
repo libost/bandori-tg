@@ -32,7 +32,8 @@
             "Search for songs by keyword.",
             "Query ongoing gacha.",
             "Query information about a specific character by her ID or name.",
-            "Get a random comic."
+            "Get a random comic.",
+            "Query recently updated content."
         ]
     },
     "cards": {
