@@ -156,7 +156,8 @@
         "anime": "Cover",
         "tie_up": "Extra",
         "countdown_end": "Released",
-        "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
+        "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "loading": "Loading..."
     },
     "generic": {
         "error": "An error occurred. Please try again later. Error message: \n<code>%[1]s</code>"

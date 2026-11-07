@@ -6,6 +6,7 @@ import (
 	"log"
 	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -28,6 +29,27 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, "en")
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	tz := utils.TzHelper(regionCode)

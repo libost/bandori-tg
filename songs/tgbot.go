@@ -19,6 +19,7 @@ import (
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -37,6 +38,7 @@ func fuzzySearch(query string, songs []string) []string {
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("search", searchCommand))
 	dispatcher.AddHandler(handlers.NewCommand("song", SongCommand))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("song_"), songCallbackHandler))
 }
 
 func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -169,6 +171,50 @@ func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	err := sendSongDetails(b, ctx, songs, qlangCode, langCode)
 	return err
+}
+
+func songCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	data := ctx.CallbackQuery.Data
+	parts := strings.Split(data, "_")
+	if len(parts) < 3 {
+		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "Invalid callback data format.",
+			ShowAlert: true,
+		})
+		return fmt.Errorf("invalid callback data format")
+	}
+	ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      I.GetLocalisedString("songs.loading", langCode),
+		ShowAlert: false,
+	})
+	songId := parts[1]
+	region := parts[2]
+	songMap := utils.ReadSongs()
+	song := songMap[songId]
+	songTitle := song.MusicTitle[utils.IndexHelper(region)]
+	return sendSongDetails(b, ctx, []string{songTitle}, region, langCode)
 }
 
 func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, langCode string) error {
