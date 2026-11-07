@@ -25,10 +25,6 @@ import (
 	"golang.org/x/image/draw"
 )
 
-func cardOrdinaryType(types string) bool {
-	return types == "permanent" || types == "limited" || types == "dreamfes" || types == "event"
-}
-
 func regionCodeFromCard(card C.Card, preferCode string) string {
 	index := 0
 	switch preferCode {
@@ -68,62 +64,30 @@ func regionCodeFromCard(card C.Card, preferCode string) string {
 	return "jp"
 }
 
-// retrieveCardsPath retrieves the path for a card image based on its region, resource set name, and stat, then returns its url.
-// regionCode: "en" for English, "jp" for Japanese, etc.
-// resourceSetName: The resource set name of the card.
-// cardStat: The card stat, e.g., "normal", "after_training".
-func retrieveCardsPath(regionCode, resourceSetName, cardStat string) (string, error) {
-	// Implementation for retrieving card image paths
+func retrieveCardsPath(regionCode, resourceSetName, cardStat string) string {
 	url := "https://bestdori.com/assets/" + regionCode + "/characters/resourceset/" + resourceSetName + "_rip/card_" + cardStat + ".png"
-	return url, nil
+	return url
 }
 
 func GetCard(cardId string) (string, string, error) {
 	cardMap := utils.ReadCards()
 	card, exists := cardMap[cardId]
 	if !exists {
-		return "", "", nil
+		return "", "", fmt.Errorf("card %s not found", cardId)
 	}
 	regionCode := regionCodeFromCard(card, "jp")
-	if card.Rarity < 3 || !cardOrdinaryType(card.Type) {
-		if card.Type == "campaign" {
-			if card.Rarity < 3 {
-				normalPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
-				if err != nil {
-					return "", "", err
-				}
-				return normalPath, "", nil
-			}
-			trainingPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-			if err != nil {
-				return "", "", err
-			}
-			return "", trainingPath, nil
-		}
-		if card.Rarity < 3 {
-
-			normalPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
-			if err != nil {
-				return "", "", err
-			}
-			return normalPath, "", nil
-		}
-		if card.Type == "birthday" || card.Type == "others" || card.Type == "kirafes" {
-			trainingPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-			if err != nil {
-				return "", "", err
-			}
-			return "", trainingPath, nil
-		}
-
+	normalPath := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
+	trainingPath := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
+	normalValid := utils.IsValidPNGUrl(normalPath)
+	trainingValid := utils.IsValidPNGUrl(trainingPath)
+	if !normalValid {
+		normalPath = ""
 	}
-	normalPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "normal")
-	if err != nil {
-		return "", "", err
+	if !trainingValid {
+		trainingPath = ""
 	}
-	trainingPath, err := retrieveCardsPath(regionCode, card.ResourceSetName, "after_training")
-	if err != nil {
-		return "", "", err
+	if !normalValid && !trainingValid {
+		return "", "", fmt.Errorf("no valid card image found for card ID %s", cardId)
 	}
 	return normalPath, trainingPath, nil
 }
@@ -160,21 +124,13 @@ func getThumbCard(cardId string) (string, error) {
 	cardPack := fmt.Sprintf("%05d", cardIDint/50)
 	normalPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_normal.png"
 	afterTrainingPath := "https://bestdori.com/assets/" + regionCode + "/thumb/chara/card" + cardPack + "_rip/" + card.ResourceSetName + "_after_training.png"
-	if card.Rarity < 3 || !cardOrdinaryType(card.Type) {
-		if card.Type == "campaign" {
-			if card.Rarity < 3 {
-				return normalPath, nil
-			}
-			return afterTrainingPath, nil
-		}
-		if card.Rarity < 3 {
-			return normalPath, nil
-		}
-		if card.Type == "birthday" || card.Type == "others" || card.Type == "kirafes" {
-			return afterTrainingPath, nil
-		}
+	if utils.IsValidPNGUrl(normalPath) {
+		return normalPath, nil
 	}
-	return normalPath, nil
+	if utils.IsValidPNGUrl(afterTrainingPath) {
+		return afterTrainingPath, nil
+	}
+	return "", fmt.Errorf("no valid thumbnail found for card ID %s", cardId)
 }
 
 func loadSVG(w, h float64, stream io.Reader) (image.Image, error) {
