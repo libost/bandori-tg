@@ -8,7 +8,7 @@ import (
 )
 
 // GetOngoingEventsID returns a list of ongoing eventsIDs, sorted by jp, en, tw, cn.
-func GetOngoingEventsID() ([]string, error) {
+func GetOngoingEventsID() []string {
 	ongoing := make([]string, 4)
 	for region, index := range []int{0, 1, 2, 3} {
 		latestID, ok := findLatestOngoingEvent(index)
@@ -16,7 +16,7 @@ func GetOngoingEventsID() ([]string, error) {
 			ongoing[region] = latestID
 		}
 	}
-	return ongoing, nil
+	return ongoing
 }
 
 func findLatestOngoingEvent(region int) (string, bool) {
@@ -64,7 +64,7 @@ type GachaOngoingPerRegion struct {
 }
 
 // GetOngoingGachas returns a list of ongoing gachas, sorted by jp, en, tw, cn.
-func GetOngoingGachas() ([]GachaOngoingPerRegion, error) {
+func GetOngoingGachas() []GachaOngoingPerRegion {
 	ongoing := make([]GachaOngoingPerRegion, 4)
 	for region, index := range []int{0, 1, 2, 3} {
 		gachaIDs := findLatestOngoingGachas(index)
@@ -73,7 +73,7 @@ func GetOngoingGachas() ([]GachaOngoingPerRegion, error) {
 			Gacha:  gachaIDs,
 		}
 	}
-	return ongoing, nil
+	return ongoing
 }
 
 func findLatestOngoingGachas(region int) []string {

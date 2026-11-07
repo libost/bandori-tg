@@ -270,5 +270,16 @@
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。",
         "error_occurred": "查询角色信息时发生错误，请稍后再试。",
         "character_not_found": "未找到指定的角色。请检查输入是否正确。"
+    },
+    "dynamic": {
+        "songsHeading": "最近更新的歌曲",
+        "songsButton": "查看歌曲详情",
+        "songsName": "歌曲名称: ",
+        "songsPubTime": "发布时间: ",
+        "eventsHeading": "最近更新的活动",
+        "eventsButton": "查看活动详情",
+        "eventsName": "活动名称: ",
+        "eventsEndTime": "结束时间: ",
+        "gachasHeading": "最近更新的招募"
     }
 }

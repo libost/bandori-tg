@@ -195,7 +195,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		})
 		return nil
 	}
-	jacketURL, _, err := getJacket(songId, detailedSong.JacketImage[0], region)
+	jacketURL, _, err := GetJacket(songId, detailedSong.JacketImage[0], region)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error fetching song jacket: "+err.Error()), &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",

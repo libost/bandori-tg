@@ -262,10 +262,10 @@ type Band struct {
 type BandData map[string]Band
 
 type Recent struct {
-	Songs      map[string]RSongsData     `json:"songs"`
-	Events     map[string]EventData      `json:"events"`
-	Gacha      map[string]RGachaData     `json:"gacha"`
-	LoginBonus map[string]LoginBonusData `json:"loginBonus"`
+	Songs      map[string]RSongsData      `json:"songs"`
+	Events     map[string]EventData       `json:"events"`
+	Gacha      map[string]RGachaData      `json:"gacha"`
+	LoginBonus map[string]RLoginBonusData `json:"loginBonus"`
 }
 
 type RSongsData struct {
@@ -285,7 +285,7 @@ type RGachaData struct {
 	ClosedAt    []string `json:"closedAt"`
 }
 
-type LoginBonusData struct {
+type RLoginBonusData struct {
 	Caption     []string `json:"caption"`
 	PublishedAt []string `json:"publishedAt"`
 	ClosedAt    []string `json:"closedAt"`
@@ -560,6 +560,26 @@ type Comic struct {
 	SubTitle        []string `json:"subTitle"`
 	PublicStartAt   []any    `json:"publicStartAt"`
 	CharacterId     []int    `json:"characterId"`
+}
+
+type LoginBonusDetail struct {
+	LoginBonusType  string          `json:"loginBonusType"`
+	AssetBundleName []string        `json:"assetBundleName"`
+	AssetMap        any             `json:"assetMap"`
+	Caption         []string        `json:"caption"`
+	PublishedAt     []string        `json:"publishedAt"`
+	ClosedAt        []string        `json:"closedAt"`
+	Details         [][]*DetailItem `json:"details"`
+}
+
+type DetailItem struct {
+	LoginBonusId int    `json:"loginBonusId"`
+	Days         int    `json:"days"`
+	ResourceType string `json:"resourceType"`
+	Quantity     int    `json:"quantity"`
+	Seq          int    `json:"seq"`
+	GrantType    string `json:"grantType"`
+	ResourceId   *int   `json:"resourceId,omitempty"`
 }
 
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.

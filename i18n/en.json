@@ -259,5 +259,16 @@
         "character_not_found": "Character not found. Please check if the character ID is correct.",
         "error_occurred": "An error occurred while querying character information. Please try again later.",
         "usage": "Please provide a character ID or name to query. Usage: /character <character_id/name>."
+    },
+    "dynamic": {
+        "songsHeading": "Recently updated songs",
+        "songsButton": "View Song Details",
+        "songName": "Song Title: ",
+        "songPubTime": "Release Time: ",
+        "eventsHeading": "Recently updated events",
+        "eventsButton": "View Event Details",
+        "eventName": "Event Title: ",
+        "eventEndTime": "End Time: ",
+        "gachasHeading": "Recently updated gachas"
     }
 }

@@ -55,7 +55,7 @@ func ceilTo10(n int) int {
 	return (n + 9) / 10 * 10
 }
 
-func getJacket(songId, musicJacket, region string) (string, string, error) {
+func GetJacket(songId, musicJacket, region string) (string, string, error) {
 	songIdInt, err := strconv.Atoi(songId)
 	if err != nil {
 		return "", "", err

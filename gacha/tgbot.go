@@ -58,12 +58,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	qindex := utils.IndexHelper(regionCode)
 	if len(ctx.Args()) == 1 {
-		ongoingGachas, err := recent.GetOngoingGachas()
-		if err != nil {
-			log.Printf("Error fetching ongoing gachas: %v", err)
-			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
-			return err
-		}
+		ongoingGachas := recent.GetOngoingGachas()
 		if len(ongoingGachas) == 0 {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.no_ongoing_gachas", langCode), nil)
 			return nil
@@ -112,7 +107,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 			richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockDivider{})
 		}
-		_, err = b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+		_, err := b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
