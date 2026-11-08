@@ -310,13 +310,15 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
+	publishedAt = utils.TimeCheck(publishedAt/1000) * 1000 // Convert to milliseconds and check
+	endAt = utils.TimeCheck(endAt/1000) * 1000             // Convert to milliseconds and check
 	if publishedAt > now {
 		countdown := publishedAt - now
-		secs, mins, hrs, days := events.TimeCalc(countdown)
+		secs, mins, hrs, days := events.TimeCalc(countdown / 1000) // Convert to seconds for TimeCalc
 		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_future", langCode), days, hrs, mins, secs)
 	} else if endAt > now {
 		countdown := endAt - now
-		secs, mins, hrs, days := events.TimeCalc(countdown)
+		secs, mins, hrs, days := events.TimeCalc(countdown / 1000) // Convert to seconds for TimeCalc
 		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_now", langCode), days, hrs, mins, secs)
 	} else {
 		countdownStr = I.GetLocalisedString("gacha.countdown_ended", langCode)

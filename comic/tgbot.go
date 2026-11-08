@@ -169,6 +169,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 	publicStartAt := convertAnyToInt(comic.PublicStartAt[idx])
 	if publicStartAt != 1 {
 		timestamp := int64(publicStartAt) / 1000
+		timestamp = utils.TimeCheck(timestamp)
 		timezone := utils.TzHelper(regionCode)
 		loc, _ := time.LoadLocation(timezone)
 		timeStr := time.Unix(timestamp, 0).In(loc).Format("2006-01-02 15:04:05 MST")
