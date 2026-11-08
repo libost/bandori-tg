@@ -407,3 +407,18 @@ func IsValidPNGUrl(url string) bool {
 
 	return true
 }
+
+// TimeCheck checks if the given timestamp is within the acceptable range defined by ApiTimeMaxInterval.
+//
+// If the timestamp is greater than the current time plus ApiTimeMaxInterval, it returns DefaultTimeStamp.
+//
+// Otherwise, it returns the original timestamp.
+//
+// timestamp: The timestamp to be checked, in seconds since the Unix epoch.
+func TimeCheck(timestamp int64) int64 {
+	now := time.Now().Unix()
+	if timestamp > now+C.ApiTimeMaxInterval {
+		return C.DefaultTimeStamp
+	}
+	return timestamp
+}

@@ -627,7 +627,9 @@ var CharaEmoji = [...]int64{
 }
 
 // Access emoji by using BandEmoji[bandID-1], for example, BandEmoji[0] will return the emoji for band ID 1.
+//
 // For unknown reasons, the IDs of RAS, Morfonica and MyGO are 18, 21 and 45 respectively, so the missing IDs will be filled with 0.
+//
 // Now I know the reason, some songs are performed by other combinations of bands, so they have their own IDs.
 var BandEmoji = [...]int64{
 	6048882135522089606,
@@ -694,7 +696,9 @@ var RarityEmoji = [...]int64{
 var AcceptedRegions = []string{"jp", "en", "tw", "cn", "kr"}
 
 // These cards are known to have issues with their data, so they are excluded from the bot's responses.
+//
 // Maybe they fixed now, but I will leave them here just in case. If you find any other cards with issues, please report them to me.
+//
 // Symptom: when send rich message, the telegram api will return 400 Bad Request with message "wrong type of the web page content".
 var BadCards = []string{"2309"}
 
@@ -709,6 +713,21 @@ var DifficultyColors = [...]string{
 	"#FD2A30", // Expert
 	"#F12199", // Special
 }
+
+const (
+	// This is the maximum interval between the current time and the time that the API can accept, in seconds.
+	//
+	// In total, this is 1099 days.
+	//
+	// If the interval is larger than this, the API will return an error. If not too large, it will return `Bad Request: RICH_MESSAGE_DATE_INVALID`. If too large, it will return `Bad Request: can't parse InputRichBlock: Can't parse PageBlockTableCell: Field "unix_time" must be a valid Number`.
+	//
+	// I also call this "the Durov Constant", XD.
+	ApiTimeMaxInterval = 94867200
+	// The default timestamp if the time is beyond the maximum interval that the API can accept.
+	//
+	// This is the timestamp of 2029-10-01 00:00:00 UTC.
+	DefaultTimeStamp = 1885507200
+)
 
 type Item struct {
 	ID      int

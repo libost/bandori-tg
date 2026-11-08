@@ -735,7 +735,9 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			eEnd, _ := strconv.Atoi(event.EndAt[r.idx])
 
 			eventStart := int64(eStart) / 1000
+			eventStart = utils.TimeCheck(eventStart)
 			eventEnd := int64(eEnd) / 1000
+			eventEnd = utils.TimeCheck(eventEnd)
 			remainingTime := eventEnd - timeNow
 			startRemainingTime := eventStart - timeNow
 
@@ -750,8 +752,8 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 			}
 
-			eStartTime := time.UnixMilli(int64(eStart)).In(loc).Format("2006-01-02 15:04:05 MST")
-			eEndTime := time.UnixMilli(int64(eEnd)).In(loc).Format("2006-01-02 15:04:05 MST")
+			eStartTime := time.Unix(eventStart, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+			eEndTime := time.Unix(eventEnd, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 
 			richMessage.Blocks = append(richMessage.Blocks,
 				gotgbot.InputRichBlockPhoto{

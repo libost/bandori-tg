@@ -175,9 +175,10 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	attribute = strings.ToUpper(attribute)
 	releasedAt := selectLocaleString(card.ReleasedAt, index)
 	releasedAtInt, _ := strconv.Atoi(releasedAt)
+	releasedAtInt64 := utils.TimeCheck(int64(releasedAtInt)/1000) * 1000 // Convert to milliseconds and check
 	tz := utils.TzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
-	releasedAtTime := time.Unix(int64(releasedAtInt)/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	releasedAtTime := time.Unix(releasedAtInt64/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
 	cemojiID := C.CharaEmoji[card.CharacterID-1]
 	bemojiID := C.BandEmoji[char.BandID-1]
@@ -275,7 +276,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		{
 			Text: gotgbot.RichTextDateTime{
 				Text:           gotgbot.RichTextString(releasedAtTime),
-				UnixTime:       int64(releasedAtInt) / 1000,
+				UnixTime:       releasedAtInt64 / 1000,
 				DateTimeFormat: "DwT",
 			},
 			Align: "right",
