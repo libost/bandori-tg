@@ -355,11 +355,11 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		})
 		return nil
 	}
-	publishedAtInt64 := utils.TimeCheck(int64(publishedAt))
+	publishedAtInt64 := utils.TimeCheck(int64(publishedAt) / 1000)
 	loc, _ := time.LoadLocation(tz)
-	timeStr := time.Unix(publishedAtInt64/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	timeStr := time.Unix(publishedAtInt64, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	now := time.Now().Unix()
-	countdownTime = max(publishedAtInt64-now*1000, 0)
+	countdownTime = max(publishedAtInt64-now, 0)
 	var countdownStr string
 	if countdownTime > 0 {
 		secs, mins, hrs, days := events.TimeCalc(countdownTime)
@@ -417,7 +417,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 			{
 				Text: gotgbot.RichTextDateTime{
 					Text:           gotgbot.RichTextString(timeStr),
-					UnixTime:       int64(publishedAt) / 1000,
+					UnixTime:       publishedAtInt64,
 					DateTimeFormat: "DwT",
 				},
 				Align: "right",
