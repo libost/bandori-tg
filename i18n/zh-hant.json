@@ -275,10 +275,13 @@
         "songsButton": "查看歌曲詳情",
         "songName": "歌曲名稱: ",
         "songPubTime": "發布時間: ",
+        "songNone": "暫無最近更新的歌曲。",
         "eventsHeading": "最近更新的活動",
         "eventsButton": "查看活動詳情",
         "eventName": "活動名稱: ",
         "eventEndTime": "結束時間: ",
-        "gachasHeading": "最近更新的轉蛋"
+        "eventNone": "暫無最近更新的活動。",
+        "gachasHeading": "最近更新的轉蛋",
+        "gachasNone": "暫無最近更新的轉蛋。"
     }
 }

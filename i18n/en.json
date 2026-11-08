@@ -267,10 +267,13 @@
         "songsButton": "View Song Details",
         "songName": "Song Title: ",
         "songPubTime": "Release Time: ",
+        "songsNone": "No recently updated songs.",
         "eventsHeading": "Recently updated events",
         "eventsButton": "View Event Details",
         "eventName": "Event Title: ",
         "eventEndTime": "End Time: ",
-        "gachasHeading": "Recently updated gachas"
+        "eventsNone": "No recently updated events.",
+        "gachasHeading": "Recently updated gachas",
+        "gachasNone": "No recently updated gachas."
     }
 }

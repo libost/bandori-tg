@@ -155,70 +155,76 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		Size: 4,
 	})
 	recentEvents := recent.GetOngoingEventsID()
-	if recentEvents[idx] != "" {
-		eventsMap := utils.ReadEvents()
-		event := eventsMap[recentEvents[idx]]
-		endTime, err := strconv.ParseInt(event.EndAt[idx], 10, 64)
-		if err != nil {
-			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error parsing event end time: "+err.Error()), &gotgbot.SendMessageOpts{
-				ParseMode: "HTML",
-			})
-			return err
-		}
-		endTime = utils.TimeCheck(endTime/1000) * 1000
-		endStr := time.Unix(endTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
-		richMessageEventSections := []gotgbot.InputRichBlock{
-			gotgbot.InputRichBlockPhoto{
-				Photo: gotgbot.InputMediaPhoto{
-					Media: gotgbot.InputFileByURL("https://bestdori.com/assets/" + regionCode + "/event/" + event.AssetBundleName + "/images_rip/banner.png"),
-				},
-			},
-			gotgbot.InputRichBlockTable{
-				Cells: [][]gotgbot.RichBlockTableCell{
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsName", langCode)),
-							Align: "left",
-						},
-						{
-							Text:  gotgbot.RichTextString(event.EventName[idx]),
-							Align: "center",
-						},
-					},
-					{
-						{
-							Text:  gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsEndTime", langCode)),
-							Align: "left",
-						},
-						{
-							Text: gotgbot.RichTextDateTime{
-								Text:           gotgbot.RichTextString(endStr),
-								UnixTime:       endTime / 1000,
-								DateTimeFormat: "DwT",
-							},
-							Align: "center",
-						},
-					},
-				},
-			},
-			gotgbot.InputRichBlockButtons{
-				Buttons: []gotgbot.RichMessageButton{
-					{
-						Text:         gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsButton", langCode)),
-						CallbackData: "events_" + recentEvents[idx] + "_" + regionCode + "_" + strconv.FormatInt(time.Now().Unix(), 10),
-						Style:        "primary",
-					},
-				},
-			},
-		}
-		richMessageEventDetails := gotgbot.InputRichBlockDetails{
-			Blocks: richMessageEventSections,
-		}
-		richMessage.Blocks = append(richMessage.Blocks, richMessageEventDetails)
-	} else {
+	if len(recentEvents) <= idx {
 		richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
 			Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsNone", langCode)),
 		})
+	} else {
+		if recentEvents[idx] != "" {
+			eventsMap := utils.ReadEvents()
+			event := eventsMap[recentEvents[idx]]
+			endTime, err := strconv.ParseInt(event.EndAt[idx], 10, 64)
+			if err != nil {
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error parsing event end time: "+err.Error()), &gotgbot.SendMessageOpts{
+					ParseMode: "HTML",
+				})
+				return err
+			}
+			endTime = utils.TimeCheck(endTime/1000) * 1000
+			endStr := time.Unix(endTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+			richMessageEventSections := []gotgbot.InputRichBlock{
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByURL("https://bestdori.com/assets/" + regionCode + "/event/" + event.AssetBundleName + "/images_rip/banner.png"),
+					},
+				},
+				gotgbot.InputRichBlockTable{
+					Cells: [][]gotgbot.RichBlockTableCell{
+						{
+							{
+								Text:  gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsName", langCode)),
+								Align: "left",
+							},
+							{
+								Text:  gotgbot.RichTextString(event.EventName[idx]),
+								Align: "center",
+							},
+						},
+						{
+							{
+								Text:  gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsEndTime", langCode)),
+								Align: "left",
+							},
+							{
+								Text: gotgbot.RichTextDateTime{
+									Text:           gotgbot.RichTextString(endStr),
+									UnixTime:       endTime / 1000,
+									DateTimeFormat: "DwT",
+								},
+								Align: "center",
+							},
+						},
+					},
+				},
+				gotgbot.InputRichBlockButtons{
+					Buttons: []gotgbot.RichMessageButton{
+						{
+							Text:         gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsButton", langCode)),
+							CallbackData: "events_" + recentEvents[idx] + "_" + regionCode + "_" + strconv.FormatInt(time.Now().Unix(), 10),
+							Style:        "primary",
+						},
+					},
+				},
+			}
+			richMessageEventDetails := gotgbot.InputRichBlockDetails{
+				Blocks: richMessageEventSections,
+			}
+			richMessage.Blocks = append(richMessage.Blocks, richMessageEventDetails)
+		} else {
+			richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
+				Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsNone", langCode)),
+			})
+		}
 	}
 	// Gacha Section
 	richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockDivider{})
@@ -226,30 +232,37 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.gachasHeading", langCode)),
 		Size: 4,
 	})
+
 	recentGachas := recent.GetOngoingGachas()
-	if len(recentGachas[idx].Gacha) > 0 {
-		gachaMap := utils.ReadGacha()
-		var richMessageGachaSections []gotgbot.InputRichBlock
-		for _, gacha := range recentGachas[idx].Gacha {
-			gachaDetails := gachaMap[gacha]
-			richMessageGachaSections = append(richMessageGachaSections, gotgbot.InputRichBlockButtons{
-				Buttons: []gotgbot.RichMessageButton{
-					{
-						Text:         gotgbot.RichTextString(gachaDetails.GachaName[idx]),
-						CallbackData: fmt.Sprintf("gacha_%s_%d", gacha, idx),
-						Style:        "primary",
+	if len(recentGachas) <= idx {
+		richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
+			Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.gachasNone", langCode)),
+		})
+	} else {
+		if len(recentGachas[idx].Gacha) > 0 {
+			gachaMap := utils.ReadGacha()
+			var richMessageGachaSections []gotgbot.InputRichBlock
+			for _, gacha := range recentGachas[idx].Gacha {
+				gachaDetails := gachaMap[gacha]
+				richMessageGachaSections = append(richMessageGachaSections, gotgbot.InputRichBlockButtons{
+					Buttons: []gotgbot.RichMessageButton{
+						{
+							Text:         gotgbot.RichTextString(gachaDetails.GachaName[idx]),
+							CallbackData: fmt.Sprintf("gacha_%s_%d", gacha, idx),
+							Style:        "primary",
+						},
 					},
-				},
+				})
+			}
+			richMessageGachaDetails := gotgbot.InputRichBlockDetails{
+				Blocks: richMessageGachaSections,
+			}
+			richMessage.Blocks = append(richMessage.Blocks, richMessageGachaDetails)
+		} else {
+			richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
+				Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.gachasNone", langCode)),
 			})
 		}
-		richMessageGachaDetails := gotgbot.InputRichBlockDetails{
-			Blocks: richMessageGachaSections,
-		}
-		richMessage.Blocks = append(richMessage.Blocks, richMessageGachaDetails)
-	} else {
-		richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
-			Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.gachaNone", langCode)),
-		})
 	}
 	// Login Bonus Section
 	// Do we really need this?
