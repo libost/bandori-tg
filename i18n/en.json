@@ -263,6 +263,12 @@
         "usage": "Please provide a character ID or name to query. Usage: /character <character_id/name>."
     },
     "dynamic": {
+        "heading": "Recently updated content - ",
+        "region_jp": "Japan 🇯🇵",
+        "region_en": "International 🇺🇸",
+        "region_tw": "Taiwan 🇹🇼",
+        "region_cn": "China 🇨🇳",
+        "region_kr": "Korea 🇰🇷",
         "songsHeading": "Recently updated songs",
         "songsButton": "View Song Details",
         "songName": "Song Title: ",

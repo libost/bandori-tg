@@ -62,7 +62,13 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	idx := utils.IndexHelper(regionCode)
 	recentMap := utils.ReadRecent()
 	richMessage := &gotgbot.InputRichMessage{
-		Blocks: []gotgbot.InputRichBlock{},
+		Blocks: []gotgbot.InputRichBlock{
+			gotgbot.InputRichBlockSectionHeading{
+				Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.heading", langCode) + I.GetLocalisedString("dynamic.region_"+regionCode, langCode)),
+				Size: 3,
+			},
+			gotgbot.InputRichBlockDivider{},
+		},
 	}
 	// Songs Section
 	var recentSongs []string

@@ -274,6 +274,12 @@
         "character_not_found": "未找到指定的角色。请检查输入是否正确。"
     },
     "dynamic": {
+        "heading": "最近更新的内容 - ",
+        "region_jp": "日服 🇯🇵",
+        "region_en": "国际服 🇺🇸",
+        "region_tw": "台服 🇹🇼",
+        "region_cn": "国服 🇨🇳",
+        "region_kr": "韩服 🇰🇷",
         "songsHeading": "最近更新的歌曲",
         "songsButton": "查看歌曲详情",
         "songsName": "歌曲名称: ",

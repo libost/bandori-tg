@@ -271,6 +271,12 @@
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。"
     },
     "dynamic": {
+        "heading": "最近更新的內容 - ",
+        "region_jp": "日服 🇯🇵",
+        "region_en": "國際服 🇺🇸",
+        "region_tw": "台服 🇹🇼",
+        "region_cn": "中國服 🇨🇳",
+        "region_kr": "韓服 🇰🇷",
         "songsHeading": "最近更新的歌曲",
         "songsButton": "查看歌曲詳情",
         "songName": "歌曲名稱: ",
