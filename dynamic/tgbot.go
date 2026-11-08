@@ -85,6 +85,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 				log.Printf("Error parsing published time for song %s: %v", songId, err)
 				continue
 			}
+			pubTime = utils.TimeCheck(pubTime/1000) * 1000
 			pubStr := time.Unix(pubTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 			cells := [][]gotgbot.RichBlockTableCell{
 				{
@@ -164,6 +165,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			})
 			return err
 		}
+		endTime = utils.TimeCheck(endTime/1000) * 1000
 		endStr := time.Unix(endTime/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 		richMessageEventSections := []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockPhoto{
