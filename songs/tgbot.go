@@ -202,6 +202,7 @@ func songCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      "Invalid callback data format.",
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid callback data format")
 	}

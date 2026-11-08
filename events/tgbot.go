@@ -849,6 +849,7 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("events.invalid_callback_data", langCode),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid callback data")
 	}

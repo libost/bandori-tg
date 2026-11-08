@@ -169,6 +169,7 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", langCode),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid callback data")
 	}
@@ -252,6 +253,7 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		log.Printf("Invalid callback data: %s", callbackData)
 		return fmt.Errorf("invalid callback data")
@@ -263,6 +265,7 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", langCode),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid region code")
 	}
