@@ -55,6 +55,7 @@ func callbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 		Text:      "The Callback query '" + parts[0] + "' is not implemented yet...\nHow did you get here? Please report this to the bot developer.\n\nYou can find us using command /about",
 		ShowAlert: true,
+		CacheTime: 60, // Cache for 60 seconds
 	})
 	log.Printf("Received unexpected callback query: %s", callbackData)
 	return err

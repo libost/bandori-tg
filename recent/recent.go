@@ -69,7 +69,7 @@ func GetOngoingGachas() []GachaOngoingPerRegion {
 	for region, index := range []int{0, 1, 2, 3} {
 		gachaIDs := findLatestOngoingGachas(index)
 		ongoing[region] = GachaOngoingPerRegion{
-			Region: indexHelper(index),
+			Region: utils.ReverseIndexHelper(index),
 			Gacha:  gachaIDs,
 		}
 	}
@@ -113,21 +113,4 @@ func findLatestOngoingGachas(region int) []string {
 	}
 
 	return candidates
-}
-
-func indexHelper(index int) string {
-	switch index {
-	case 0:
-		return "jp"
-	case 1:
-		return "en"
-	case 2:
-		return "tw"
-	case 3:
-		return "cn"
-	case 4:
-		return "kr"
-	default:
-		return "jp"
-	}
 }
