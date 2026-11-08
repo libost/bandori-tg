@@ -140,6 +140,8 @@ func main() {
 		})
 	}
 
+	cronTasks(c)
+
 	go func() {
 		for sig := range sigs {
 			switch sig {
@@ -165,7 +167,6 @@ func main() {
 		}
 	}()
 	log.Printf("Bot is running.")
-	cronTasks(c)
 
 	updater.Idle()
 }
@@ -183,7 +184,6 @@ func cronTasks(c *cron.Cron) {
 		log.Printf("Error adding cron job: %v", err)
 	}
 	c.Start()
-	select {} // Keep the main goroutine running
 }
 
 func startWebhookCommunication(cfg *C.Config, updater *ext.Updater, b *gotgbot.Bot) {
