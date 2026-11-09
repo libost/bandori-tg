@@ -19,6 +19,7 @@ import (
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -37,6 +38,7 @@ func fuzzySearch(query string, songs []string) []string {
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("search", searchCommand))
 	dispatcher.AddHandler(handlers.NewCommand("song", SongCommand))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("song_"), songCallbackHandler))
 }
 
 func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -171,6 +173,51 @@ func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
+func songCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	data := ctx.CallbackQuery.Data
+	parts := strings.Split(data, "_")
+	if len(parts) < 3 {
+		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "Invalid callback data format.",
+			ShowAlert: true,
+			CacheTime: 60,
+		})
+		return fmt.Errorf("invalid callback data format")
+	}
+	ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      I.GetLocalisedString("songs.loading", langCode),
+		ShowAlert: false,
+	})
+	songId := parts[1]
+	region := parts[2]
+	songMap := utils.ReadSongs()
+	song := songMap[songId]
+	songTitle := song.MusicTitle[utils.IndexHelper(region)]
+	return sendSongDetails(b, ctx, []string{songTitle}, region, langCode)
+}
+
 func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, langCode string) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
@@ -195,7 +242,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		})
 		return nil
 	}
-	jacketURL, _, err := getJacket(songId, detailedSong.JacketImage[0], region)
+	jacketURL, _, err := GetJacket(songId, detailedSong.JacketImage[0], region)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error fetching song jacket: "+err.Error()), &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
@@ -308,11 +355,11 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		})
 		return nil
 	}
-	publishedAtInt64 := utils.TimeCheck(int64(publishedAt))
+	publishedAtInt64 := utils.TimeCheck(int64(publishedAt) / 1000)
 	loc, _ := time.LoadLocation(tz)
-	timeStr := time.Unix(publishedAtInt64/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	timeStr := time.Unix(publishedAtInt64, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	now := time.Now().Unix()
-	countdownTime = max(publishedAtInt64-now*1000, 0)
+	countdownTime = max(publishedAtInt64-now, 0)
 	var countdownStr string
 	if countdownTime > 0 {
 		secs, mins, hrs, days := events.TimeCalc(countdownTime)
@@ -370,7 +417,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 			{
 				Text: gotgbot.RichTextDateTime{
 					Text:           gotgbot.RichTextString(timeStr),
-					UnixTime:       int64(publishedAt) / 1000,
+					UnixTime:       publishedAtInt64,
 					DateTimeFormat: "DwT",
 				},
 				Align: "right",
@@ -390,7 +437,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
-				Text: gotgbot.RichTextString(I.GetLocalisedString("songs.header", langCode)),
+				Text: gotgbot.RichTextString(detailedSong.MusicTitle[regionIndex]),
 				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{

@@ -5,7 +5,7 @@
 ![GitHub License](https://img.shields.io/github/license/libost/bandori-tg)
 [![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
 [![GitHub Downloads](https://img.shields.io/github/downloads/libost/bandori-tg/total.svg)](https://github.com/libost/bandori-tg/releases)
-![GitHub Release](https://img.shields.io/github/v/release/libost/bandori-tg)
+[![GitHub Release](https://img.shields.io/github/v/release/libost/bandori-tg)](https://github.com/libost/bandori-tg/releases/latest)
 ---
 
 试用机器人：[@gbp_hina_bot](https://t.me/gbp_hina_bot)

@@ -325,7 +325,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(
-					I.GetLocalisedString("events.event_details", langCode),
+					eventName,
 				),
 				Size: 2,
 			},
@@ -482,19 +482,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	eventID := ctx.Args()[1]
 	regionCode := utils.IndexHelper(qlangCode)
 	if eventID == "now" || eventID == "当前" {
-		ongoingEvents, err := recent.GetOngoingEventsID()
-		if err != nil {
-			log.Printf("Error fetching ongoing events: %v", err)
-			if ctx.EffectiveChat.Type == "private" {
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
-			} else {
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
-					EphemeralMessageParameters: &gotgbot.EphemeralMessageParameters{
-						ReceiverUserId: ctx.EffectiveSender.ChatId,
-					},
-				})
-			}
-		}
+		ongoingEvents := recent.GetOngoingEventsID()
 		eventID = ongoingEvents[regionCode]
 	}
 	img, last, predicted, latestTime, speed, allTimeSpeed, err := getEventTracker(qlangCode, eventID, tier)
@@ -712,10 +700,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if len(ctx.Args()) == 1 {
 		ctxTimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		ongoingIDs, err := recent.GetOngoingEventsID()
-		if err != nil {
-			return err
-		}
+		ongoingIDs := recent.GetOngoingEventsID()
 		richMessage := gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
@@ -809,7 +794,7 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				},
 			)
 		}
-		_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+		_, err := b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
@@ -864,29 +849,18 @@ func callbackEventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("events.invalid_callback_data", langCode),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid callback data")
 	}
-	timeThen, err := strconv.ParseInt(parts[3], 10, 64)
+
+	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      I.GetLocalisedString("events.loading", langCode),
+		ShowAlert: false,
+	})
 	if err != nil {
-		log.Printf("Error parsing timestamp from callback data: %v", err)
-		return fmt.Errorf("invalid timestamp in callback data")
+		log.Printf("Error answering callback query: %v", err)
 	}
 
-	if time.Now().Unix() > timeThen+60 {
-		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-			Text:      I.GetLocalisedString("events.callback_expired", langCode),
-			ShowAlert: true,
-		})
-		return err
-	} else {
-		_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
-			Text:      I.GetLocalisedString("events.loading", langCode),
-			ShowAlert: false,
-		})
-		if err != nil {
-			log.Printf("Error answering callback query: %v", err)
-		}
-	}
 	return SendDetailedEvent(b, ctx, parts[1], langCode, parts[2])
 }

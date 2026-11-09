@@ -33,7 +33,8 @@
             "根据关键词搜索歌曲。",
             "查询当前进行中的招募。",
             "根据角色 ID 或名称查询角色信息。",
-            "抽取随机漫画。"
+            "抽取随机漫画。",
+            "查询最近更新内容。"
         ]
     },
     "cards": {
@@ -158,7 +159,8 @@
         "anime": "翻唱曲",
         "tie_up": "额外曲",
         "countdown_end": "已发布",
-        "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后"
+        "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后",
+        "loading": "加载中..."
     },
     "generic": {
         "error": "发生错误，请稍后再试。错误信息: \n<code>%[1]s</code>"
@@ -270,5 +272,25 @@
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。",
         "error_occurred": "查询角色信息时发生错误，请稍后再试。",
         "character_not_found": "未找到指定的角色。请检查输入是否正确。"
+    },
+    "dynamic": {
+        "heading": "最近更新的内容 - ",
+        "region_jp": "日服 🇯🇵",
+        "region_en": "国际服 🇺🇸",
+        "region_tw": "台服 🇹🇼",
+        "region_cn": "国服 🇨🇳",
+        "region_kr": "韩服 🇰🇷",
+        "songsHeading": "最近更新的歌曲",
+        "songsButton": "查看歌曲详情",
+        "songsName": "歌曲名称: ",
+        "songsPubTime": "发布时间: ",
+        "songsNone": "暂无最近更新的歌曲。",
+        "eventsHeading": "最近更新的活动",
+        "eventsButton": "查看活动详情",
+        "eventsName": "活动名称: ",
+        "eventsEndTime": "结束时间: ",
+        "eventsNone": "暂无最近更新的活动。",
+        "gachasHeading": "最近更新的招募",
+        "gachasNone": "暂无最近更新的招募。"
     }
 }

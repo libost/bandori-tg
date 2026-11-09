@@ -32,7 +32,8 @@
             "根據關鍵詞搜索歌曲。",
             "查詢當前進行中的轉蛋。",
             "根據角色 ID 或名稱查詢角色信息。",
-            "抽取隨機漫畫。"
+            "抽取隨機漫畫。",
+            "查詢最近更新內容。"
         ]
     },
     "cards": {
@@ -155,7 +156,8 @@
         "anime": "翻唱曲",
         "tie_up": "額外曲",
         "countdown_end": "已發布",
-        "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後"
+        "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後",
+        "loading": "載入中..."
     },
     "generic": {
         "error": "發生錯誤，請稍後再試。錯誤信息: \n<code>%[1]s</code>"
@@ -267,5 +269,25 @@
         "error_occurred": "查询角色信息时发生错误，请稍后再试。",
         "character_not_found": "未找到指定的角色。请检查输入是否正确。",
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。"
+    },
+    "dynamic": {
+        "heading": "最近更新的內容 - ",
+        "region_jp": "日服 🇯🇵",
+        "region_en": "國際服 🇺🇸",
+        "region_tw": "台服 🇹🇼",
+        "region_cn": "中國服 🇨🇳",
+        "region_kr": "韓服 🇰🇷",
+        "songsHeading": "最近更新的歌曲",
+        "songsButton": "查看歌曲詳情",
+        "songName": "歌曲名稱: ",
+        "songPubTime": "發布時間: ",
+        "songNone": "暫無最近更新的歌曲。",
+        "eventsHeading": "最近更新的活動",
+        "eventsButton": "查看活動詳情",
+        "eventName": "活動名稱: ",
+        "eventEndTime": "結束時間: ",
+        "eventNone": "暫無最近更新的活動。",
+        "gachasHeading": "最近更新的轉蛋",
+        "gachasNone": "暫無最近更新的轉蛋。"
     }
 }

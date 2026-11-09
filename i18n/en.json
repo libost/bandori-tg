@@ -32,7 +32,8 @@
             "Search for songs by keyword.",
             "Query ongoing gacha.",
             "Query information about a specific character by her ID or name.",
-            "Get a random comic."
+            "Get a random comic.",
+            "Query recently updated content."
         ]
     },
     "cards": {
@@ -155,7 +156,8 @@
         "anime": "Cover",
         "tie_up": "Extra",
         "countdown_end": "Released",
-        "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)"
+        "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
+        "loading": "Loading..."
     },
     "generic": {
         "error": "An error occurred. Please try again later. Error message: \n<code>%[1]s</code>"
@@ -259,5 +261,25 @@
         "character_not_found": "Character not found. Please check if the character ID is correct.",
         "error_occurred": "An error occurred while querying character information. Please try again later.",
         "usage": "Please provide a character ID or name to query. Usage: /character <character_id/name>."
+    },
+    "dynamic": {
+        "heading": "Recently updated content - ",
+        "region_jp": "Japan 🇯🇵",
+        "region_en": "International 🇺🇸",
+        "region_tw": "Taiwan 🇹🇼",
+        "region_cn": "China 🇨🇳",
+        "region_kr": "Korea 🇰🇷",
+        "songsHeading": "Recently updated songs",
+        "songsButton": "View Song Details",
+        "songsName": "Song Title: ",
+        "songsPubTime": "Release Time: ",
+        "songsNone": "No recently updated songs.",
+        "eventsHeading": "Recently updated events",
+        "eventsButton": "View Event Details",
+        "eventsName": "Event Title: ",
+        "eventsEndTime": "End Time: ",
+        "eventsNone": "No recently updated events.",
+        "gachasHeading": "Recently updated gachas",
+        "gachasNone": "No recently updated gachas."
     }
 }

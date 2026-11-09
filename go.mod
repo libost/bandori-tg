@@ -6,7 +6,7 @@ require (
 	github.com/creasty/defaults v1.11.0
 	github.com/dustin/go-humanize v1.1.0
 	github.com/goccy/go-yaml v1.19.2
-	github.com/gogpu/gg v0.52.5
+	github.com/gogpu/gg v0.52.7
 	github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm
 	github.com/netresearch/go-cron v0.19.0
 	github.com/sahilm/fuzzy v0.1.3
@@ -16,7 +16,7 @@ require (
 	golang.org/x/sync v0.24.0
 	gonum.org/v1/plot v0.17.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	modernc.org/sqlite v1.61.1
+	modernc.org/sqlite v1.62.0
 )
 
 require (
@@ -35,7 +35,7 @@ require (
 	github.com/benoitkugler/textprocessing v0.0.6 // indirect
 	github.com/go-fonts/latin-modern v0.3.3 // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
-	github.com/gogpu/gpucontext v0.31.3 // indirect
+	github.com/gogpu/gpucontext v0.32.0 // indirect
 	github.com/gogpu/gputypes v0.8.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.6.0 // indirect

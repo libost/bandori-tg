@@ -58,12 +58,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	qindex := utils.IndexHelper(regionCode)
 	if len(ctx.Args()) == 1 {
-		ongoingGachas, err := recent.GetOngoingGachas()
-		if err != nil {
-			log.Printf("Error fetching ongoing gachas: %v", err)
-			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
-			return err
-		}
+		ongoingGachas := recent.GetOngoingGachas()
 		if len(ongoingGachas) == 0 {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.no_ongoing_gachas", langCode), nil)
 			return nil
@@ -112,7 +107,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 			richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockDivider{})
 		}
-		_, err = b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+		_, err := b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
@@ -174,6 +169,7 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", langCode),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid callback data")
 	}
@@ -257,6 +253,7 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		log.Printf("Invalid callback data: %s", callbackData)
 		return fmt.Errorf("invalid callback data")
@@ -268,6 +265,7 @@ func gachaOngoingCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      I.GetLocalisedString("gacha.invalid_callback_data", langCode),
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return fmt.Errorf("invalid region code")
 	}
@@ -296,7 +294,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 
 	qindex := utils.IndexHelper(regionCode)
 
-	now := time.Now().Unix() * 1000 // Convert to milliseconds
+	now := time.Now().Unix() * 1000
 	var countdownStr string
 	publishedAt, parseErr := strconv.ParseInt(gachaDetailed.PublishedAt[qindex], 10, 64)
 	if parseErr != nil {
@@ -310,15 +308,15 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
 	}
-	publishedAt = utils.TimeCheck(publishedAt/1000) * 1000 // Convert to milliseconds and check
-	endAt = utils.TimeCheck(endAt/1000) * 1000             // Convert to milliseconds and check
+	publishedAt = utils.TimeCheck(publishedAt/1000) * 1000
+	endAt = utils.TimeCheck(endAt/1000) * 1000
 	if publishedAt > now {
 		countdown := publishedAt - now
-		secs, mins, hrs, days := events.TimeCalc(countdown / 1000) // Convert to seconds for TimeCalc
+		secs, mins, hrs, days := events.TimeCalc(countdown / 1000)
 		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_future", langCode), days, hrs, mins, secs)
 	} else if endAt > now {
 		countdown := endAt - now
-		secs, mins, hrs, days := events.TimeCalc(countdown / 1000) // Convert to seconds for TimeCalc
+		secs, mins, hrs, days := events.TimeCalc(countdown / 1000)
 		countdownStr = fmt.Sprintf(I.GetLocalisedString("gacha.countdown_now", langCode), days, hrs, mins, secs)
 	} else {
 		countdownStr = I.GetLocalisedString("gacha.countdown_ended", langCode)

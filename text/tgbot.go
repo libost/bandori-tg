@@ -1,6 +1,7 @@
 package text
 
 import (
+	"log"
 	"slices"
 	"strings"
 
@@ -11,11 +12,13 @@ import (
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 	"github.com/libost/gotgbot/v2/ext/handlers/filters/message"
 )
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewMessage(message.Text, textHandler))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.All, callbackHandler))
 }
 
 func textHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -43,4 +46,17 @@ func textHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	default:
 		return nil
 	}
+}
+
+func callbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	callbackData := ctx.CallbackQuery.Data
+	parts := strings.Split(callbackData, "_")
+
+	_, err := ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      "The Callback query '" + parts[0] + "' is not implemented yet...\nHow did you get here? Please report this to the bot developer.\n\nYou can find us using command /about",
+		ShowAlert: true,
+		CacheTime: 60, // Cache for 60 seconds
+	})
+	log.Printf("Received unexpected callback query: %s", callbackData)
+	return err
 }
