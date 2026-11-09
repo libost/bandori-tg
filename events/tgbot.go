@@ -389,6 +389,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("events", eventsCommand))
+	dispatcher.AddHandler(handlers.NewCommand("event", eventsCommand))
 	dispatcher.AddHandler(handlers.NewCommand("cutoff", FsxCommand))
 	dispatcher.AddHandler(handlers.NewCommand("fsx", FsxCommand))
 	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("events_"), callbackEventsCommand))

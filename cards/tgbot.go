@@ -61,6 +61,7 @@ func isWebPageContentErr(err error) bool {
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("cards", QueryHandler))
+	dispatcher.AddHandler(handlers.NewCommand("card", QueryHandler))
 }
 
 func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
