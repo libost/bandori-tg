@@ -23,3 +23,7 @@ If you're looking for something, have a look at the
 2. Fork this repository from the `next-1.*` branch. You should NEVER fork from the `main` branch, as this is the production branch.
 3. Make your changes in a new branch.
 4. Submit a pull request from your branch to the `next-1.*` branch.
+
+### If still confused
+Feel free to reach out to the us via the [GitHub issue tracker](https://github.com/libost/bandori-tg/issues).  
+But remember, NEVER make commits directly to the `main` branch, as this is the production branch.
