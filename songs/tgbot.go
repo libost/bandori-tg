@@ -2,7 +2,6 @@ package songs
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -470,26 +469,26 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		},
 	})
 	if err != nil {
-		if isSpecifiedError(err) {
+		if utils.IsSpecifiedError(err, "failed to get HTTP URL content") {
 			log.Printf("Handling specified error for song %s, Id: %s", detailedSong.MusicTitle[regionIndex], songId)
 			httpClient := utils.HttpClient
 			httpClient.Timeout = 30 * time.Second
-			reqSong, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, bgmURL, nil)
-			if err != nil {
-				return err
+			reqSong, errReqSong := http.NewRequestWithContext(ctxTimeout, http.MethodGet, bgmURL, nil)
+			if errReqSong != nil {
+				return errReqSong
 			}
-			respSong, err := httpClient.Do(reqSong)
-			if err != nil {
-				return err
+			respSong, errRespSong := httpClient.Do(reqSong)
+			if errRespSong != nil {
+				return errRespSong
 			}
 			defer respSong.Body.Close()
-			reqJacket, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, jacketURL, nil)
-			if err != nil {
-				return err
+			reqJacket, errReq := http.NewRequestWithContext(ctxTimeout, http.MethodGet, jacketURL, nil)
+			if errReq != nil {
+				return errReq
 			}
-			respJacket, err := httpClient.Do(reqJacket)
-			if err != nil {
-				return err
+			respJacket, errResp := httpClient.Do(reqJacket)
+			if errResp != nil {
+				return errResp
 			}
 			defer respJacket.Body.Close()
 			richMessage.Blocks[1] = gotgbot.InputRichBlockPhoto{
@@ -530,18 +529,4 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 		}
 	}
 	return err
-}
-
-func isSpecifiedError(err error) bool {
-	if err == nil {
-		return false
-	}
-	if tgErr, ok := errors.AsType[*gotgbot.TelegramError](err); ok {
-		if tgErr.Code == 400 &&
-			tgErr.Method == "sendRichMessage" &&
-			strings.Contains(tgErr.Description, "failed to get HTTP URL content") {
-			return true
-		}
-	}
-	return false
 }

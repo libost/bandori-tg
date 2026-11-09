@@ -3,16 +3,19 @@ package utils
 import (
 	"context"
 	"encoding/json/v2"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
+	"github.com/libost/gotgbot/v2"
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 )
@@ -421,4 +424,18 @@ func TimeCheck(timestamp int64) int64 {
 		return C.DefaultTimeStamp
 	}
 	return timestamp
+}
+
+func IsSpecifiedError(err error, targetDescription string) bool {
+	if err == nil {
+		return false
+	}
+	if tgErr, ok := errors.AsType[*gotgbot.TelegramError](err); ok {
+		if tgErr.Code == 400 &&
+			tgErr.Method == "sendRichMessage" &&
+			strings.Contains(tgErr.Description, targetDescription) {
+			return true
+		}
+	}
+	return false
 }
