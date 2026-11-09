@@ -325,7 +325,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
 				Text: gotgbot.RichTextString(
-					I.GetLocalisedString("events.event_details", langCode),
+					eventName,
 				),
 				Size: 2,
 			},

@@ -297,7 +297,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessage = &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -314,7 +314,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessage = &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -331,7 +331,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessage = &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -366,7 +366,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessageErr := &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockParagraph{

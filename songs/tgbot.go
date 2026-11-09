@@ -437,7 +437,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
-				Text: gotgbot.RichTextString(I.GetLocalisedString("songs.header", langCode)),
+				Text: gotgbot.RichTextString(detailedSong.MusicTitle[regionIndex]),
 				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{
