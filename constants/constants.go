@@ -717,7 +717,7 @@ var DifficultyColors = [...]string{
 const (
 	// This is the maximum interval between the current time and the time that the API can accept, in seconds.
 	//
-	// In total, this is 1099 days.
+	// In total, this is 1098 days.
 	//
 	// If the interval is larger than this, the API will return an error. If not too large, it will return `Bad Request: RICH_MESSAGE_DATE_INVALID`. If too large, it will return `Bad Request: can't parse InputRichBlock: Can't parse PageBlockTableCell: Field "unix_time" must be a valid Number`.
 	//
