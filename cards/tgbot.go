@@ -365,32 +365,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
-	if isWebPageContentErr(err) {
-		// Handle web page content error
-		richMessageErr := &gotgbot.InputRichMessage{
-			Blocks: []gotgbot.InputRichBlock{
-				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(name),
-					Size: 3,
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextBold{
-						Text: gotgbot.RichTextItalic{
-							Text: gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("cards.bad_card", dlangCode), param)),
-						},
-					},
-				},
-				gotgbot.InputRichBlockTable{
-					Cells: richTable.Cells,
-				},
-			},
-		}
-		_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
-			ReplyParameters: &gotgbot.ReplyParameters{
-				MessageId: ctx.EffectiveMessage.MessageId,
-			},
-		})
-	} else if utils.IsSpecifiedError(err, "failed to get HTTP URL content") {
+	if utils.IsSpecifiedError(err, "failed to get HTTP URL content") || utils.IsSpecifiedError(err, "wrong type of the web page content") {
 		// Handle the specific error
 		var richMessageErr *gotgbot.InputRichMessage
 		if normalPath == "" {
