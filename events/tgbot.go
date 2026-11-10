@@ -182,7 +182,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 	}
 
 	charaIDs := make([]string, len(eventDetailed.Characters))
-	percents := make([]int, len(eventDetailed.Characters))
+	percents := make([]int64, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
 		charaIDs[i] = normalizeCharacterID(chara.CharacterID)
 		percents[i] = chara.Percent
@@ -463,9 +463,9 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 
-	tier := 0
+	tier := int64(0)
 	if len(ctx.Args()) > 2 {
-		t, err := strconv.Atoi(ctx.Args()[2])
+		t, err := strconv.ParseInt(ctx.Args()[2], 10, 64)
 		if err != nil {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 			return nil

@@ -27,7 +27,7 @@ func TestGenerateGachaResultByRatesUsesRarityRatesBeforeCardWeights(t *testing.T
 	}
 
 	for range 100 {
-		result, err := generateGachaResultByRates(gachaMaps, []int{100, 0, 0, 0, 0}, 1)
+		result, err := generateGachaResultByRates(gachaMaps, []int64{100, 0, 0, 0, 0}, 1)
 		if err != nil {
 			t.Fatalf("generateGachaResultByRates returned an error: %v", err)
 		}

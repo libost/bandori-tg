@@ -149,7 +149,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		rarityEmoji = fmt.Sprint(C.RarityEmoji[1])
 	}
 	var rarityBlock gotgbot.RichTextArray
-	for i := 0; i < card.Rarity; i++ {
+	for range card.Rarity {
 		rarityBlock = append(rarityBlock, gotgbot.RichTextCustomEmoji{
 			CustomEmojiId:   fmt.Sprint(rarityEmoji),
 			AlternativeText: "😐",

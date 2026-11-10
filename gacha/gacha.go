@@ -18,9 +18,9 @@ import (
 
 type gachaMap struct {
 	Id          string
-	Weight      int
-	WeightTotal int
-	Rarity      int
+	Weight      int64
+	WeightTotal int64
+	Rarity      int64
 }
 
 func GetGacha(gachaId string) (C.Gacha, error) {
@@ -57,14 +57,14 @@ func GetGachaDetails(gachaId string) (C.GachaDetailed, error) {
 	return gachaDetailed, nil
 }
 
-func generateGachaResult(gachaMaps []gachaMap, guarantee int) (string, error) {
+func generateGachaResult(gachaMaps []gachaMap, guarantee int64) (string, error) {
 	if len(gachaMaps) == 0 {
 		return "", fmt.Errorf("no gacha cards available")
 	}
 
 	eligible := make([]gachaMap, 0, len(gachaMaps))
-	weightTotal := 0
-	previousWeightTotal := 0
+	weightTotal := int64(0)
+	previousWeightTotal := int64(0)
 	for _, gacha := range gachaMaps {
 		weight := gacha.WeightTotal - previousWeightTotal
 		previousWeightTotal = gacha.WeightTotal
@@ -96,15 +96,15 @@ func generateGachaResult(gachaMaps []gachaMap, guarantee int) (string, error) {
 	return "", fmt.Errorf("failed to generate gacha result")
 }
 
-func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int, guarantee int) (string, error) {
+func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int64, guarantee int64) (string, error) {
 	if len(gachaMaps) == 0 {
 		return "", fmt.Errorf("no gacha cards available")
 	}
 
-	rarityTotal := 0
-	eligibleRarities := make([]int, 0, len(rarityWeights))
+	rarityTotal := int64(0)
+	eligibleRarities := make([]int64, 0, len(rarityWeights))
 	for rarity, weight := range rarityWeights {
-		rarityIndex := rarity + 1
+		rarityIndex := int64(rarity + 1)
 		if rarityIndex < guarantee || weight <= 0 {
 			continue
 		}
@@ -128,7 +128,7 @@ func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int, guara
 	if err != nil {
 		return "", err
 	}
-	selectedRarity := 0
+	selectedRarity := int64(0)
 	for _, rarity := range eligibleRarities {
 		randomNum -= rarityWeights[rarity-1]
 		if randomNum <= 0 {
@@ -140,7 +140,7 @@ func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int, guara
 		return "", fmt.Errorf("failed to generate gacha rarity result")
 	}
 
-	cardWeightTotal := 0
+	cardWeightTotal := int64(0)
 	for _, gacha := range gachaMaps {
 		if gacha.Rarity == selectedRarity && gacha.Weight > 0 {
 			cardWeightTotal += gacha.Weight
@@ -162,7 +162,7 @@ func generateGachaResultByRates(gachaMaps []gachaMap, rarityWeights []int, guara
 	return "", fmt.Errorf("failed to generate gacha card result")
 }
 
-func randomNumGen(min, max int) (int, error) {
+func randomNumGen(min, max int64) (int64, error) {
 	if min > max {
 		return 0, fmt.Errorf("min cannot be greater than max")
 	}
@@ -192,7 +192,7 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 			Rarity: gacha.RarityIndex,
 		})
 	}
-	var rarityRates [5]float32
+	var rarityRates [5]float64
 
 	for rarity, rate := range gachaDetailed.Rates[index] {
 		var rarityIndex int
@@ -206,11 +206,11 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 
 		rarityRates[rarityIndex-1] = rate.Rate
 	}
-	rarityWeightsInt := make([]int, len(rarityRates))
+	rarityWeightsInt := make([]int64, len(rarityRates))
 	for i, rate := range rarityRates {
-		rarityWeightsInt[i] = int(math.Round(float64(rate) * 100))
+		rarityWeightsInt[i] = int64(math.Round(float64(rate) * 100))
 	}
-	guaranteedRarity := 3
+	guaranteedRarity := int64(3)
 	switch paymentMethods.Behavior {
 	case "fixed_5_star_once":
 		guaranteedRarity = 5

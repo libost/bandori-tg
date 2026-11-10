@@ -155,7 +155,7 @@ func setFont(fontFile string) (*opentype.Font, error) {
 	return ttFont, nil
 }
 
-func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, int64, error) {
+func getEventTracker(regionCode, eventID string, tier int64) (image.Image, int64, int64, int64, int64, int64, error) {
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	eventMap := utils.ReadEvents()
@@ -163,7 +163,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	if !exists {
 		return nil, 0, 0, 0, 0, 0, C.ErrNoSuchEvent
 	}
-	var tierList []int
+	var tierList []int64
 	switch regionCode {
 	case "jp":
 		tierList = C.JPTierList[:]
@@ -176,7 +176,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	case "en":
 		tierList = C.ENTierList[:]
 	}
-	var region int
+	var region int64
 	if !slices.Contains(tierList, tier) {
 		region, tier = getRegionCodeandTier(regionCode)
 	} else {
@@ -352,7 +352,7 @@ type predictedCutoff struct {
 	Percent float64
 }
 
-func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, timeStart, timeEnd int64) ([]predictedCutoff, error) {
+func getPredictedEp(eventType string, server, tier int64, tracker C.EventTracker, timeStart, timeEnd int64) ([]predictedCutoff, error) {
 	latestTime := tracker.Cutoffs[len(tracker.Cutoffs)-1].Time
 	predicted := make([]predictedCutoff, len(tracker.Cutoffs))
 	if latestTime-timeStart < 86400000 { // 如果最新时间距离开始时间不足一天，则不进行预测
@@ -414,7 +414,7 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 	return predicted, nil
 }
 
-func getRegionCodeandTier(regionCode string) (int, int) {
+func getRegionCodeandTier(regionCode string) (int64, int64) {
 	switch regionCode {
 	case "jp":
 		return 0, 1000

@@ -10,10 +10,10 @@ import (
 func TestGenerateDifficultyImage(t *testing.T) {
 	testDifficulties := []difficultyData{
 		{
-			level: []int{5, 10, 15, 20, 25}, // For songs with an extra difficulty "Special"
+			level: []int64{5, 10, 15, 20, 25}, // For songs with an extra difficulty "Special"
 		},
 		{
-			level: []int{5, 10, 15, 20}, // For ordinary songs with 4 difficulties
+			level: []int64{5, 10, 15, 20}, // For ordinary songs with 4 difficulties
 		},
 	}
 	for i, testDifficulty := range testDifficulties {

@@ -77,7 +77,7 @@ func getBgm(songId, region string) (string, error) {
 }
 
 type difficultyData struct {
-	level []int
+	level []int64
 }
 
 // generateDifficultyImg generates an image representing the difficulty levels of a song.
@@ -100,7 +100,7 @@ func generateDifficultyImg(diffData difficultyData) (image.Image, error) {
 		}
 		dc.SetFont(fontSrc.Face(22))
 		dc.SetHexColor("#000000")
-		inputStr := strconv.Itoa(level)
+		inputStr := strconv.FormatInt(level, 10)
 		dc.DrawStringAnchored(inputStr, float64(15+i*30), 15, 0.5, 0.5)
 	}
 	return dc.Image(), nil
