@@ -127,27 +127,27 @@ func qlangHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	inlineKeyboard := &gotgbot.InlineKeyboardMarkup{
 		InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 			{{
-				Text:         "English",
+				Text:         "International 🌐 (EN)",
 				CallbackData: "setqlang_en",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "日本語",
+				Text:         "日本 🇯🇵 (JP)",
 				CallbackData: "setqlang_jp",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "中文简体",
+				Text:         "中国 🇨🇳 (CN)",
 				CallbackData: "setqlang_cn",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "中文繁體",
+				Text:         "台灣 🇹🇼 (TW)",
 				CallbackData: "setqlang_tw",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "한국어",
+				Text:         "한국 🇰🇷 (KR)",
 				CallbackData: "setqlang_kr",
 				Style:        "primary",
 			}},
