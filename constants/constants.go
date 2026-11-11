@@ -526,12 +526,12 @@ type AchievementsData struct {
 type DifficultyDetailed struct {
 	PlayLevel         int64                            `json:"playLevel"`
 	MultiLiveScoreMap map[string]MultiLiveScoreMapData `json:"multiLiveScoreMap"`
-	NotesQuantity     int                              `json:"notesQuantity"`
-	ScoreC            int                              `json:"scoreC"`
-	ScoreB            int                              `json:"scoreB"`
-	ScoreA            int                              `json:"scoreA"`
-	ScoreS            int                              `json:"scoreS"`
-	ScoreSS           int                              `json:"scoreSS"`
+	NotesQuantity     int64                            `json:"notesQuantity"`
+	ScoreC            int64                            `json:"scoreC"`
+	ScoreB            int64                            `json:"scoreB"`
+	ScoreA            int64                            `json:"scoreA"`
+	ScoreS            int64                            `json:"scoreS"`
+	ScoreSS           int64                            `json:"scoreSS"`
 }
 
 type MultiLiveScoreMapData struct {
