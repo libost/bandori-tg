@@ -5,7 +5,7 @@
 ![GitHub License](https://img.shields.io/github/license/libost/bandori-tg)
 [![Go Version](https://img.shields.io/badge/Go-1.27-blue.svg)](go.mod)
 [![GitHub Downloads](https://img.shields.io/github/downloads/libost/bandori-tg/total.svg)](https://github.com/libost/bandori-tg/releases)
-![GitHub Release](https://img.shields.io/github/v/release/libost/bandori-tg)
+[![GitHub Release](https://img.shields.io/github/v/release/libost/bandori-tg)](https://github.com/libost/bandori-tg/releases/latest)
 ---
 
 试用机器人：[@gbp_hina_bot](https://t.me/gbp_hina_bot)
@@ -58,7 +58,7 @@ bandori-tg/
 ├── gacha/               # 卡池数据处理
 ├── skills/              # 技能数据处理
 ├── recent/              # 最新资讯数据处理
-├── dynamic/             # 动态资讯转发（TODO）
+├── dynamic/             # 动态资讯转发
 ├── callback/            # 内联键盘回调处理
 ├── commands/            # 基础指令（start/help/lang/about 等）
 ├── config/              # 配置加载
@@ -133,10 +133,11 @@ go build -o bandori-tg .
 | --- | --- | --- |
 | `/start` | 所有人 | 开始使用 |
 | `/help` | 所有人 | 查看帮助 |
-| `/cards <关键词>` | 所有人 | 查卡（也支持直接发送「查卡 <关键词>」） |
-| `/comics` | 所有人 | 随机查看漫画 |
-| `/events` | 所有人 | 查看各服近期活动 |
+| `/card <关键词>` | 所有人 | 查卡（也支持直接发送「查卡 <关键词>」） |
+| `/comic` | 所有人 | 随机查看漫画 |
+| `/event` | 所有人 | 查看各服近期活动 |
 | `/cutoff <活动ID>` | 所有人 | 查看活动档线预测图 |
+| `/news` | 所有人 | 查看最新资讯 |
 | `/gacha` | 所有人 | 查看卡池信息 |
 | `/songs` | 所有人 | 查看歌曲信息 |
 | `/search` | 所有人 | 搜索歌曲 |
@@ -193,7 +194,7 @@ go build ./...
 
 ## 开发路线
 
-- [ ] 新闻页面
+- [x] 新闻页面
 - [x] 招募信息查询
 - [ ] 更多语言支持（需要帮助！）
 

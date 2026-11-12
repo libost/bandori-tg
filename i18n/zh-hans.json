@@ -12,9 +12,9 @@
         "lang_desc": "选择你要设置的语言类型。",
         "lang_desc_group": "请在私聊中使用 /lang 命令设置语言类型。",
         "lang_dlang": "设置显示语言",
-        "lang_qlang": "设置查询语言",
+        "lang_qlang": "设置查询区服",
         "dlanguages_desc": "设置显示语言。\n本设置仅适用于显示的文本，不适用于查询卡片中的信息。",
-        "qlanguages_desc": "设置查询语言。\n本设置仅适用于查询地区的内容，不适用于显示的文本。",
+        "qlanguages_desc": "设置查询区服。\n本设置仅适用于查询地区的内容，不适用于显示的文本。",
         "about_desc": "Bandori Bot \n版本: <code>%[1]s</code>\n构建时间: <code>%[2]s</code>\nGit 提交: <code>%[3]s</code>\n分支: <code>%[4]s</code> \n运行环境: <code>%[5]s/%[6]s</code> \nGo 版本: <code>%[7]s</code>\n项目地址: https://github.com/libost/bandori-tg",
         "setadmin_no_token": "请提供管理员令牌。",
         "setadmin_invalid_token": "无效的管理员令牌。",
@@ -33,7 +33,8 @@
             "根据关键词搜索歌曲。",
             "查询当前进行中的招募。",
             "根据角色 ID 或名称查询角色信息。",
-            "抽取随机漫画。"
+            "抽取随机漫画。",
+            "查询最近更新内容。"
         ]
     },
     "cards": {
@@ -65,7 +66,7 @@
         "card_info_id": "ID: ",
         "region": "服务器: ",
         "jp": "日服 🇯🇵",
-        "en": "国际服 🇺🇸",
+        "en": "国际服 🌐",
         "tw": "台服 🇹🇼",
         "cn": "国服 🇨🇳",
         "kr": "韩服 🇰🇷",
@@ -158,7 +159,8 @@
         "anime": "翻唱曲",
         "tie_up": "额外曲",
         "countdown_end": "已发布",
-        "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后"
+        "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后",
+        "loading": "加载中..."
     },
     "generic": {
         "error": "发生错误，请稍后再试。错误信息: \n<code>%[1]s</code>"
@@ -201,7 +203,7 @@
         "random_result": "未指定招募 ID，将随机选择一个招募 ID 进行查询。",
         "ongoing_gachas": "当前进行中的招募",
         "ongoing_jp": "日服 🇯🇵 正在进行的招募",
-        "ongoing_en": "国际服 🇺🇸 正在进行的招募",
+        "ongoing_en": "国际服 🌐 正在进行的招募",
         "ongoing_tw": "台服 🇹🇼 正在进行的招募",
         "ongoing_cn": "国服 🇨🇳 正在进行的招募",
         "ongoing_kr": "韩服 🇰🇷 正在进行的招募",
@@ -259,7 +261,7 @@
         "id": "ID: ",
         "region": "服务器: ",
         "jp": "日服 🇯🇵",
-        "en": "国际服 🇺🇸",
+        "en": "国际服 🌐",
         "tw": "台服 🇹🇼",
         "cn": "国服 🇨🇳",
         "kr": "韩服 🇰🇷",
@@ -270,5 +272,25 @@
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。",
         "error_occurred": "查询角色信息时发生错误，请稍后再试。",
         "character_not_found": "未找到指定的角色。请检查输入是否正确。"
+    },
+    "dynamic": {
+        "heading": "最近更新的内容 - ",
+        "region_jp": "日服 🇯🇵",
+        "region_en": "国际服 🌐",
+        "region_tw": "台服 🇹🇼",
+        "region_cn": "国服 🇨🇳",
+        "region_kr": "韩服 🇰🇷",
+        "songsHeading": "最近更新的歌曲",
+        "songsButton": "查看歌曲详情",
+        "songsName": "歌曲名称: ",
+        "songsPubTime": "发布时间: ",
+        "songsNone": "暂无最近更新的歌曲。",
+        "eventsHeading": "最近更新的活动",
+        "eventsButton": "查看活动详情",
+        "eventsName": "活动名称: ",
+        "eventsEndTime": "结束时间: ",
+        "eventsNone": "暂无最近更新的活动。",
+        "gachasHeading": "最近更新的招募",
+        "gachasNone": "暂无最近更新的招募。"
     }
 }

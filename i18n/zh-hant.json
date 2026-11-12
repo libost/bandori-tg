@@ -11,9 +11,9 @@
         "lang_desc": "選擇你要設置的語言類型。",
         "lang_desc_group": "請在私聊中使用 /lang 指令設定語言類型。",
         "lang_dlang": "設置顯示語言",
-        "lang_qlang": "設置查詢語言",
+        "lang_qlang": "設置查詢區服",
         "dlanguages_desc": "設置顯示語言。\n本設置僅適用於顯示的文本，不適用於查詢卡片中的信息。",
-        "qlanguages_desc": "設置查詢語言。\n本設置僅適用於查詢地區的內容，不適用於顯示的文本。",
+        "qlanguages_desc": "設置查詢區服。\n本設置僅適用於查詢地區的內容，不適用於顯示的文本。",
         "about_desc": "Bandori Bot \n版本: <code>%[1]s</code>\n構建時間: <code>%[2]s</code>\nGit 提交: <code>%[3]s</code>\n分支: <code>%[4]s</code> \n運行環境: <code>%[5]s/%[6]s</code> \nGo 版本: <code>%[7]s</code>\n項目地址: https://github.com/libost/bandori-tg",
         "setadmin_no_token": "請提供管理員令牌。",
         "setadmin_invalid_token": "無效的管理員令牌。",
@@ -32,7 +32,8 @@
             "根據關鍵詞搜索歌曲。",
             "查詢當前進行中的轉蛋。",
             "根據角色 ID 或名稱查詢角色信息。",
-            "抽取隨機漫畫。"
+            "抽取隨機漫畫。",
+            "查詢最近更新內容。"
         ]
     },
     "cards": {
@@ -64,7 +65,7 @@
         "card_info_id": "ID: ",
         "region": "伺服器: ",
         "jp": "日服 🇯🇵",
-        "en": "國際服 🇺🇸",
+        "en": "國際服 🌐",
         "tw": "台服 🇹🇼",
         "cn": "國服 🇨🇳",
         "kr": "韓服 🇰🇷",
@@ -104,7 +105,7 @@
         "EventID": "活動ID: ",
         "event_detailsClick": "點擊查詢活動詳情",
         "jp": "日服 🇯🇵",
-        "en": "國際服 🇺🇸",
+        "en": "國際服 🌐",
         "tw": "台服 🇹🇼",
         "cn": "中國服 🇨🇳",
         "kr": "韓服 🇰🇷",
@@ -155,7 +156,8 @@
         "anime": "翻唱曲",
         "tie_up": "額外曲",
         "countdown_end": "已發布",
-        "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後"
+        "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後",
+        "loading": "載入中..."
     },
     "generic": {
         "error": "發生錯誤，請稍後再試。錯誤信息: \n<code>%[1]s</code>"
@@ -198,7 +200,7 @@
         "random_result": "未指定轉蛋 ID，將隨機選擇一個轉蛋 ID 進行查詢。",
         "ongoing_gachas": "當前進行中的轉蛋",
         "ongoing_jp": "日服 🇯🇵 正在進行的轉蛋",
-        "ongoing_en": "國際服 🇺🇸 正在進行的轉蛋",
+        "ongoing_en": "國際服 🌐 正在進行的轉蛋",
         "ongoing_tw": "台服 🇹🇼 正在進行的轉蛋",
         "ongoing_cn": "中國服 🇨🇳 正在進行的轉蛋",
         "ongoing_kr": "韓服 🇰🇷 正在進行的轉蛋",
@@ -256,7 +258,7 @@
         "id": "ID: ",
         "region": "伺服器: ",
         "jp": "日服 🇯🇵",
-        "en": "國際服 🇺🇸",
+        "en": "國際服 🌐",
         "tw": "台服 🇹🇼",
         "cn": "中國服 🇨🇳",
         "kr": "韓服 🇰🇷",
@@ -267,5 +269,25 @@
         "error_occurred": "查询角色信息时发生错误，请稍后再试。",
         "character_not_found": "未找到指定的角色。请检查输入是否正确。",
         "usage": "请提供要查询的角色 ID 或名称。使用方法： /character <character_id/name>。"
+    },
+    "dynamic": {
+        "heading": "最近更新的內容 - ",
+        "region_jp": "日服 🇯🇵",
+        "region_en": "國際服 🌐",
+        "region_tw": "台服 🇹🇼",
+        "region_cn": "中國服 🇨🇳",
+        "region_kr": "韓服 🇰🇷",
+        "songsHeading": "最近更新的歌曲",
+        "songsButton": "查看歌曲詳情",
+        "songName": "歌曲名稱: ",
+        "songPubTime": "發布時間: ",
+        "songNone": "暫無最近更新的歌曲。",
+        "eventsHeading": "最近更新的活動",
+        "eventsButton": "查看活動詳情",
+        "eventName": "活動名稱: ",
+        "eventEndTime": "結束時間: ",
+        "eventNone": "暫無最近更新的活動。",
+        "gachasHeading": "最近更新的轉蛋",
+        "gachasNone": "暫無最近更新的轉蛋。"
     }
 }

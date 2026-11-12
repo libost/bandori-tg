@@ -127,27 +127,27 @@ func qlangHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	inlineKeyboard := &gotgbot.InlineKeyboardMarkup{
 		InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 			{{
-				Text:         "English",
+				Text:         "International 🌐 (EN)",
 				CallbackData: "setqlang_en",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "日本語",
+				Text:         "日本 🇯🇵 (JP)",
 				CallbackData: "setqlang_jp",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "中文简体",
+				Text:         "中国 🇨🇳 (CN)",
 				CallbackData: "setqlang_cn",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "中文繁體",
+				Text:         "台灣 🇹🇼 (TW)",
 				CallbackData: "setqlang_tw",
 				Style:        "primary",
 			}},
 			{{
-				Text:         "한국어",
+				Text:         "한국 🇰🇷 (KR)",
 				CallbackData: "setqlang_kr",
 				Style:        "primary",
 			}},
@@ -236,10 +236,11 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		privateCommands := []gotgbot.BotCommand{
 			{Command: "start", Description: I.GetLocalisedString("commands.setcommands_desc_list[0]", code)},
 			{Command: "help", Description: I.GetLocalisedString("commands.setcommands_desc_list[1]", code)},
-			{Command: "cards", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
-			{Command: "events", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
+			{Command: "card", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
+			{Command: "event", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
 			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
 			{Command: "comic", Description: I.GetLocalisedString("commands.setcommands_desc_list[12]", code)},
+			{Command: "news", Description: I.GetLocalisedString("commands.setcommands_desc_list[13]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "char", Description: I.GetLocalisedString("commands.setcommands_desc_list[11]", code)},
@@ -260,10 +261,11 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		groupCommands := []gotgbot.BotCommand{
 			{Command: "start", Description: I.GetLocalisedString("commands.setcommands_desc_list[6]", code)},
-			{Command: "cards", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
-			{Command: "events", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
+			{Command: "card", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
+			{Command: "event", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
 			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
 			{Command: "comic", Description: I.GetLocalisedString("commands.setcommands_desc_list[12]", code)},
+			{Command: "news", Description: I.GetLocalisedString("commands.setcommands_desc_list[13]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "char", Description: I.GetLocalisedString("commands.setcommands_desc_list[11]", code)},

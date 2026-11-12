@@ -20,6 +20,7 @@ import (
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
 	DB "github.com/libost/bandori-tg/database"
+	"github.com/libost/bandori-tg/dynamic"
 	"github.com/libost/bandori-tg/events"
 	"github.com/libost/bandori-tg/gacha"
 	"github.com/libost/bandori-tg/songs"
@@ -127,6 +128,7 @@ func main() {
 	gacha.AddHandlers(dispatcher)
 	comic.AddHandlers(dispatcher)
 	characters.AddHandlers(dispatcher)
+	dynamic.AddHandlers(dispatcher)
 	text.AddHandlers(dispatcher) // text handlers must be added after all other handlers to avoid conflicts
 
 	if config.AppConfig.Webhook.Enabled {
@@ -137,6 +139,8 @@ func main() {
 			EnableWebhookDeletion: true,
 		})
 	}
+
+	cronTasks(c)
 
 	go func() {
 		for sig := range sigs {
@@ -163,7 +167,6 @@ func main() {
 		}
 	}()
 	log.Printf("Bot is running.")
-	cronTasks(c)
 
 	updater.Idle()
 }
@@ -181,7 +184,6 @@ func cronTasks(c *cron.Cron) {
 		log.Printf("Error adding cron job: %v", err)
 	}
 	c.Start()
-	select {} // Keep the main goroutine running
 }
 
 func startWebhookCommunication(cfg *C.Config, updater *ext.Updater, b *gotgbot.Bot) {

@@ -48,19 +48,7 @@ func GetDetailedEvents(eventID string) (C.EventDetailed, error) {
 }
 
 func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
-	index := 0
-	switch preferCode {
-	case "jp":
-		index = 0
-	case "en":
-		index = 1
-	case "tw":
-		index = 2
-	case "cn":
-		index = 3
-	case "kr":
-		index = 4
-	}
+	index := utils.IndexHelper(preferCode)
 	if index < len(event.EndAt) && event.EndAt[index] != "" && event.EndAt[index] != "null" {
 		return preferCode
 	}
@@ -68,20 +56,7 @@ func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
 		if releasedAt == "" || releasedAt == "null" {
 			continue
 		}
-		switch i {
-		case 0:
-			return "jp"
-		case 1:
-			return "en"
-		case 2:
-			return "tw"
-		case 3:
-			return "cn"
-		case 4:
-			return "kr"
-		default:
-			return "jp"
-		}
+		return utils.ReverseIndexHelper(i)
 	}
 	return "jp"
 }
@@ -155,7 +130,7 @@ func setFont(fontFile string) (*opentype.Font, error) {
 	return ttFont, nil
 }
 
-func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, int64, int64, int64, int64, error) {
+func getEventTracker(regionCode, eventID string, tier int) (image.Image, int, int, int, int, int, error) {
 	context, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	eventMap := utils.ReadEvents()
@@ -227,11 +202,11 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 			return nil, 0, 0, 0, 0, 0, C.ErrNoCutoffData
 		}
 	}
-	startAt, err := strconv.ParseInt(event.StartAt[region], 10, 64)
+	startAt, err := strconv.Atoi(event.StartAt[region])
 	if err != nil {
 		return nil, 0, 0, 0, 0, 0, err
 	}
-	endAt, err := strconv.ParseInt(event.EndAt[region], 10, 64)
+	endAt, err := strconv.Atoi(event.EndAt[region])
 	if err != nil {
 		return nil, 0, 0, 0, 0, 0, err
 	}
@@ -239,7 +214,7 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	if err != nil && !errors.Is(err, C.ErrCannotPredict) {
 		return nil, 0, 0, 0, 0, 0, err
 	}
-	var lastPredictedEp int64
+	var lastPredictedEp int
 	if len(predicted) > 0 {
 		lastPredictedEp = predicted[len(predicted)-1].Ep
 	} else {
@@ -341,18 +316,18 @@ func getEventTracker(regionCode, eventID string, tier int) (image.Image, int64, 
 	p.Draw(dc)
 	lastEpIncrement := tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep - tracker.Cutoffs[len(tracker.Cutoffs)-2].Ep
 	lastTimeIncrement := tracker.Cutoffs[len(tracker.Cutoffs)-1].Time - tracker.Cutoffs[len(tracker.Cutoffs)-2].Time
-	speed := int64(float64(lastEpIncrement) / (float64(lastTimeIncrement) / 3600000)) // 计算每小时的速度
-	allTimeSpeed := int64(float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep-tracker.Cutoffs[0].Ep) / (float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Time-tracker.Cutoffs[0].Time) / 3600000))
+	speed := int(float64(lastEpIncrement) / (float64(lastTimeIncrement) / 3600000)) // 计算每小时的速度
+	allTimeSpeed := int(float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep-tracker.Cutoffs[0].Ep) / (float64(tracker.Cutoffs[len(tracker.Cutoffs)-1].Time-tracker.Cutoffs[0].Time) / 3600000))
 	return canvas.Image(), tracker.Cutoffs[len(tracker.Cutoffs)-1].Ep, lastPredictedEp, tracker.Cutoffs[len(tracker.Cutoffs)-1].Time, speed, allTimeSpeed, nil
 }
 
 type predictedCutoff struct {
-	Time    int64
-	Ep      int64
+	Time    int
+	Ep      int
 	Percent float64
 }
 
-func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, timeStart, timeEnd int64) ([]predictedCutoff, error) {
+func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, timeStart, timeEnd int) ([]predictedCutoff, error) {
 	latestTime := tracker.Cutoffs[len(tracker.Cutoffs)-1].Time
 	predicted := make([]predictedCutoff, len(tracker.Cutoffs))
 	if latestTime-timeStart < 86400000 { // 如果最新时间距离开始时间不足一天，则不进行预测
@@ -367,7 +342,7 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 		}
 	}
 	var avgPercent, sumPercent float64
-	var avgEp, sumEp int64
+	var avgEp, sumEp int
 	for i, cutoff := range tracker.Cutoffs {
 		percent := float64(cutoff.Time-timeStart) / float64(timeEnd-timeStart)
 		predicted[i].Percent = percent
@@ -376,7 +351,7 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 	}
 	if len(tracker.Cutoffs) > 0 {
 		avgPercent = sumPercent / float64(len(tracker.Cutoffs))
-		avgEp = sumEp / int64(len(tracker.Cutoffs))
+		avgEp = sumEp / len(tracker.Cutoffs)
 	}
 	for i, cutoff := range tracker.Cutoffs {
 		predicted[i].Time = cutoff.Time
@@ -393,7 +368,7 @@ func getPredictedEp(eventType string, server, tier int, tracker C.EventTracker, 
 		b := z / w
 		a := float64(avgEp) - b*avgPercent
 		predictedEp := a + b*(float64(1)+rateAssigned) // 预测的最终ep值
-		predicted[i].Ep = int64(predictedEp)
+		predicted[i].Ep = int(predictedEp)
 	}
 	var lastEqualIndex int
 	for i, cutoff := range tracker.Cutoffs {

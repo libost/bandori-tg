@@ -192,7 +192,7 @@ func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethod
 			Rarity: gacha.RarityIndex,
 		})
 	}
-	var rarityRates [5]float32
+	var rarityRates [5]float64
 
 	for rarity, rate := range gachaDetailed.Rates[index] {
 		var rarityIndex int

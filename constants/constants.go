@@ -186,9 +186,21 @@ type CharacterDetailed struct {
 	ColorCode            string   `json:"colorCode"`
 	SdAssetBundleName    string   `json:"sdAssetBundleName"`
 	DefaultCostumeId     int      `json:"defaultCostumeId"`
-	SeasonCostumeListMap any      `json:"seasonCostumeListMap"`
-	Ruby                 []string `json:"ruby"`
-	Profile              struct {
+	SeasonCostumeListMap struct {
+		Entries struct {
+			Season_3 struct {
+				Entries []CharacterSeasonCostume `json:"entries"`
+			} `json:"season_3"`
+			Season_2 struct {
+				Entries []CharacterSeasonCostume `json:"entries"`
+			} `json:"season_2"`
+			Season_1 struct {
+				Entries []CharacterSeasonCostume `json:"entries"`
+			} `json:"season_1"`
+		} `json:"entries"`
+	} `json:"seasonCostumeListMap"`
+	Ruby    []string `json:"ruby"`
+	Profile struct {
 		CharacterVoice   []string `json:"characterVoice"`
 		FavoriteFood     []string `json:"favoriteFood"`
 		HatedFood        []string `json:"hatedFood"`
@@ -202,6 +214,16 @@ type CharacterDetailed struct {
 		Constellation    string   `json:"constellation"`
 		Height           int      `json:"height"`
 	} `json:"profile"`
+}
+
+type CharacterSeasonCostume struct {
+	CharacterId           int    `json:"characterId"`
+	BasicSeasonId         int    `json:"basicSeasonId"`
+	CostumeType           string `json:"costumeType"`
+	SeasonCostumeType     string `json:"seasonCostumeType"`
+	SdAssetBundleName     string `json:"sdAssetBundleName"`
+	Live2dAssetBundleName string `json:"live2dAssetBundleName"`
+	SeasonType            string `json:"seasonType"`
 }
 
 type Card struct {
@@ -233,7 +255,7 @@ type CardData map[string]Card
 type Skill struct {
 	SimpleDescription []string  `json:"simpleDescription"`
 	Description       []string  `json:"description"`
-	Duration          []float32 `json:"duration"`
+	Duration          []float64 `json:"duration"`
 	ActivationEffect  struct {
 		ActivateEffectTypes struct {
 			Score SkillActivationEffectTypesValue `json:"score"`
@@ -262,10 +284,10 @@ type Band struct {
 type BandData map[string]Band
 
 type Recent struct {
-	Songs      map[string]RSongsData     `json:"songs"`
-	Events     map[string]EventData      `json:"events"`
-	Gacha      map[string]RGachaData     `json:"gacha"`
-	LoginBonus map[string]LoginBonusData `json:"loginBonus"`
+	Songs      map[string]RSongsData      `json:"songs"`
+	Events     map[string]EventData       `json:"events"`
+	Gacha      map[string]RGachaData      `json:"gacha"`
+	LoginBonus map[string]RLoginBonusData `json:"loginBonus"`
 }
 
 type RSongsData struct {
@@ -285,7 +307,7 @@ type RGachaData struct {
 	ClosedAt    []string `json:"closedAt"`
 }
 
-type LoginBonusData struct {
+type RLoginBonusData struct {
 	Caption     []string `json:"caption"`
 	PublishedAt []string `json:"publishedAt"`
 	ClosedAt    []string `json:"closedAt"`
@@ -300,8 +322,8 @@ type Events struct {
 	EndAt                 []string           `json:"endAt"`
 	Attribute             []Attributes       `json:"attribute"`
 	Characters            []EventsCharacters `json:"characters"`
-	Members               []any              `json:"members"`
-	LimitBreaks           []any              `json:"limitBreaks"`
+	Members               []EventMembers     `json:"members"`
+	LimitBreaks           []EventLimitBreaks `json:"limitBreaks"`
 	RewardCards           []int              `json:"rewardCards"`
 }
 
@@ -324,36 +346,76 @@ type CardDetailed struct {
 	LevelLimit      int    `json:"levelLimit"`
 	ResourceSetName string `json:"resourceSetName"`
 	SdResourceName  string `json:"sdResourceName"`
-	//Episodes        map[string]CardStatValue `json:"episodes"` //???
+	Episodes        struct {
+		Entries []struct {
+			EpisodeId         int    `json:"episodeId"`
+			EpisodeType       string `json:"episodeType"`
+			SituationId       int    `json:"situationId"`
+			ScenarioId        string `json:"scenarioId"`
+			AppendPerformance int    `json:"appendPerformance"`
+			AppendTechnique   int    `json:"appendTechnique"`
+			AppendVisual      int    `json:"appendVisual"`
+			ReleaseLevel      int    `json:"releaseLevel"`
+			Costs             struct {
+				ResourceId   int    `json:"resourceId"`
+				ResourceType string `json:"resourceType"`
+				Quantity     int    `json:"quantity"`
+				LbBonus      int    `json:"lbBonus"`
+			} `json:"costs"`
+			Rewards struct {
+				ResourceId   *int   `json:"resourceId,omitempty"`
+				ResourceType string `json:"resourceType"`
+				Quantity     int    `json:"quantity"`
+				LbBonus      int    `json:"lbBonus"`
+			} `json:"rewards"`
+			Title       []*string `json:"title"`
+			CharacterId int       `json:"characterId"`
+		} `json:"entries"`
+	} `json:"episodes"`
 	CostumeID  int      `json:"costumeId"`
 	GachaText  []string `json:"gachaText"`
 	Prefix     []string `json:"prefix"`
 	ReleasedAt []string `json:"releasedAt"`
 	SkillName  []string `json:"skillName"`
 	SkillID    int      `json:"skillId"`
-	Source     []any    `json:"source"`
-	Type       string   `json:"type"`
-	//Stats           CardStatValue            `json:"stats"`
+	Source     []struct {
+		Gacha map[string]struct {
+			Probability float64 `json:"probability"`
+		} `json:"gacha"`
+	} `json:"source"`
+	Type  string                   `json:"type"`
+	Stats map[string]CardStatValue `json:"stats"`
 }
 
 type EventDetailed struct {
-	EventType                       string            `json:"eventType"`
-	EventName                       []string          `json:"eventName"`
-	AssetBundleName                 string            `json:"assetBundleName"`
-	BannerAssetBundleName           string            `json:"bannerAssetBundleName"`
-	StartAt                         []string          `json:"startAt"`
-	EndAt                           []string          `json:"endAt"`
-	EnableFlag                      []*bool           `json:"enableFlag"`
-	PublicStartAt                   []string          `json:"publicStartAt"`
-	PublicEndAt                     []string          `json:"publicEndAt"`
-	DistributionStartAt             []string          `json:"distributionStartAt"`
-	DistributionEndAt               []string          `json:"distributionEndAt"`
-	BgmAssetBundleName              string            `json:"bgmAssetBundleName"`
-	BgmFileName                     string            `json:"bgmFileName"`
-	AggregateEndAt                  []string          `json:"aggregateEndAt"`
-	ExchangeEndAt                   []string          `json:"exchangeEndAt"`
-	PointRewards                    []any             `json:"pointRewards"`
-	RankingRewards                  []any             `json:"rankingRewards"`
+	EventType             string   `json:"eventType"`
+	EventName             []string `json:"eventName"`
+	AssetBundleName       string   `json:"assetBundleName"`
+	BannerAssetBundleName string   `json:"bannerAssetBundleName"`
+	StartAt               []string `json:"startAt"`
+	EndAt                 []string `json:"endAt"`
+	EnableFlag            []*bool  `json:"enableFlag"`
+	PublicStartAt         []string `json:"publicStartAt"`
+	PublicEndAt           []string `json:"publicEndAt"`
+	DistributionStartAt   []string `json:"distributionStartAt"`
+	DistributionEndAt     []string `json:"distributionEndAt"`
+	BgmAssetBundleName    string   `json:"bgmAssetBundleName"`
+	BgmFileName           string   `json:"bgmFileName"`
+	AggregateEndAt        []string `json:"aggregateEndAt"`
+	ExchangeEndAt         []string `json:"exchangeEndAt"`
+	PointRewards          [][]struct {
+		Point          string `json:"point"`
+		RewardType     string `json:"rewardType"`
+		RewardId       int    `json:"rewardId"`
+		RewardQuantity int    `json:"rewardQuantity"`
+	} `json:"pointRewards"`
+	RankingRewards [][]struct {
+		FromRank       int    `json:"fromRank"`
+		ToRank         int    `json:"toRank"`
+		RewardType     string `json:"rewardType"`
+		RewardId       int    `json:"rewardId"`
+		RewardQuantity int    `json:"rewardQuantity"`
+	} `json:"rankingRewards"`
 	Attributes                      []EventAttribute  `json:"attributes"`
 	Characters                      []EventCharacters `json:"characters"`
 	EventAttributeAndCharacterBonus struct {
@@ -363,8 +425,22 @@ type EventDetailed struct {
 	} `json:"eventAttributeAndCharacterBonus"`
 	Members     []EventMembers     `json:"members"`
 	LimitBreaks []EventLimitBreaks `json:"limitBreaks"`
-	Stories     []any              `json:"stories"`
-	RewardCards []int              `json:"rewardCards"`
+	Stories     []struct {
+		ScenarioId      string `json:"scenarioId"`
+		CoverImage      string `json:"coverImage"`
+		BackgroundImage string `json:"backgroundImage"`
+		ReleasePt       string `json:"releasePt"`
+		Rewards         []struct {
+			RewardType     string `json:"rewardType"`
+			RewardId       int    `json:"rewardId"`
+			RewardQuantity int    `json:"rewardQuantity"`
+		} `json:"rewards"`
+		Caption           []string `json:"caption"`
+		Title             []string `json:"title"`
+		Synopsis          []string `json:"synopsis"`
+		ReleaseConditions []string `json:"releaseConditions"`
+	} `json:"stories"`
+	RewardCards []int `json:"rewardCards"`
 }
 
 type EventAttribute struct {
@@ -388,9 +464,10 @@ type EventMembers struct {
 }
 
 type EventLimitBreaks struct {
+	EventID int     `json:"eventId"`
 	Rarity  int     `json:"rarity"`
 	Rank    int     `json:"rank"`
-	Percent float32 `json:"percent"`
+	Percent float64 `json:"percent"`
 }
 
 type Gacha struct {
@@ -437,7 +514,7 @@ type DetailsGacha struct {
 type GachaDetailedData map[string]DetailsGacha
 
 type GachaRates struct {
-	Rate        float32 `json:"rate"`
+	Rate        float64 `json:"rate"`
 	WeightTotal int     `json:"weightTotal"`
 }
 
@@ -461,8 +538,8 @@ type EventTracker struct {
 }
 
 type Cutoff struct {
-	Time int64 `json:"time"`
-	Ep   int64 `json:"ep"`
+	Time int `json:"time"`
+	Ep   int `json:"ep"`
 }
 
 type Rates struct {
@@ -562,8 +639,35 @@ type Comic struct {
 	CharacterId     []int    `json:"characterId"`
 }
 
+type LoginBonusDetail struct {
+	LoginBonusType  string   `json:"loginBonusType"`
+	AssetBundleName []string `json:"assetBundleName"`
+	AssetMap        struct {
+		Entries map[string]struct {
+			LoginBonusId int    `json:"loginBonusId"`
+			Days         int    `json:"days"`
+			ResourceName string `json:"resourceName"`
+			VoiceId      string `json:"voiceId"`
+		} `json:"entries"`
+	} `json:"assetMap"`
+	Caption     []string        `json:"caption"`
+	PublishedAt []string        `json:"publishedAt"`
+	ClosedAt    []string        `json:"closedAt"`
+	Details     [][]*DetailItem `json:"details"`
+}
+
+type DetailItem struct {
+	LoginBonusId int    `json:"loginBonusId"`
+	Days         int    `json:"days"`
+	ResourceType string `json:"resourceType"`
+	Quantity     int    `json:"quantity"`
+	Seq          int    `json:"seq"`
+	GrantType    string `json:"grantType"`
+	ResourceId   *int   `json:"resourceId,omitempty"`
+}
+
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
-var CharaEmoji = [...]int64{
+var CharaEmoji = [...]int{
 	6046130500299398386,
 	6046387158955072399,
 	6046167522917490460,
@@ -611,7 +715,7 @@ var CharaEmoji = [...]int64{
 // For unknown reasons, the IDs of RAS, Morfonica and MyGO are 18, 21 and 45 respectively, so the missing IDs will be filled with 0.
 //
 // Now I know the reason, some songs are performed by other combinations of bands, so they have their own IDs.
-var BandEmoji = [...]int64{
+var BandEmoji = [...]int{
 	6048882135522089606,
 	6046584078910627512,
 	6046608500094672312,
@@ -660,7 +764,7 @@ var BandEmoji = [...]int64{
 }
 
 // Access emoji by using AttributeEmoji[attributeIndex], for example, AttributeEmoji[0] will return the emoji for attribute "powerful".
-var AttributeEmoji = [...]int64{
+var AttributeEmoji = [...]int{
 	6046234846529854324, // powerful
 	6048435136800761010, // cool
 	6046477052620578270, // happy
@@ -668,7 +772,7 @@ var AttributeEmoji = [...]int64{
 }
 
 // Access emoji by using RarityEmoji[rarityIndex], for example, RarityEmoji[0] will return the emoji for rarity "normal".
-var RarityEmoji = [...]int64{
+var RarityEmoji = [...]int{
 	6048893384041438933, // Normal
 	6048597808687095847, // After Training
 }
@@ -697,7 +801,7 @@ var DifficultyColors = [...]string{
 const (
 	// This is the maximum interval between the current time and the time that the API can accept, in seconds.
 	//
-	// In total, this is 1099 days.
+	// In total, this is 1098 days.
 	//
 	// If the interval is larger than this, the API will return an error. If not too large, it will return `Bad Request: RICH_MESSAGE_DATE_INVALID`. If too large, it will return `Bad Request: can't parse InputRichBlock: Can't parse PageBlockTableCell: Field "unix_time" must be a valid Number`.
 	//

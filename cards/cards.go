@@ -26,19 +26,7 @@ import (
 )
 
 func regionCodeFromCard(card C.Card, preferCode string) string {
-	index := 0
-	switch preferCode {
-	case "jp":
-		index = 0
-	case "en":
-		index = 1
-	case "tw":
-		index = 2
-	case "cn":
-		index = 3
-	case "kr":
-		index = 4
-	}
+	index := utils.IndexHelper(preferCode)
 	if index < len(card.ReleasedAt) && card.ReleasedAt[index] != "" && card.ReleasedAt[index] != "null" {
 		return preferCode
 	}
@@ -46,20 +34,7 @@ func regionCodeFromCard(card C.Card, preferCode string) string {
 		if releasedAt == "" || releasedAt == "null" {
 			continue
 		}
-		switch i {
-		case 0:
-			return "jp"
-		case 1:
-			return "en"
-		case 2:
-			return "tw"
-		case 3:
-			return "cn"
-		case 4:
-			return "kr"
-		default:
-			return "jp"
-		}
+		return utils.ReverseIndexHelper(i)
 	}
 	return "jp"
 }

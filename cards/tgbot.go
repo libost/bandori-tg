@@ -1,11 +1,14 @@
 package cards
 
 import (
+	"bytes"
 	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"slices"
 	"strconv"
 	"strings"
@@ -47,20 +50,9 @@ func selectLocaleString(strings []string, index int) string {
 	return selected
 }
 
-func isWebPageContentErr(err error) bool {
-	if err == nil {
-		return false
-	}
-	if tgErr, ok := errors.AsType[*gotgbot.TelegramError](err); ok {
-		if tgErr.Code == 400 && strings.Contains(tgErr.Description, "wrong type of the web page content") {
-			return true
-		}
-	}
-	return false
-}
-
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("cards", QueryHandler))
+	dispatcher.AddHandler(handlers.NewCommand("card", QueryHandler))
 }
 
 func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -157,7 +149,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		rarityEmoji = fmt.Sprint(C.RarityEmoji[1])
 	}
 	var rarityBlock gotgbot.RichTextArray
-	for i := 0; i < card.Rarity; i++ {
+	for range card.Rarity {
 		rarityBlock = append(rarityBlock, gotgbot.RichTextCustomEmoji{
 			CustomEmojiId:   fmt.Sprint(rarityEmoji),
 			AlternativeText: "😐",
@@ -297,7 +289,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessage = &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -314,7 +306,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessage = &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -331,7 +323,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		richMessage = &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -361,32 +353,171 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
-	if isWebPageContentErr(err) {
-		// Handle web page content error
+	if utils.IsSpecifiedError(err, "failed to get HTTP URL content") || utils.IsSpecifiedError(err, "wrong type of the web page content") {
+		// Handle the specific error
 		richMessageErr := &gotgbot.InputRichMessage{
 			Blocks: []gotgbot.InputRichBlock{
 				gotgbot.InputRichBlockSectionHeading{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.Heading", dlangCode)),
+					Text: gotgbot.RichTextString(name),
 					Size: 3,
-				},
-				gotgbot.InputRichBlockParagraph{
-					Text: gotgbot.RichTextBold{
-						Text: gotgbot.RichTextItalic{
-							Text: gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("cards.bad_card", dlangCode), param)),
-						},
-					},
-				},
-				gotgbot.InputRichBlockTable{
-					Cells: richTable.Cells,
 				},
 			},
 		}
-		_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
+		var richMessageErrPhotos []gotgbot.InputRichBlock
+		if normalPath == "" {
+			req, errReq := http.NewRequestWithContext(ctxTimeout, http.MethodGet, trainingPath, nil)
+			if errReq != nil {
+				log.Printf("Error creating request for training path: %v", errReq)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReq.Error()), nil)
+				return errReq
+			}
+			resp, errResp := http.DefaultClient.Do(req)
+			if errResp != nil {
+				log.Printf("Error fetching training path: %v", errResp)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errResp.Error()), nil)
+				return errResp
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				log.Printf("Training path returned non-OK status: %d", resp.StatusCode)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Training path returned non-OK status: %d", resp.StatusCode)), nil)
+				return fmt.Errorf("training path returned non-OK status: %d", resp.StatusCode)
+			}
+			var trainingPNG bytes.Buffer
+			_, errCopy := io.Copy(&trainingPNG, resp.Body)
+			if errCopy != nil {
+				log.Printf("Error copying training PNG: %v", errCopy)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopy.Error()), nil)
+				return errCopy
+			}
+
+			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByReader("training.png", &trainingPNG),
+				},
+				Caption: &gotgbot.RichBlockCaption{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+				},
+			})
+
+		} else if trainingPath == "" {
+			req, errReq := http.NewRequestWithContext(ctxTimeout, http.MethodGet, normalPath, nil)
+			if errReq != nil {
+				log.Printf("Error creating request for normal path: %v", errReq)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReq.Error()), nil)
+				return errReq
+			}
+			resp, errResp := http.DefaultClient.Do(req)
+			if errResp != nil {
+				log.Printf("Error fetching normal path: %v", errResp)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errResp.Error()), nil)
+				return errResp
+			}
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				log.Printf("Normal path returned non-OK status: %d", resp.StatusCode)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Normal path returned non-OK status: %d", resp.StatusCode)), nil)
+				return fmt.Errorf("normal path returned non-OK status: %d", resp.StatusCode)
+			}
+			var normalPNG bytes.Buffer
+			_, errCopy := io.Copy(&normalPNG, resp.Body)
+			if errCopy != nil {
+				log.Printf("Error copying normal PNG: %v", errCopy)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopy.Error()), nil)
+				return errCopy
+			}
+			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByReader("normal.png", &normalPNG),
+				},
+				Caption: &gotgbot.RichBlockCaption{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+				},
+			})
+		} else {
+			reqTraining, errReqTraining := http.NewRequestWithContext(ctxTimeout, http.MethodGet, trainingPath, nil)
+			if errReqTraining != nil {
+				log.Printf("Error creating request for training path: %v", errReqTraining)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReqTraining.Error()), nil)
+				return errReqTraining
+			}
+			respTraining, errRespTraining := http.DefaultClient.Do(reqTraining)
+			if errRespTraining != nil {
+				log.Printf("Error fetching training path: %v", errRespTraining)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errRespTraining.Error()), nil)
+				return errRespTraining
+			}
+			defer respTraining.Body.Close()
+			if respTraining.StatusCode != http.StatusOK {
+				log.Printf("Training path returned non-OK status: %d", respTraining.StatusCode)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Training path returned non-OK status: %d", respTraining.StatusCode)), nil)
+				return fmt.Errorf("training path returned non-OK status: %d", respTraining.StatusCode)
+			}
+			var trainingPNG bytes.Buffer
+			_, errCopyTraining := io.Copy(&trainingPNG, respTraining.Body)
+			if errCopyTraining != nil {
+				log.Printf("Error copying training PNG: %v", errCopyTraining)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopyTraining.Error()), nil)
+				return errCopyTraining
+			}
+			reqNormal, errReqNormal := http.NewRequestWithContext(ctxTimeout, http.MethodGet, normalPath, nil)
+			if errReqNormal != nil {
+				log.Printf("Error creating request for normal path: %v", errReqNormal)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReqNormal.Error()), nil)
+				return errReqNormal
+			}
+			respNormal, errRespNormal := http.DefaultClient.Do(reqNormal)
+			if errRespNormal != nil {
+				log.Printf("Error fetching normal path: %v", errRespNormal)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errRespNormal.Error()), nil)
+				return errRespNormal
+			}
+			defer respNormal.Body.Close()
+			if respNormal.StatusCode != http.StatusOK {
+				log.Printf("Normal path returned non-OK status: %d", respNormal.StatusCode)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Normal path returned non-OK status: %d", respNormal.StatusCode)), nil)
+				return fmt.Errorf("normal path returned non-OK status: %d", respNormal.StatusCode)
+			}
+			var normalPNG bytes.Buffer
+			_, errCopyNormal := io.Copy(&normalPNG, respNormal.Body)
+			if errCopyNormal != nil {
+				log.Printf("Error copying normal PNG: %v", errCopyNormal)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopyNormal.Error()), nil)
+				return errCopyNormal
+			}
+			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByReader("normal.png", &normalPNG),
+				},
+				Caption: &gotgbot.RichBlockCaption{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+				},
+			})
+			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
+				Photo: gotgbot.InputMediaPhoto{
+					Media: gotgbot.InputFileByReader("training.png", &trainingPNG),
+				},
+				Caption: &gotgbot.RichBlockCaption{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+				},
+			})
+		}
+		richMessageErr.Blocks = append(richMessageErr.Blocks, richMessageErrPhotos...)
+		richMessageErr.Blocks = append(richMessageErr.Blocks, gotgbot.InputRichBlockTable{
+			Cells: richTable.Cells,
+		})
+		_, errErr := b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, *richMessageErr, &gotgbot.SendRichMessageOpts{
 			ReplyParameters: &gotgbot.ReplyParameters{
 				MessageId: ctx.EffectiveMessage.MessageId,
 			},
 		})
+		if errErr != nil {
+			log.Printf("Failed to send rich message with card details after handling error: %v", errErr)
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errErr.Error()), nil)
+		}
+		return errErr
 	}
+
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.request_timeout", dlangCode), nil)
 		log.Printf("Request timed out while sending card details to user %d", ctx.EffectiveUser.Id)

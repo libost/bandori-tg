@@ -1,10 +1,13 @@
 package comic
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"math/rand/v2"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -220,5 +223,50 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if utils.IsSpecifiedError(err, "failed to get HTTP URL content") {
+		req, errReq := http.NewRequestWithContext(ctxTimeout, http.MethodGet, url, nil)
+		if errReq != nil {
+			return errReq
+		}
+		resp, errResp := http.DefaultClient.Do(req)
+		if errResp != nil {
+			return errResp
+		}
+		defer resp.Body.Close()
+		var comicImg bytes.Buffer
+		_, errCopy := io.Copy(&comicImg, resp.Body)
+		if errCopy != nil {
+			return errCopy
+		}
+		richMessageErr := gotgbot.InputRichMessage{
+			Blocks: []gotgbot.InputRichBlock{
+				gotgbot.InputRichBlockSectionHeading{
+					Text: gotgbot.RichTextString(I.GetLocalisedString("comic.title", langCode)),
+					Size: 3,
+				},
+				gotgbot.InputRichBlockPhoto{
+					Photo: gotgbot.InputMediaPhoto{
+						Media: gotgbot.InputFileByReader("comic.png", &comicImg),
+					},
+				},
+				gotgbot.InputRichBlockTable{
+					Cells: cells,
+				},
+			},
+		}
+		_, errErr := b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessageErr, &gotgbot.SendRichMessageOpts{
+			ReplyParameters: &gotgbot.ReplyParameters{
+				MessageId: ctx.EffectiveMessage.MessageId,
+			},
+		})
+		if errErr != nil {
+			log.Printf("Comic: Failed to send rich message with comic image: %v", errErr)
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errErr.Error()), nil)
+		}
+		return errErr
+	}
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+	}
 	return err
 }
