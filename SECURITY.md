@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Each major release is supported until there are one newer major releases. For example, v1.3 was supported until the v1.4 release, and v1.4 was supported until the v1.5 release. We fix critical problems, including critical security problems, in supported releases as needed by issuing minor revisions (for example, v1.3.1, v1.4.1, and so on).
+Each major release is supported until there are one newer major release. For example, v1.3 was supported until the v1.4 release, and v1.4 was supported until the v1.5 release. We fix critical problems, including critical security problems, in supported releases as needed by issuing minor revisions (for example, v1.3.1, v1.4.1, and so on).
 
 
 ## Reporting a Vulnerability
