@@ -183,7 +183,7 @@ func scaleImagePNG(src image.Image, targetWidth, targetHeight int) image.Image {
 	return dst
 }
 
-func frameHelper(rarity int64, attribute string) string {
+func frameHelper(rarity int, attribute string) string {
 	if rarity == -1 {
 		switch attribute {
 		case "powerful":
@@ -221,7 +221,7 @@ func frameHelper(rarity int64, attribute string) string {
 	return ""
 }
 
-func ThumbGenerate(cardId string, percent int64) (image.Image, error) {
+func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	cardMap := utils.ReadCards()

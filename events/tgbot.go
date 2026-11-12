@@ -182,7 +182,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 	}
 
 	charaIDs := make([]string, len(eventDetailed.Characters))
-	percents := make([]int64, len(eventDetailed.Characters))
+	percents := make([]int, len(eventDetailed.Characters))
 	for i, chara := range eventDetailed.Characters {
 		charaIDs[i] = normalizeCharacterID(chara.CharacterID)
 		percents[i] = chara.Percent
@@ -463,9 +463,9 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 
-	tier := int64(0)
+	tier := 0
 	if len(ctx.Args()) > 2 {
-		t, err := strconv.ParseInt(ctx.Args()[2], 10, 64)
+		t, err := strconv.Atoi(ctx.Args()[2])
 		if err != nil {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 			return nil
@@ -536,17 +536,16 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		percent := int64(float64(now-startAt) / float64(endAt-startAt) * 100)
 		status = fmt.Sprintf(I.GetLocalisedString("events.complete_percent", langCode), percent)
 	}
-	lastStr := humanize.Comma(last)
-	predictedStr := humanize.Comma(predicted)
+	lastStr := humanize.Comma(int64(last))
+	predictedStr := humanize.Comma(int64(predicted))
 	if predicted == 0 {
 		predictedStr = I.GetLocalisedString("events.not_enough_data", langCode)
 	}
 	tz := utils.TzHelper(qlangCode)
 	loc, _ := time.LoadLocation(tz)
-	lastTimeStr := time.UnixMilli(latestTime).In(loc).Format("2006-01-02 15:04:05 MST")
-	allTimeSpeedStr := humanize.Comma(allTimeSpeed)
-	speedStr := humanize.Comma(speed)
-
+	lastTimeStr := time.UnixMilli(int64(latestTime)).In(loc).Format("2006-01-02 15:04:05 MST")
+	allTimeSpeedStr := humanize.Comma(int64(allTimeSpeed))
+	speedStr := humanize.Comma(int64(speed))
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockPhoto{
@@ -594,7 +593,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						{
 							Text: gotgbot.RichTextDateTime{
 								Text:           gotgbot.RichTextString(lastTimeStr),
-								UnixTime:       latestTime / 1000,
+								UnixTime:       int64(latestTime) / 1000,
 								DateTimeFormat: "DwT",
 							},
 							Align: "right",
@@ -634,7 +633,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
-	if now < endAt && now-latestTime > 3600000 {
+	if now < endAt && now-int64(latestTime) > 3600000 {
 		richMessage.Blocks = append(richMessage.Blocks,
 			gotgbot.InputRichBlockDivider{},
 			gotgbot.InputRichBlockBlockQuotation{

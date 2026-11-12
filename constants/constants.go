@@ -113,23 +113,23 @@ var BandFrames = [...]string{
 	"https://bestdori.com/res/icon/band_45.svg", // 45
 }
 
-var CNTierList = [...]int64{
+var CNTierList = [...]int{
 	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000, 3000, 4000, 5000, 10000, 15000, 20000, 30000, 40000, 50000, 100000, 150000, 200000, 300000,
 }
 
-var JPTierList = [...]int64{
+var JPTierList = [...]int{
 	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 2000, 5000, 10000, 20000, 30000, 50000, 70000, 100000, 300000,
 }
 
-var TWTierList = [...]int64{
+var TWTierList = [...]int{
 	20, 30, 40, 50, 100, 500, 1000, 3000, 5000,
 }
 
-var ENTierList = [...]int64{
+var ENTierList = [...]int{
 	20, 30, 40, 50, 100, 200, 300, 400, 500, 1000, 2000, 2500, 3000, 4000, 5000, 10000,
 }
 
-var KRTierList = [...]int64{
+var KRTierList = [...]int{
 	100,
 }
 
@@ -146,7 +146,7 @@ type Config struct {
 		Enabled  bool   `yaml:"enabled" default:"false"`
 		Type     string `yaml:"type"`
 		Host     string `yaml:"host"`
-		Port     int64  `yaml:"port"`
+		Port     int    `yaml:"port"`
 		Username string `yaml:"username"`
 		Password string `yaml:"password"`
 	} `yaml:"proxy"`
@@ -154,7 +154,7 @@ type Config struct {
 		Enabled      bool   `yaml:"enabled" default:"false"`
 		NginxEnabled bool   `yaml:"nginx_enabled"`
 		URL          string `yaml:"url"`
-		Port         int64  `yaml:"port"`
+		Port         int    `yaml:"port"`
 		Cert         struct {
 			SelfSigned bool   `yaml:"self_signed"`
 			CertPath   string `yaml:"cert_path"`
@@ -170,7 +170,7 @@ type Character struct {
 	FirstName     []string  `json:"firstName"`
 	LastName      []string  `json:"lastName"`
 	Nickname      []*string `json:"nickname"`
-	BandID        int64     `json:"bandId"`
+	BandID        int       `json:"bandId"`
 	ColorCode     string    `json:"colorCode"`
 }
 
@@ -182,10 +182,10 @@ type CharacterDetailed struct {
 	FirstName            []string `json:"firstName"`
 	LastName             []string `json:"lastName"`
 	Nickname             []string `json:"nickname"`
-	BandID               int64    `json:"bandId"`
+	BandID               int      `json:"bandId"`
 	ColorCode            string   `json:"colorCode"`
 	SdAssetBundleName    string   `json:"sdAssetBundleName"`
-	DefaultCostumeId     int64    `json:"defaultCostumeId"`
+	DefaultCostumeId     int      `json:"defaultCostumeId"`
 	SeasonCostumeListMap any      `json:"seasonCostumeListMap"`
 	Ruby                 []string `json:"ruby"`
 	Profile              struct {
@@ -200,27 +200,27 @@ type CharacterDetailed struct {
 		Part             string   `json:"part"`
 		Birthday         string   `json:"birthday"`
 		Constellation    string   `json:"constellation"`
-		Height           int64    `json:"height"`
+		Height           int      `json:"height"`
 	} `json:"profile"`
 }
 
 type Card struct {
-	CharacterID     int64    `json:"characterId"`
-	Rarity          int64    `json:"rarity"`
+	CharacterID     int      `json:"characterId"`
+	Rarity          int      `json:"rarity"`
 	Attribute       string   `json:"attribute"`
-	LevelLimit      int64    `json:"levelLimit"`
+	LevelLimit      int      `json:"levelLimit"`
 	ResourceSetName string   `json:"resourceSetName"`
 	Prefix          []string `json:"prefix"`
 	ReleasedAt      []string `json:"releasedAt"`
-	SkillID         int64    `json:"skillId"`
+	SkillID         int      `json:"skillId"`
 	Type            string   `json:"type"`
 	Stat            CardStat `json:"stat"`
 }
 
 type CardStatValue struct {
-	Performance int64 `json:"performance"`
-	Technique   int64 `json:"technique"`
-	Visual      int64 `json:"visual"`
+	Performance int `json:"performance"`
+	Technique   int `json:"technique"`
+	Visual      int `json:"visual"`
 }
 
 type CardStat struct {
@@ -241,16 +241,16 @@ type Skill struct {
 		}
 	} `json:"activationEffect"`
 	OnceEffect struct {
-		OnceEffectType      string  `json:"onceEffectType"`
-		OnceEffectValueType string  `json:"onceEffectValueType"`
-		OnceEffectValue     []int64 `json:"onceEffectValue"`
+		OnceEffectType      string `json:"onceEffectType"`
+		OnceEffectValueType string `json:"onceEffectValueType"`
+		OnceEffectValue     []int  `json:"onceEffectValue"`
 	} `json:"onceEffect"`
 }
 
 type SkillActivationEffectTypesValue struct {
-	ActivateEffectValue     []int64 `json:"activateEffectValue"`
-	ActivateEffectValueType string  `json:"activateEffectValueType"`
-	ActivateCondition       string  `json:"activateCondition"`
+	ActivateEffectValue     []int  `json:"activateEffectValue"`
+	ActivateEffectValueType string `json:"activateEffectValueType"`
+	ActivateCondition       string `json:"activateCondition"`
 }
 
 type SkillData map[string]Skill
@@ -302,35 +302,35 @@ type Events struct {
 	Characters            []EventsCharacters `json:"characters"`
 	Members               []any              `json:"members"`
 	LimitBreaks           []any              `json:"limitBreaks"`
-	RewardCards           []int64            `json:"rewardCards"`
+	RewardCards           []int              `json:"rewardCards"`
 }
 
 type Attributes struct {
 	Attribute string `json:"attribute"`
-	Percent   int64  `json:"percent"`
+	Percent   int    `json:"percent"`
 }
 
 type EventsCharacters struct {
-	CharacterID any   `json:"characterId"`
-	Percent     int64 `json:"percent"`
+	CharacterID any `json:"characterId"`
+	Percent     int `json:"percent"`
 }
 
 type EventsData map[string]Events
 
 type CardDetailed struct {
-	CharacterID     int64  `json:"characterId"`
-	Rarity          int64  `json:"rarity"`
+	CharacterID     int    `json:"characterId"`
+	Rarity          int    `json:"rarity"`
 	Attribute       string `json:"attribute"`
-	LevelLimit      int64  `json:"levelLimit"`
+	LevelLimit      int    `json:"levelLimit"`
 	ResourceSetName string `json:"resourceSetName"`
 	SdResourceName  string `json:"sdResourceName"`
 	//Episodes        map[string]CardStatValue `json:"episodes"` //???
-	CostumeID  int64    `json:"costumeId"`
+	CostumeID  int      `json:"costumeId"`
 	GachaText  []string `json:"gachaText"`
 	Prefix     []string `json:"prefix"`
 	ReleasedAt []string `json:"releasedAt"`
 	SkillName  []string `json:"skillName"`
-	SkillID    int64    `json:"skillId"`
+	SkillID    int      `json:"skillId"`
 	Source     []any    `json:"source"`
 	Type       string   `json:"type"`
 	//Stats           CardStatValue            `json:"stats"`
@@ -357,40 +357,40 @@ type EventDetailed struct {
 	Attributes                      []EventAttribute  `json:"attributes"`
 	Characters                      []EventCharacters `json:"characters"`
 	EventAttributeAndCharacterBonus struct {
-		EventID          int64 `json:"eventId"`
-		PointPercent     int64 `json:"pointPercent"`
-		ParameterPercent int64 `json:"parameterPercent"`
+		EventID          int `json:"eventId"`
+		PointPercent     int `json:"pointPercent"`
+		ParameterPercent int `json:"parameterPercent"`
 	} `json:"eventAttributeAndCharacterBonus"`
 	Members     []EventMembers     `json:"members"`
 	LimitBreaks []EventLimitBreaks `json:"limitBreaks"`
 	Stories     []any              `json:"stories"`
-	RewardCards []int64            `json:"rewardCards"`
+	RewardCards []int              `json:"rewardCards"`
 }
 
 type EventAttribute struct {
-	EventID   int64  `json:"eventId"`
+	EventID   int    `json:"eventId"`
 	Attribute string `json:"attribute"`
-	Percent   int64  `json:"percent"`
+	Percent   int    `json:"percent"`
 }
 
 type EventCharacters struct {
-	EventID     int64 `json:"eventId"`
-	CharacterID any   `json:"characterId"`
-	Percent     int64 `json:"percent"`
-	Seq         int64 `json:"seq"`
+	EventID     int `json:"eventId"`
+	CharacterID any `json:"characterId"`
+	Percent     int `json:"percent"`
+	Seq         int `json:"seq"`
 }
 
 type EventMembers struct {
-	EventID     int64 `json:"eventId"`
-	SituationID int64 `json:"situationId"`
-	Percent     int64 `json:"percent"`
-	Seq         int64 `json:"seq"`
+	EventID     int `json:"eventId"`
+	SituationID int `json:"situationId"`
+	Percent     int `json:"percent"`
+	Seq         int `json:"seq"`
 }
 
 type EventLimitBreaks struct {
-	EventID int64   `json:"eventId"`
-	Rarity  int64   `json:"rarity"`
-	Rank    int64   `json:"rank"`
+	EventID int     `json:"eventId"`
+	Rarity  int     `json:"rarity"`
+	Rank    int     `json:"rank"`
 	Percent float64 `json:"percent"`
 }
 
@@ -401,7 +401,7 @@ type Gacha struct {
 	PublishedAt           []string `json:"publishedAt"`
 	ClosedAt              []string `json:"closedAt"`
 	Type                  string   `json:"type"`
-	NewCards              []int64  `json:"newCards"`
+	NewCards              []int    `json:"newCards"`
 }
 
 type GachaData map[string]Gacha
@@ -420,7 +420,7 @@ type GachaDetailed struct {
 	GachaPeriod           []string            `json:"gachaPeriod"`
 	GachaType             string              `json:"gachaType"`
 	Type                  string              `json:"type"`
-	NewCards              []int64             `json:"newCards"`
+	NewCards              []int               `json:"newCards"`
 	Information           struct {
 		Description   []string `json:"description"`
 		Term          []string `json:"term"`
@@ -430,30 +430,30 @@ type GachaDetailed struct {
 }
 
 type DetailsGacha struct {
-	RarityIndex int64 `json:"rarityIndex"`
-	Weight      int64 `json:"weight"`
-	Pickup      bool  `json:"pickup"`
+	RarityIndex int  `json:"rarityIndex"`
+	Weight      int  `json:"weight"`
+	Pickup      bool `json:"pickup"`
 }
 
 type GachaDetailedData map[string]DetailsGacha
 
 type GachaRates struct {
 	Rate        float64 `json:"rate"`
-	WeightTotal int64   `json:"weightTotal"`
+	WeightTotal int     `json:"weightTotal"`
 }
 
 type GachaRatesData map[string]GachaRates
 
 type PaymentMethods struct {
-	GachaID          int64  `json:"gachaId"`
+	GachaID          int    `json:"gachaId"`
 	PaymentMethod    string `json:"paymentMethod"`
-	Quantity         int64  `json:"quantity"`
-	PaymentMethodID  int64  `json:"paymentMethodId"`
-	Count            int64  `json:"count"`
+	Quantity         int    `json:"quantity"`
+	PaymentMethodID  int    `json:"paymentMethodId"`
+	Count            int    `json:"count"`
 	Behavior         string `json:"behavior"`
 	Pickup           bool   `json:"pickup"`
-	CostItemQuantity int64  `json:"costItemQuantity"`
-	DiscountType     int64  `json:"discountType"`
+	CostItemQuantity int    `json:"costItemQuantity"`
+	DiscountType     int    `json:"discountType"`
 }
 
 type EventTracker struct {
@@ -462,14 +462,14 @@ type EventTracker struct {
 }
 
 type Cutoff struct {
-	Time int64 `json:"time"`
-	Ep   int64 `json:"ep"`
+	Time int `json:"time"`
+	Ep   int `json:"ep"`
 }
 
 type Rates struct {
 	Type   string  `json:"type"`
-	Server int64   `json:"server"`
-	Tier   int64   `json:"tier"`
+	Server int     `json:"server"`
+	Tier   int     `json:"tier"`
 	Rate   float64 `json:"rate"`
 }
 
@@ -477,7 +477,7 @@ type RatesData []Rates
 
 type Songs struct {
 	Tag         string                    `json:"tag"` // `normal` for og, `anime` for covers and `tie-up` for extras
-	BandID      int64                     `json:"bandId"`
+	BandID      int                       `json:"bandId"`
 	JacketImage []string                  `json:"jacketImage"`
 	MusicTitle  []string                  `json:"musicTitle"`
 	PublishedAt []string                  `json:"publishedAt"`
@@ -486,7 +486,7 @@ type Songs struct {
 }
 
 type DifficultyData struct {
-	PlayLevel   int64    `json:"playLevel"`
+	PlayLevel   int      `json:"playLevel"`
 	PublishedAt []string `json:"publishedAt"`
 }
 
@@ -496,10 +496,10 @@ type SongsDetailed struct {
 	BgmID        string                        `json:"bgmId"`
 	BgmFile      string                        `json:"bgmFile"`
 	Tag          string                        `json:"tag"`
-	BandID       int64                         `json:"bandId"`
+	BandID       int                           `json:"bandId"`
 	Achievements []AchievementsData            `json:"achievements"`
 	JacketImage  []string                      `json:"jacketImage"`
-	Seq          int64                         `json:"seq"`
+	Seq          int                           `json:"seq"`
 	MusicTitle   []string                      `json:"musicTitle"`
 	Ruby         []string                      `json:"ruby"`
 	Phonetic     []string                      `json:"phonetic"`
@@ -517,38 +517,38 @@ type SongsDetailed struct {
 }
 
 type AchievementsData struct {
-	MusicID         int64  `json:"musicId"`
+	MusicID         int    `json:"musicId"`
 	AchievementType string `json:"achievementType"`
 	RewardType      string `json:"rewardType"`
-	Quantity        int64  `json:"quantity"`
+	Quantity        int    `json:"quantity"`
 }
 
 type DifficultyDetailed struct {
-	PlayLevel         int64                            `json:"playLevel"`
+	PlayLevel         int                              `json:"playLevel"`
 	MultiLiveScoreMap map[string]MultiLiveScoreMapData `json:"multiLiveScoreMap"`
-	NotesQuantity     int64                            `json:"notesQuantity"`
-	ScoreC            int64                            `json:"scoreC"`
-	ScoreB            int64                            `json:"scoreB"`
-	ScoreA            int64                            `json:"scoreA"`
-	ScoreS            int64                            `json:"scoreS"`
-	ScoreSS           int64                            `json:"scoreSS"`
+	NotesQuantity     int                              `json:"notesQuantity"`
+	ScoreC            int                              `json:"scoreC"`
+	ScoreB            int                              `json:"scoreB"`
+	ScoreA            int                              `json:"scoreA"`
+	ScoreS            int                              `json:"scoreS"`
+	ScoreSS           int                              `json:"scoreSS"`
 }
 
 type MultiLiveScoreMapData struct {
-	MusicID                 int64  `json:"musicId"`
+	MusicID                 int    `json:"musicId"`
 	MusicDifficulty         string `json:"musicDifficulty"`
-	MusicLiveDifficultyID   int64  `json:"musicLiveDifficultyId"`
-	ScoreS                  int64  `json:"scoreS"`
-	ScoreA                  int64  `json:"scoreA"`
-	ScoreB                  int64  `json:"scoreB"`
-	ScoreC                  int64  `json:"scoreC"`
+	MusicLiveDifficultyID   int    `json:"musicLiveDifficultyId"`
+	ScoreS                  int    `json:"scoreS"`
+	ScoreA                  int    `json:"scoreA"`
+	ScoreB                  int    `json:"scoreB"`
+	ScoreC                  int    `json:"scoreC"`
 	MultiLiveDifficultyType string `json:"multiLiveDifficultyType"`
-	ScoreSS                 int64  `json:"scoreSS"`
-	ScoreSSS                int64  `json:"scoreSSS"`
+	ScoreSS                 int    `json:"scoreSS"`
+	ScoreSSS                int    `json:"scoreSSS"`
 }
 
 type BpmData []struct {
-	Bpm   int64   `json:"bpm"`
+	Bpm   int     `json:"bpm"`
 	Start float64 `json:"start"`
 	End   float64 `json:"end"`
 }
@@ -560,7 +560,7 @@ type Comic struct {
 	Title           []string `json:"title"`
 	SubTitle        []string `json:"subTitle"`
 	PublicStartAt   []any    `json:"publicStartAt"`
-	CharacterId     []int64  `json:"characterId"`
+	CharacterId     []int    `json:"characterId"`
 }
 
 type LoginBonusDetail struct {
@@ -574,17 +574,17 @@ type LoginBonusDetail struct {
 }
 
 type DetailItem struct {
-	LoginBonusId int64  `json:"loginBonusId"`
-	Days         int64  `json:"days"`
+	LoginBonusId int    `json:"loginBonusId"`
+	Days         int    `json:"days"`
 	ResourceType string `json:"resourceType"`
-	Quantity     int64  `json:"quantity"`
-	Seq          int64  `json:"seq"`
+	Quantity     int    `json:"quantity"`
+	Seq          int    `json:"seq"`
 	GrantType    string `json:"grantType"`
-	ResourceId   *int64 `json:"resourceId,omitempty"`
+	ResourceId   *int   `json:"resourceId,omitempty"`
 }
 
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
-var CharaEmoji = [...]int64{
+var CharaEmoji = [...]int{
 	6046130500299398386,
 	6046387158955072399,
 	6046167522917490460,
@@ -632,7 +632,7 @@ var CharaEmoji = [...]int64{
 // For unknown reasons, the IDs of RAS, Morfonica and MyGO are 18, 21 and 45 respectively, so the missing IDs will be filled with 0.
 //
 // Now I know the reason, some songs are performed by other combinations of bands, so they have their own IDs.
-var BandEmoji = [...]int64{
+var BandEmoji = [...]int{
 	6048882135522089606,
 	6046584078910627512,
 	6046608500094672312,
@@ -681,7 +681,7 @@ var BandEmoji = [...]int64{
 }
 
 // Access emoji by using AttributeEmoji[attributeIndex], for example, AttributeEmoji[0] will return the emoji for attribute "powerful".
-var AttributeEmoji = [...]int64{
+var AttributeEmoji = [...]int{
 	6046234846529854324, // powerful
 	6048435136800761010, // cool
 	6046477052620578270, // happy
@@ -689,7 +689,7 @@ var AttributeEmoji = [...]int64{
 }
 
 // Access emoji by using RarityEmoji[rarityIndex], for example, RarityEmoji[0] will return the emoji for rarity "normal".
-var RarityEmoji = [...]int64{
+var RarityEmoji = [...]int{
 	6048893384041438933, // Normal
 	6048597808687095847, // After Training
 }
@@ -703,9 +703,9 @@ var AcceptedRegions = []string{"jp", "en", "tw", "cn", "kr"}
 // Symptom: when send rich message, the telegram api will return 400 Bad Request with message "wrong type of the web page content".
 var BadCards = []string{"2309"}
 
-var TelegramAcceptPorts = [...]int64{80, 88, 443, 8443}
+var TelegramAcceptPorts = [...]int{80, 88, 443, 8443}
 
-var BandWithEmoji = [...]int64{1, 2, 3, 4, 5, 18, 21, 45}
+var BandWithEmoji = [...]int{1, 2, 3, 4, 5, 18, 21, 45}
 
 var DifficultyColors = [...]string{
 	"#3076F8", // Easy
