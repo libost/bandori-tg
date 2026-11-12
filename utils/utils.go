@@ -15,6 +15,7 @@ import (
 
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
+	"github.com/libost/bandori-tg/version"
 	"github.com/libost/gotgbot/v2"
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
@@ -239,8 +240,8 @@ func fetchAndDecode(ctx context.Context, client *http.Client, url string, target
 }
 
 func InitHttpClient() error {
+	ua := generateUserAgent()
 	config := config.AppConfig
-
 	if config.Proxy.Enabled {
 		switch config.Proxy.Type {
 		case "http":
@@ -255,7 +256,7 @@ func InitHttpClient() error {
 							User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
 						}),
 					},
-					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+					UserAgent: ua,
 				},
 			}
 		case "socks5":
@@ -273,7 +274,7 @@ func InitHttpClient() error {
 						MaxIdleConnsPerHost: 10,
 						Dial:                dialer.Dial,
 					},
-					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+					UserAgent: ua,
 				},
 			}
 		default:
@@ -286,7 +287,7 @@ func InitHttpClient() error {
 				Base: &http.Transport{
 					MaxIdleConnsPerHost: 10,
 				},
-				UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+				UserAgent: ua,
 			},
 		}
 	}
@@ -438,4 +439,13 @@ func IsSpecifiedError(err error, targetDescription string) bool {
 		}
 	}
 	return false
+}
+
+func generateUserAgent() string {
+	version := strings.TrimPrefix(version.Version, "v")
+	if version == "dev" {
+		loc, _ := time.LoadLocation("UTC")
+		version = "0.0.0-" + time.Now().In(loc).Format("20060102150405")
+	}
+	return fmt.Sprintf("bandori-tg/%s (https://github.com/libost/bandori-tg)", version)
 }
