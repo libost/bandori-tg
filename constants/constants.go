@@ -186,9 +186,21 @@ type CharacterDetailed struct {
 	ColorCode            string   `json:"colorCode"`
 	SdAssetBundleName    string   `json:"sdAssetBundleName"`
 	DefaultCostumeId     int      `json:"defaultCostumeId"`
-	SeasonCostumeListMap any      `json:"seasonCostumeListMap"`
-	Ruby                 []string `json:"ruby"`
-	Profile              struct {
+	SeasonCostumeListMap struct {
+		Entries struct {
+			Season_3 struct {
+				Entries []CharacterSeasonCostume `json:"entries"`
+			} `json:"season_3"`
+			Season_2 struct {
+				Entries []CharacterSeasonCostume `json:"entries"`
+			} `json:"season_2"`
+			Season_1 struct {
+				Entries []CharacterSeasonCostume `json:"entries"`
+			} `json:"season_1"`
+		} `json:"entries"`
+	} `json:"seasonCostumeListMap"`
+	Ruby    []string `json:"ruby"`
+	Profile struct {
 		CharacterVoice   []string `json:"characterVoice"`
 		FavoriteFood     []string `json:"favoriteFood"`
 		HatedFood        []string `json:"hatedFood"`
@@ -202,6 +214,16 @@ type CharacterDetailed struct {
 		Constellation    string   `json:"constellation"`
 		Height           int      `json:"height"`
 	} `json:"profile"`
+}
+
+type CharacterSeasonCostume struct {
+	CharacterId           int    `json:"characterId"`
+	BasicSeasonId         int    `json:"basicSeasonId"`
+	CostumeType           string `json:"costumeType"`
+	SeasonCostumeType     string `json:"seasonCostumeType"`
+	SdAssetBundleName     string `json:"sdAssetBundleName"`
+	Live2dAssetBundleName string `json:"live2dAssetBundleName"`
+	SeasonType            string `json:"seasonType"`
 }
 
 type Card struct {
@@ -300,8 +322,8 @@ type Events struct {
 	EndAt                 []string           `json:"endAt"`
 	Attribute             []Attributes       `json:"attribute"`
 	Characters            []EventsCharacters `json:"characters"`
-	Members               []any              `json:"members"`
-	LimitBreaks           []any              `json:"limitBreaks"`
+	Members               []EventMembers     `json:"members"`
+	LimitBreaks           []EventLimitBreaks `json:"limitBreaks"`
 	RewardCards           []int              `json:"rewardCards"`
 }
 
@@ -324,36 +346,76 @@ type CardDetailed struct {
 	LevelLimit      int    `json:"levelLimit"`
 	ResourceSetName string `json:"resourceSetName"`
 	SdResourceName  string `json:"sdResourceName"`
-	//Episodes        map[string]CardStatValue `json:"episodes"` //???
+	Episodes        struct {
+		Entries []struct {
+			EpisodeId         int    `json:"episodeId"`
+			EpisodeType       string `json:"episodeType"`
+			SituationId       int    `json:"situationId"`
+			ScenarioId        string `json:"scenarioId"`
+			AppendPerformance int    `json:"appendPerformance"`
+			AppendTechnique   int    `json:"appendTechnique"`
+			AppendVisual      int    `json:"appendVisual"`
+			ReleaseLevel      int    `json:"releaseLevel"`
+			Costs             struct {
+				ResourceId   int    `json:"resourceId"`
+				ResourceType string `json:"resourceType"`
+				Quantity     int    `json:"quantity"`
+				LbBonus      int    `json:"lbBonus"`
+			} `json:"costs"`
+			Rewards struct {
+				ResourceId   *int   `json:"resourceId,omitempty"`
+				ResourceType string `json:"resourceType"`
+				Quantity     int    `json:"quantity"`
+				LbBonus      int    `json:"lbBonus"`
+			} `json:"rewards"`
+			Title       []*string `json:"title"`
+			CharacterId int       `json:"characterId"`
+		} `json:"entries"`
+	} `json:"episodes"`
 	CostumeID  int      `json:"costumeId"`
 	GachaText  []string `json:"gachaText"`
 	Prefix     []string `json:"prefix"`
 	ReleasedAt []string `json:"releasedAt"`
 	SkillName  []string `json:"skillName"`
 	SkillID    int      `json:"skillId"`
-	Source     []any    `json:"source"`
-	Type       string   `json:"type"`
-	//Stats           CardStatValue            `json:"stats"`
+	Source     []struct {
+		Gacha map[string]struct {
+			Probability float64 `json:"probability"`
+		} `json:"gacha"`
+	} `json:"source"`
+	Type  string                   `json:"type"`
+	Stats map[string]CardStatValue `json:"stats"`
 }
 
 type EventDetailed struct {
-	EventType                       string            `json:"eventType"`
-	EventName                       []string          `json:"eventName"`
-	AssetBundleName                 string            `json:"assetBundleName"`
-	BannerAssetBundleName           string            `json:"bannerAssetBundleName"`
-	StartAt                         []string          `json:"startAt"`
-	EndAt                           []string          `json:"endAt"`
-	EnableFlag                      []*bool           `json:"enableFlag"`
-	PublicStartAt                   []string          `json:"publicStartAt"`
-	PublicEndAt                     []string          `json:"publicEndAt"`
-	DistributionStartAt             []string          `json:"distributionStartAt"`
-	DistributionEndAt               []string          `json:"distributionEndAt"`
-	BgmAssetBundleName              string            `json:"bgmAssetBundleName"`
-	BgmFileName                     string            `json:"bgmFileName"`
-	AggregateEndAt                  []string          `json:"aggregateEndAt"`
-	ExchangeEndAt                   []string          `json:"exchangeEndAt"`
-	PointRewards                    []any             `json:"pointRewards"`
-	RankingRewards                  []any             `json:"rankingRewards"`
+	EventType             string   `json:"eventType"`
+	EventName             []string `json:"eventName"`
+	AssetBundleName       string   `json:"assetBundleName"`
+	BannerAssetBundleName string   `json:"bannerAssetBundleName"`
+	StartAt               []string `json:"startAt"`
+	EndAt                 []string `json:"endAt"`
+	EnableFlag            []*bool  `json:"enableFlag"`
+	PublicStartAt         []string `json:"publicStartAt"`
+	PublicEndAt           []string `json:"publicEndAt"`
+	DistributionStartAt   []string `json:"distributionStartAt"`
+	DistributionEndAt     []string `json:"distributionEndAt"`
+	BgmAssetBundleName    string   `json:"bgmAssetBundleName"`
+	BgmFileName           string   `json:"bgmFileName"`
+	AggregateEndAt        []string `json:"aggregateEndAt"`
+	ExchangeEndAt         []string `json:"exchangeEndAt"`
+	PointRewards          [][]struct {
+		Point          string `json:"point"`
+		RewardType     string `json:"rewardType"`
+		RewardId       int    `json:"rewardId"`
+		RewardQuantity int    `json:"rewardQuantity"`
+	} `json:"pointRewards"`
+	RankingRewards [][]struct {
+		FromRank       int    `json:"fromRank"`
+		ToRank         int    `json:"toRank"`
+		RewardType     string `json:"rewardType"`
+		RewardId       int    `json:"rewardId"`
+		RewardQuantity int    `json:"rewardQuantity"`
+	} `json:"rankingRewards"`
 	Attributes                      []EventAttribute  `json:"attributes"`
 	Characters                      []EventCharacters `json:"characters"`
 	EventAttributeAndCharacterBonus struct {
@@ -363,8 +425,22 @@ type EventDetailed struct {
 	} `json:"eventAttributeAndCharacterBonus"`
 	Members     []EventMembers     `json:"members"`
 	LimitBreaks []EventLimitBreaks `json:"limitBreaks"`
-	Stories     []any              `json:"stories"`
-	RewardCards []int              `json:"rewardCards"`
+	Stories     []struct {
+		ScenarioId      string `json:"scenarioId"`
+		CoverImage      string `json:"coverImage"`
+		BackgroundImage string `json:"backgroundImage"`
+		ReleasePt       string `json:"releasePt"`
+		Rewards         []struct {
+			RewardType     string `json:"rewardType"`
+			RewardId       int    `json:"rewardId"`
+			RewardQuantity int    `json:"rewardQuantity"`
+		} `json:"rewards"`
+		Caption           []string `json:"caption"`
+		Title             []string `json:"title"`
+		Synopsis          []string `json:"synopsis"`
+		ReleaseConditions []string `json:"releaseConditions"`
+	} `json:"stories"`
+	RewardCards []int `json:"rewardCards"`
 }
 
 type EventAttribute struct {
@@ -564,13 +640,20 @@ type Comic struct {
 }
 
 type LoginBonusDetail struct {
-	LoginBonusType  string          `json:"loginBonusType"`
-	AssetBundleName []string        `json:"assetBundleName"`
-	AssetMap        any             `json:"assetMap"`
-	Caption         []string        `json:"caption"`
-	PublishedAt     []string        `json:"publishedAt"`
-	ClosedAt        []string        `json:"closedAt"`
-	Details         [][]*DetailItem `json:"details"`
+	LoginBonusType  string   `json:"loginBonusType"`
+	AssetBundleName []string `json:"assetBundleName"`
+	AssetMap        struct {
+		Entries map[string]struct {
+			LoginBonusId int    `json:"loginBonusId"`
+			Days         int    `json:"days"`
+			ResourceName string `json:"resourceName"`
+			VoiceId      string `json:"voiceId"`
+		} `json:"entries"`
+	} `json:"assetMap"`
+	Caption     []string        `json:"caption"`
+	PublishedAt []string        `json:"publishedAt"`
+	ClosedAt    []string        `json:"closedAt"`
+	Details     [][]*DetailItem `json:"details"`
 }
 
 type DetailItem struct {
