@@ -26,7 +26,7 @@ If applicable, add logs to help explain your problem.
 
 **Server (please complete the following information):**
  - OS: [e.g. Ubuntu]
-- Version: [e.g. 24.4.5 LTS]
+ - Version: [e.g. 24.4.5 LTS]
 
 **Client (please complete the following information):**
  - Device: [e.g. Samsung Galaxy S26]
