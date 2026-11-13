@@ -24,6 +24,7 @@ import (
 	"github.com/libost/bandori-tg/events"
 	"github.com/libost/bandori-tg/gacha"
 	"github.com/libost/bandori-tg/songs"
+	"github.com/libost/bandori-tg/songs/meta"
 	"github.com/libost/bandori-tg/text"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
@@ -125,6 +126,7 @@ func main() {
 	events.AddHandlers(dispatcher)
 	cards.AddHandlers(dispatcher)
 	songs.AddHandlers(dispatcher)
+	meta.AddHandlers(dispatcher)
 	gacha.AddHandlers(dispatcher)
 	comic.AddHandlers(dispatcher)
 	characters.AddHandlers(dispatcher)

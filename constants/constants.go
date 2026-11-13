@@ -666,6 +666,47 @@ type DetailItem struct {
 	ResourceId   *int   `json:"resourceId,omitempty"`
 }
 
+type SongMeta map[string]map[string]map[string]MetaFactors
+
+type MetaFactors [4]float64
+
+// NoFeverOut gives you the value of a, which is the factor for no Fever and outside of skill.
+func (m MetaFactors) NoFeverOut() float64 { return m[0] }
+
+// NoFeverIn gives you the value of b, which is the factor for no Fever and inside of skill.
+func (m MetaFactors) NoFeverIn() float64 { return m[1] }
+
+// FeverOut gives you the value of c, which is the factor for Fever and outside of skill.
+func (m MetaFactors) FeverOut() float64 { return m[2] }
+
+// FeverIn gives you the value of d, which is the factor for Fever and inside of skill.
+func (m MetaFactors) FeverIn() float64 { return m[3] }
+
+// ScoreFactor calculates the score factor based on whether Fever is active, the skill boost(default: 1.0), and the accuracy(default: 1.1).
+func (m MetaFactors) ScoreFactor(fever bool, skillBoost, accuracy float64) float64 {
+	if fever {
+		return accuracy * (m.FeverOut() + m.FeverIn()*(1+skillBoost))
+	}
+	return accuracy * (m.NoFeverOut() + m.NoFeverIn()*(1+skillBoost))
+}
+
+// SkillReliance calculates the skill reliance based on whether Fever is active. It returns a value between 0 and 1, where 0 means no reliance on skill and 1 means full reliance on skill.
+func (m MetaFactors) SkillReliance(fever bool) float64 {
+	if fever {
+		return m.FeverIn() / (m.FeverOut() + m.FeverIn())
+	}
+	return m.NoFeverIn() / (m.NoFeverOut() + m.NoFeverIn())
+}
+
+// Efficiency calculates the efficiency based on whether Fever is active, the skill boost(default: 1.0), the accuracy(default: 1.1), and the length of the song in seconds.
+//
+// length is the length of the song in seconds, and the formula is: efficiency = score factor * 60 / (length + 30). The +30 is a constant that represents the time it takes to start and end the song, which is not affected by Fever or skill boost.
+func (m MetaFactors) Efficiency(fever bool, skillBoost, accuracy, length float64) float64 {
+	score := m.ScoreFactor(fever, skillBoost, accuracy)
+	eff := score * 60 / (length + 30)
+	return eff
+}
+
 // Access emoji by using CharaEmoji[characterID-1], for example, CharaEmoji[0] will return the emoji for character ID 1.
 var CharaEmoji = [...]int{
 	6046130500299398386,

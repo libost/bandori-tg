@@ -40,6 +40,7 @@ var Gacha C.GachaData
 var Rates C.RatesData
 var Songs C.SongsData
 var Comic C.ComicData
+var SongsMeta C.SongMeta
 var REventsKeys []string
 var RGachaKeys []string
 var SongsKeysJP []string
@@ -108,6 +109,32 @@ func ReadComic() C.ComicData {
 	return Comic
 }
 
+// ReadSongsMeta returns a copy of the SongsMeta data structure.
+//
+// example usage:
+//
+//			  var songID = "1" // Yes! BanG_Dream! in this case
+//			  var difficulty = "3" // Expert in this case
+//			  var skilllength = "7" // 7 seconds skill length in this case
+//			  meta := utils.ReadSongsMeta()
+//			  factors, ok := meta[songID][difficulty][skilllength]
+//			  if !ok {
+//				   fmt.Println("Song meta not found for the given parameters")
+//			  }
+//			  fmt.Println("Factors:", factors)
+//			  fmt.Println("Score Factor without Fever:", factors.ScoreFactor(false, 1.0, 1.1))
+//			  fmt.Println("Score Factor with Fever:", factors.ScoreFactor(true, 1.0, 1.1))
+//			  fmt.Println("Skill Reliance without Fever:", factors.SkillReliance(false))
+//			  fmt.Println("Skill Reliance with Fever:", factors.SkillReliance(true))
+//			  length := 120.0 // Example song length in seconds, you should get the actual length from the song data
+//		      efficiency := factors.Efficiency(true, 1.0, 1.1, length)
+//		      fmt.Println("Efficiency with Fever:", efficiency)
+//	       // For a more "close to bestdori" result, you should turn every result into a percentage and round it to the nearest integer, as bestdori does.
+func ReadSongsMeta() C.SongMeta {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return SongsMeta
+}
 func ReadREventsKeys() []string {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
@@ -120,7 +147,7 @@ func ReadRGachasKeys() []string {
 	return append([]string(nil), RGachaKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData, snapshotComic C.ComicData) {
+func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData, snapshotSongsMeta C.SongMeta, snapshotComic C.ComicData) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
@@ -133,6 +160,7 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	Gacha = snapshotGacha
 	Rates = snapshotRates
 	Songs = snapshotSongs
+	SongsMeta = snapshotSongsMeta
 	Comic = snapshotComic
 
 	REventsKeys = make([]string, 0, len(Recent.Events))
@@ -185,6 +213,7 @@ func InitLists() error {
 	var snapshotRates C.RatesData
 	var snapshotSongs C.SongsData
 	var snapshotComic C.ComicData
+	var snapshotSongsMeta C.SongMeta
 
 	data := []fetchTask{
 		{URL: "https://bestdori.com/api/bands/all.1.json", Target: &snapshotBand},
@@ -197,6 +226,7 @@ func InitLists() error {
 		{URL: "https://bestdori.com/api/tracker/rates.json", Target: &snapshotRates},
 		{URL: "https://bestdori.com/api/songs/all.5.json", Target: &snapshotSongs},
 		{URL: "https://bestdori.com/api/comics/all.5.json", Target: &snapshotComic},
+		{URL: "https://bestdori.com/api/songs/meta/all.5.json", Target: &snapshotSongsMeta},
 	}
 
 	eg, gCtx := errgroup.WithContext(ctx)
@@ -211,7 +241,7 @@ func InitLists() error {
 		return err
 	}
 
-	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotComic)
+	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotSongsMeta, snapshotComic)
 	log.Printf("All lists initialized successfully.")
 	return nil
 }
