@@ -1,11 +1,13 @@
 package meta
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	C "github.com/libost/bandori-tg/constants"
 	I "github.com/libost/bandori-tg/i18n"
@@ -21,10 +23,13 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 }
 
 func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	if len(ctx.Args()) < 2 {
 		ctx.EffectiveMessage.Reply(b, "Please provide a song ID. Usage: /meta <song_id>", nil)
 		return nil
 	}
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	ridx := utils.IndexHelper(regionCode)
 	songId := ctx.Args()[1]
@@ -101,11 +106,11 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	length := songMap.Length
 	effStr := make([]string, len(difficultyMap)+1)
-	effStr[0] = "Efficiency"
+	effStr[0] = I.GetLocalisedString("songs.meta.efficiency", langCode)
 	scoreStr := make([]string, len(difficultyMap)+1)
-	scoreStr[0] = "Score Factor"
+	scoreStr[0] = I.GetLocalisedString("songs.meta.score_factor", langCode)
 	srStr := make([]string, len(difficultyMap)+1)
-	srStr[0] = "Skill Reliance"
+	srStr[0] = I.GetLocalisedString("songs.meta.skill_reliance", langCode)
 	cells := make([][]gotgbot.RichBlockTableCell, 0, 6)
 	header := make([]gotgbot.RichBlockTableCell, len(difficultyMap)+1)
 	header[0] = gotgbot.RichBlockTableCell{
@@ -115,8 +120,12 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	bpmStr := make([]string, len(difficultyMap)+1)
 	noteStr := make([]string, len(difficultyMap)+1)
-	bpmStr[0] = "BPM"
-	noteStr[0] = "Notes"
+	npsStr := make([]string, len(difficultyMap)+1)
+	lengthStr := make([]string, len(difficultyMap)+1)
+	bpmStr[0] = I.GetLocalisedString("songs.meta.bpm", langCode)
+	noteStr[0] = I.GetLocalisedString("songs.meta.note", langCode)
+	npsStr[0] = I.GetLocalisedString("songs.meta.nps", langCode)
+	lengthStr[0] = I.GetLocalisedString("songs.meta.length", langCode)
 	for i, difficulty := range difficultyMap {
 		effStr[i+1] = strconv.Itoa(int(math.Round(factors[i].Efficiency(true, 1.0, 1.1, length)*100))) + "%"
 		scoreStr[i+1] = strconv.Itoa(int(math.Round(factors[i].ScoreFactor(true, 1.0, 1.1)*100))) + "%"
@@ -128,6 +137,8 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		bpmStr[i+1] = strconv.Itoa(difficulty.Bpm)
 		noteStr[i+1] = strconv.Itoa(difficulty.Note)
+		npsStr[i+1] = fmt.Sprintf("%.1f", float64(difficulty.Note)/float64(length))
+		lengthStr[i+1] = timeCalc(length)
 	}
 	cells = append(cells, header)
 
@@ -142,8 +153,10 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		cells = append(cells, row)
 	}
 
+	appendRow(lengthStr)
 	appendRow(bpmStr)
 	appendRow(noteStr)
+	appendRow(npsStr)
 	appendRow(effStr)
 	appendRow(scoreStr)
 	appendRow(srStr)
@@ -168,10 +181,20 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			},
 		},
 	}
-	_, err = b.SendRichMessage(ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
+	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
 	return err
+}
+
+func timeCalc(length float64) string {
+	var i int
+	for i = range 100 {
+		if length-60*float64(i) < 60 {
+			return fmt.Sprintf("%d:%04.1f", i, length-60*float64(i))
+		}
+	}
+	return "0:00"
 }

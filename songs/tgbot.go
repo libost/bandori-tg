@@ -19,20 +19,7 @@ import (
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
 	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
-	"github.com/sahilm/fuzzy"
 )
-
-func FuzzySearch(query string, songs []string) []string {
-	fuzzyResults := fuzzy.Find(query, songs)
-	var results []string
-	for _, result := range fuzzyResults {
-		results = append(results, result.Str)
-	}
-	if len(results) > 5 {
-		results = results[:5]
-	}
-	return results
-}
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("search", searchCommand))
