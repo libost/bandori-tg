@@ -5,8 +5,10 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"strings"
 
 	C "github.com/libost/bandori-tg/constants"
+	I "github.com/libost/bandori-tg/i18n"
 	"github.com/libost/bandori-tg/songs"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/gotgbot/v2"
@@ -19,8 +21,44 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 }
 
 func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
+	if len(ctx.Args()) < 2 {
+		ctx.EffectiveMessage.Reply(b, "Please provide a song ID. Usage: /meta <song_id>", nil)
+		return nil
+	}
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	ridx := utils.IndexHelper(regionCode)
+	songId := ctx.Args()[1]
+	_, err := strconv.Atoi(songId)
+	if err != nil {
+		var searchStr strings.Builder
+		for i, arg := range ctx.Args()[1:] {
+			searchStr.WriteString(arg)
+			if i < len(ctx.Args())-2 {
+				searchStr.WriteString(" ")
+			}
+		}
+		index := utils.NewSearchIndex(utils.SongsKeys)
+		songs := index.Search(searchStr.String())
+		if len(songs) == 0 {
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf("No results found for '%s'.", searchStr.String()), nil)
+			return nil
+		}
+		for _, song := range songs {
+			if ridx == 0 {
+				if song.Item.Name == "" {
+					continue
+				}
+				songId = strconv.Itoa(song.Item.ID)
+				break
+			}
+			if song.Item.Aliases[ridx-1] == "" {
+				continue
+			}
+			songId = strconv.Itoa(song.Item.ID)
+			break
+		}
+	}
 	meta := utils.ReadSongsMeta()
-	songId := "1"      // Temporary hardcoded song ID for demonstration purposes
 	skilllength := "7" // Temporary hardcoded skill length for demonstration purposes
 
 	songMap, err := songs.GetDetailedSong(songId)

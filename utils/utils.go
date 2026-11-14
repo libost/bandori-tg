@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -41,13 +42,9 @@ var Rates C.RatesData
 var Songs C.SongsData
 var Comic C.ComicData
 var SongsMeta C.SongMeta
+var SongsKeys []*Item
 var REventsKeys []string
 var RGachaKeys []string
-var SongsKeysJP []string
-var SongsKeysEN []string
-var SongsKeysCN []string
-var SongsKeysKR []string
-var SongsKeysTW []string
 
 func ReadBand() C.BandData {
 	dataMu.RLock()
@@ -135,6 +132,7 @@ func ReadSongsMeta() C.SongMeta {
 	defer dataMu.RUnlock()
 	return SongsMeta
 }
+
 func ReadREventsKeys() []string {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
@@ -175,27 +173,15 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	}
 	sort.Strings(RGachaKeys)
 
-	SongsKeysJP = make([]string, 0, len(Songs))
-	SongsKeysCN = make([]string, 0, len(Songs))
-	SongsKeysEN = make([]string, 0, len(Songs))
-	SongsKeysKR = make([]string, 0, len(Songs))
-	SongsKeysTW = make([]string, 0, len(Songs))
-	for k := range Songs {
-		SongsKeysJP = append(SongsKeysJP, Songs[k].MusicTitle[0])
-		SongsKeysEN = append(SongsKeysEN, Songs[k].MusicTitle[1])
-		SongsKeysTW = append(SongsKeysTW, Songs[k].MusicTitle[2])
-		SongsKeysCN = append(SongsKeysCN, Songs[k].MusicTitle[3])
-		SongsKeysKR = append(SongsKeysKR, Songs[k].MusicTitle[4])
+	SongsKeys = make([]*Item, 0, len(Songs))
+	for i, k := range Songs {
+		idx, _ := strconv.Atoi(i)
+		SongsKeys = append(SongsKeys, &Item{
+			ID:      idx,
+			Name:    k.MusicTitle[0],
+			Aliases: k.MusicTitle[1:],
+		})
 	}
-	sort.Strings(SongsKeysJP)
-
-	sort.Strings(SongsKeysEN)
-
-	sort.Strings(SongsKeysCN)
-
-	sort.Strings(SongsKeysKR)
-
-	sort.Strings(SongsKeysTW)
 
 }
 
