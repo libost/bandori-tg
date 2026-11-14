@@ -199,7 +199,9 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	img, err := generateGachaImage(results)
 	if err != nil {
 		log.Printf("Error generating gacha image for ID %s: %v", gachaId, err)
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return err
 	}
 
@@ -207,7 +209,9 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	err = png.Encode(&buf, img)
 	if err != nil {
 		log.Printf("Error encoding gacha image for ID %s: %v", gachaId, err)
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
 		return err
 	}
 
@@ -219,6 +223,11 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
+	}
 	return err
 }
 
@@ -530,5 +539,10 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
+			ParseMode: "HTML",
+		})
+	}
 	return err
 }
