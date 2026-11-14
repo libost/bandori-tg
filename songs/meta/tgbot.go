@@ -100,33 +100,12 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		factors[i] = difficultyMeta
 	}
 	length := songMap.Length
-	efficiencies := make([]int, len(difficultyMap))
-	for i := range difficultyMap {
-		efficiencies[i] = int(math.Round(factors[i].Efficiency(true, 1.0, 1.1, length) * 100))
-	}
-	effStr := make([]string, len(efficiencies)+1)
+	effStr := make([]string, len(difficultyMap)+1)
 	effStr[0] = "Efficiency"
-	for i, eff := range efficiencies {
-		effStr[i+1] = strconv.Itoa(eff) + "%"
-	}
-	scores := make([]int, len(difficultyMap))
-	for i := range difficultyMap {
-		scores[i] = int(math.Round(factors[i].ScoreFactor(true, 1.0, 1.1) * 100))
-	}
-	scoreStr := make([]string, len(scores)+1)
+	scoreStr := make([]string, len(difficultyMap)+1)
 	scoreStr[0] = "Score Factor"
-	for i, score := range scores {
-		scoreStr[i+1] = strconv.Itoa(score) + "%"
-	}
-	srs := make([]int, len(difficultyMap))
-	for i := range difficultyMap {
-		srs[i] = int(math.Round(factors[i].SkillReliance(true) * 100))
-	}
-	srStr := make([]string, len(srs)+1)
+	srStr := make([]string, len(difficultyMap)+1)
 	srStr[0] = "Skill Reliance"
-	for i, sr := range srs {
-		srStr[i+1] = strconv.Itoa(sr) + "%"
-	}
 	cells := make([][]gotgbot.RichBlockTableCell, 0, 6)
 	header := make([]gotgbot.RichBlockTableCell, len(difficultyMap)+1)
 	header[0] = gotgbot.RichBlockTableCell{
@@ -134,12 +113,21 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		IsHeader: true,
 		Align:    "center",
 	}
+	bpmStr := make([]string, len(difficultyMap)+1)
+	noteStr := make([]string, len(difficultyMap)+1)
+	bpmStr[0] = "BPM"
+	noteStr[0] = "Notes"
 	for i, difficulty := range difficultyMap {
+		effStr[i+1] = strconv.Itoa(int(math.Round(factors[i].Efficiency(true, 1.0, 1.1, length)*100))) + "%"
+		scoreStr[i+1] = strconv.Itoa(int(math.Round(factors[i].ScoreFactor(true, 1.0, 1.1)*100))) + "%"
+		srStr[i+1] = strconv.Itoa(int(math.Round(factors[i].SkillReliance(true)*100))) + "%"
 		header[i+1] = gotgbot.RichBlockTableCell{
 			Text:     gotgbot.RichTextString(strconv.Itoa(difficulty.PlayLevel)),
 			IsHeader: true,
 			Align:    "center",
 		}
+		bpmStr[i+1] = strconv.Itoa(difficulty.Bpm)
+		noteStr[i+1] = strconv.Itoa(difficulty.Note)
 	}
 	cells = append(cells, header)
 
@@ -154,22 +142,6 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		cells = append(cells, row)
 	}
 
-	bpms := make([]int, len(difficultyMap))
-	notes := make([]int, len(difficultyMap))
-	for i, difficulty := range difficultyMap {
-		bpms[i] = difficulty.Bpm
-		notes[i] = difficulty.Note
-	}
-	bpmStr := make([]string, len(bpms)+1)
-	noteStr := make([]string, len(notes)+1)
-	bpmStr[0] = "BPM"
-	noteStr[0] = "Notes"
-	for i, bpm := range bpms {
-		bpmStr[i+1] = strconv.Itoa(bpm)
-	}
-	for i, note := range notes {
-		noteStr[i+1] = strconv.Itoa(note)
-	}
 	appendRow(bpmStr)
 	appendRow(noteStr)
 	appendRow(effStr)
