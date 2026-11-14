@@ -429,6 +429,16 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songId string, region, la
 			gotgbot.InputRichBlockTable{
 				Cells: infoCells,
 			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockButtons{
+				Buttons: []gotgbot.RichMessageButton{
+					{
+						Text:         gotgbot.RichTextString(I.GetLocalisedString("songs.get_song_meta", langCode)),
+						Style:        "primary",
+						CallbackData: "meta_" + songId + "_" + region,
+					},
+				},
+			},
 		},
 	}
 	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{

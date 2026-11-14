@@ -16,10 +16,12 @@ import (
 	"github.com/libost/gotgbot/v2"
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
+	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
 )
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("meta", metaCommand))
+	dispatcher.AddHandler(handlers.NewCallback(callbackquery.Prefix("meta_"), metaCallback))
 }
 
 func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -63,6 +65,32 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			break
 		}
 	}
+	return sendMetaMessage(b, ctx, ctxTimeout, songId, regionCode, langCode)
+}
+
+func metaCallback(b *gotgbot.Bot, ctx *ext.Context) error {
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	data := ctx.CallbackQuery.Data
+	parts := strings.Split(data, "_")
+	if len(parts) < 3 {
+		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+			Text:      "Invalid callback data.",
+			ShowAlert: true,
+		})
+		return nil
+	}
+	songId := parts[1]
+	region := parts[2]
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
+		Text:      I.GetLocalisedString("songs.meta.processing", langCode),
+		ShowAlert: false,
+	})
+	return sendMetaMessage(b, ctx, ctxTimeout, songId, region, langCode)
+}
+
+func sendMetaMessage(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, songId, region, langCode string) error {
 	meta := utils.ReadSongsMeta()
 	skilllength := "7" // Temporary hardcoded skill length for demonstration purposes
 
@@ -179,6 +207,16 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			gotgbot.InputRichBlockTable{
 				Cells: cells,
 			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockButtons{
+				Buttons: []gotgbot.RichMessageButton{
+					{
+						Text:         gotgbot.RichTextString(I.GetLocalisedString("songs.meta.get_song_info_button", langCode)),
+						Style:        "primary",
+						CallbackData: "song_" + songId + "_" + region,
+					},
+				},
+			},
 		},
 	}
 	_, err = b.SendRichMessageWithContext(ctxTimeout, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
@@ -190,8 +228,7 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func timeCalc(length float64) string {
-	var i int
-	for i = range 100 {
+	for i := range 100 {
 		if length-60*float64(i) < 60 {
 			return fmt.Sprintf("%d:%04.1f", i, length-60*float64(i))
 		}
