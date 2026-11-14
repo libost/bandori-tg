@@ -157,7 +157,20 @@
         "tie_up": "額外曲",
         "countdown_end": "已發布",
         "countdown_not_end": "發布於 %[1]d天 %[2]d小時 %[3]d分鐘 %[4]d秒後",
-        "loading": "載入中..."
+        "loading": "載入中...",
+        "get_song_meta": "獲取歌曲元信息",
+        "meta": {
+            "difficulty": "難度",
+            "efficiency": "效率",
+            "score_factor": "分數",
+            "bpm": "BPM",
+            "note": "N",
+            "nps": "NPS",
+            "length": "長度",
+            "skill_reliance": "SR",
+            "get_song_info_button": "獲取歌曲詳情",
+            "processing": "處理中..."
+        }
     },
     "generic": {
         "error": "發生錯誤，請稍後再試。錯誤信息: \n<code>%[1]s</code>"

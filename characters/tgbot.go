@@ -60,7 +60,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	characterId := ctx.Args()[1]
 	idNum, err := strconv.Atoi(characterId)
 	if err != nil {
-		index := C.NewSearchIndex(C.CharaSearch)
+		index := utils.NewSearchIndex(utils.CharaSearch)
 		var queryString strings.Builder
 		for i := range len(ctx.Args()) - 1 {
 			queryString.WriteString(ctx.Args()[i+1])

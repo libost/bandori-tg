@@ -160,7 +160,20 @@
         "tie_up": "额外曲",
         "countdown_end": "已发布",
         "countdown_not_end": "发布于 %[1]d天 %[2]d小时 %[3]d分钟 %[4]d秒后",
-        "loading": "加载中..."
+        "loading": "加载中...",
+        "get_song_meta": "获取歌曲元信息",
+        "meta": {
+            "difficulty": "难度",
+            "length": "时长",
+            "efficiency": "效率",
+            "score_factor": "得分",
+            "skill_reliance": "SR",
+            "bpm": "BPM",
+            "note": "N",
+            "nps": "NPS",
+            "get_song_info_button": "获取歌曲信息",
+            "processing": "处理中..."
+        }
     },
     "generic": {
         "error": "发生错误，请稍后再试。错误信息: \n<code>%[1]s</code>"
