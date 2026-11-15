@@ -321,7 +321,7 @@ func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XM
 		if attr.Name.Local != "class" {
 			continue
 		}
-		for _, className := range strings.Fields(attr.Value) {
+		for className := range strings.FieldsSeq(attr.Value) {
 			for key, value := range cssRules[className] {
 				newAttrs = append(newAttrs, xml.Attr{
 					Name:  xml.Name{Local: key},
@@ -411,7 +411,7 @@ func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XM
 
 func parseCSSRules(content string) map[string]map[string]string {
 	rules := make(map[string]map[string]string)
-	for _, rule := range strings.Split(content, "}") {
+	for rule := range strings.SplitSeq(content, "}") {
 		parts := strings.SplitN(rule, "{", 2)
 		if len(parts) != 2 {
 			continue

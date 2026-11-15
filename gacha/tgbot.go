@@ -191,6 +191,9 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	results, err := gachaHelper(gachaDetailed, regionCode, gachaDetailed.PaymentMethods[paymentIndex])
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "no gacha details found for region code:") {
+
+		}
 		log.Printf("Error generating gacha results for ID %s: %v", gachaId, err)
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
@@ -532,8 +535,11 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	if len(pickupCards) > 0 {
 		richMessage.Blocks = append(richMessage.Blocks, pickupHeading, pickupSection, gotgbot.InputRichBlockDivider{})
 	}
-	richMessage.Blocks = append(richMessage.Blocks, buttons...)
-
+	if len(gachaDetailed.Rates) >= qindex {
+		if gachaDetailed.Rates[qindex] != nil {
+			richMessage.Blocks = append(richMessage.Blocks, buttons...)
+		}
+	}
 	_, err = b.SendRichMessageWithContext(context, ctx.EffectiveChat.Id, richMessage, &gotgbot.SendRichMessageOpts{
 		ReplyParameters: &gotgbot.ReplyParameters{
 			MessageId: ctx.EffectiveMessage.MessageId,
