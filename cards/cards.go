@@ -308,7 +308,6 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XMLNode {
 	tag := strings.ToLower(node.XMLName.Local)
 
-	// 过滤 oksvg 不需要或不支持的标签
 	if tag == "metadata" || tag == "image" || tag == "style" || (tag == "defs" && len(node.Children) == 0) {
 		return nil
 	}
@@ -331,7 +330,6 @@ func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XM
 		}
 	}
 
-	// 处理属性，将 style="key:val;" 转为标准的 SVG 属性
 	for _, attr := range node.Attrs {
 		if attr.Name.Local == "style" {
 			styles := strings.SplitSeq(attr.Value, ";")
@@ -390,14 +388,12 @@ func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XM
 		})
 	}
 
-	// 如果当前图层设置了 display:none，直接丢弃该节点
 	if isDisplayNone {
 		return nil
 	}
 
 	node.Attrs = newAttrs
 
-	// 递归处理子节点
 	var newChildren []XMLNode
 	for _, child := range node.Children {
 		if processed := processNodeWithCSS(child, cssRules); processed != nil {
@@ -465,7 +461,7 @@ func cleanSVGXML(input string) (string, error) {
 	collectCSSRules(root, cssRules)
 	cleanedRoot := processNodeWithCSS(root, cssRules)
 	if cleanedRoot == nil {
-		return "", fmt.Errorf("清洗后 SVG 内容为空")
+		return "", fmt.Errorf("all nodes were filtered out, resulting in an empty SVG")
 	}
 
 	var buf bytes.Buffer
