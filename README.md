@@ -41,6 +41,7 @@
 | 定时任务 | [netresearch/go-cron](https://github.com/netresearch/go-cron) |
 | 日志 | [lumberjack](https://github.com/natefinch/lumberjack)（滚动日志） |
 | 配置 | YAML（[goccy/go-yaml](https://github.com/goccy/go-yaml)） |
+| 日文转罗马字 | [libost/kanjiconv](https://github.com/libost/kanjiconv) |
 
 ## 📁 目录结构
 
