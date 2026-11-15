@@ -228,6 +228,10 @@ func sendMetaMessage(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Contex
 			MessageId: ctx.EffectiveMessage.MessageId,
 		},
 	})
+	if err != nil {
+		log.Printf("Error occurred while sending rich message: %v", err)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
+	}
 	return err
 }
 
