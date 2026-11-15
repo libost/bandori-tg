@@ -64,7 +64,7 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	index := utils.NewSearchIndex(utils.SongsKeys)
+	index := utils.NewSearchIndex(utils.ReadSongsKeys())
 	songs := index.Search(searchStr.String())
 	if len(songs) == 0 {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
@@ -72,8 +72,9 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	qidx := utils.IndexHelper(qlangCode)
 	var results strings.Builder
+	var validCount int
 	for i, song := range songs {
-		if i >= 5 {
+		if validCount >= 5 {
 			break
 		}
 		if qidx == 0 {
@@ -82,11 +83,16 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Name)
 		} else {
-			if song.Item.Aliases[qidx-1] == "" {
+			if song.Item.Aliases[qidx] == "" {
 				continue
 			}
-			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Aliases[qidx-1])
+			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Aliases[qidx])
 		}
+		validCount++
+	}
+	if validCount == 0 {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		return nil
 	}
 	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(qlangCode))+results.String(), nil)
 	if err != nil {
@@ -143,14 +149,32 @@ func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 	}
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	index := utils.NewSearchIndex(utils.SongsKeys)
+	qidx := utils.IndexHelper(qlangCode)
+	index := utils.NewSearchIndex(utils.ReadSongsKeys())
 	songs := index.Search(searchStr.String())
 
 	if len(songs) == 0 {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
 		return nil
 	}
-	matchedSong := strconv.Itoa(songs[0].Item.ID)
+	var matchedSong string
+	for _, song := range songs {
+		if qidx == 0 {
+			if song.Item.Name != "" {
+				matchedSong = strconv.Itoa(song.Item.ID)
+				break
+			}
+		} else {
+			if song.Item.Aliases[qidx] != "" {
+				matchedSong = strconv.Itoa(song.Item.ID)
+				break
+			}
+		}
+	}
+	if matchedSong == "" {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		return nil
+	}
 	err := sendSongDetails(b, ctx, matchedSong, qlangCode, langCode)
 	return err
 }

@@ -18,6 +18,7 @@ import (
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/version"
 	"github.com/libost/gotgbot/v2"
+	"github.com/libost/kanjiconv"
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 )
@@ -133,6 +134,12 @@ func ReadSongsMeta() C.SongMeta {
 	return SongsMeta
 }
 
+func ReadSongsKeys() []*Item {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return append([]*Item(nil), SongsKeys...)
+}
+
 func ReadREventsKeys() []string {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
@@ -174,12 +181,16 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	sort.Strings(RGachaKeys)
 
 	SongsKeys = make([]*Item, 0, len(Songs))
+	t := kanjiconv.InitTokenizer()
 	for i, k := range Songs {
 		idx, _ := strconv.Atoi(i)
+		romanizedTitle := kanjiconv.ConvertJapaneseToRoman(t, k.MusicTitle[0], &kanjiconv.ConvertOptions{
+			CleanNN: true,
+		})
 		SongsKeys = append(SongsKeys, &Item{
 			ID:      idx,
 			Name:    k.MusicTitle[0],
-			Aliases: k.MusicTitle[1:],
+			Aliases: append([]string{romanizedTitle}, k.MusicTitle[1:]...),
 		})
 	}
 

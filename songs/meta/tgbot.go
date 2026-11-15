@@ -44,7 +44,7 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				searchStr.WriteString(" ")
 			}
 		}
-		index := utils.NewSearchIndex(utils.SongsKeys)
+		index := utils.NewSearchIndex(utils.ReadSongsKeys())
 		songs := index.Search(searchStr.String())
 		if len(songs) == 0 {
 			ctx.EffectiveMessage.Reply(b, fmt.Sprintf("No results found for '%s'.", searchStr.String()), nil)
@@ -52,17 +52,20 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		for _, song := range songs {
 			if ridx == 0 {
-				if song.Item.Name == "" {
-					continue
+				if song.Item.Name != "" {
+					songId = strconv.Itoa(song.Item.ID)
+					break
 				}
-				songId = strconv.Itoa(song.Item.ID)
-				break
+			} else {
+				if song.Item.Aliases[ridx] != "" {
+					songId = strconv.Itoa(song.Item.ID)
+					break
+				}
 			}
-			if song.Item.Aliases[ridx-1] == "" {
-				continue
-			}
-			songId = strconv.Itoa(song.Item.ID)
-			break
+		}
+		if songId == "" {
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
+			return nil
 		}
 	}
 	return sendMetaMessage(b, ctx, ctxTimeout, songId, regionCode, langCode)
@@ -142,7 +145,7 @@ func sendMetaMessage(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Contex
 	cells := make([][]gotgbot.RichBlockTableCell, 0, 6)
 	header := make([]gotgbot.RichBlockTableCell, len(difficultyMap)+1)
 	header[0] = gotgbot.RichBlockTableCell{
-		Text:     gotgbot.RichTextString("Difficulty"),
+		Text:     gotgbot.RichTextString(I.GetLocalisedString("songs.meta.difficulty", langCode)),
 		IsHeader: true,
 		Align:    "center",
 	}
@@ -188,15 +191,16 @@ func sendMetaMessage(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Contex
 	appendRow(effStr)
 	appendRow(scoreStr)
 	appendRow(srStr)
-	jacketURL, _, err := songs.GetJacket(songId, songMap.JacketImage[0], "jp")
+	jacketURL, _, err := songs.GetJacket(songId, songMap.JacketImage[0], region)
 	if err != nil {
 		log.Printf("Error occurred while fetching jacket URL: %v", err)
 		return err
 	}
+	ridx := utils.IndexHelper(region)
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
-				Text: gotgbot.RichTextString(fmt.Sprintf("Song Meta for %s", songMap.MusicTitle[0])),
+				Text: gotgbot.RichTextString(songMap.MusicTitle[ridx]),
 				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{

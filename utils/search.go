@@ -1,6 +1,8 @@
 package utils
 
-import "github.com/sahilm/fuzzy"
+import (
+	"github.com/sahilm/fuzzy"
+)
 
 type Item struct {
 	ID      int

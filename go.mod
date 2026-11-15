@@ -8,6 +8,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gogpu/gg v0.52.7
 	github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm
+	github.com/libost/kanjiconv v0.0.0-20261115071140-031280af33d8
 	github.com/netresearch/go-cron v0.19.0
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/tdewolff/canvas v0.0.0-20260923214215-09804640d00c
@@ -37,8 +38,12 @@ require (
 	github.com/go-text/typesetting v0.3.5 // indirect
 	github.com/gogpu/gpucontext v0.32.0 // indirect
 	github.com/gogpu/gputypes v0.8.2 // indirect
+	github.com/gojp/kana v0.1.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/ikawaha/kagome-dict v1.1.8 // indirect
+	github.com/ikawaha/kagome-dict/ipa v1.2.6 // indirect
+	github.com/ikawaha/kagome/v2 v2.11.1 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
