@@ -191,9 +191,6 @@ func gachaCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	results, err := gachaHelper(gachaDetailed, regionCode, gachaDetailed.PaymentMethods[paymentIndex])
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "no gacha details found for region code:") {
-
-		}
 		log.Printf("Error generating gacha results for ID %s: %v", gachaId, err)
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("gacha.api_error", langCode), nil)
 		return err
