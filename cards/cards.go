@@ -10,18 +10,17 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"math"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gogpu/gg"
+	"github.com/gogpu/gg/svg"
 	"github.com/gogpu/gg/text"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
-	"github.com/tdewolff/canvas"
-	"github.com/tdewolff/canvas/renderers/rasterizer"
 	"golang.org/x/image/draw"
 )
 
@@ -108,25 +107,21 @@ func getThumbCard(cardId string) (string, error) {
 	return "", fmt.Errorf("no valid thumbnail found for card ID %s", cardId)
 }
 
-func loadSVG(w, h float64, stream io.Reader) (image.Image, error) {
-	svgData, err := io.ReadAll(stream)
+func loadSVG(dc *gg.Context, targetX, targetY, w, h float64, stream io.Reader) error {
+	bytes, err := io.ReadAll(stream)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	svgStr, err := cleanSVGXML(string(svgData))
+	cleaned, err := cleanSVGXML(string(bytes))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	icon, err := canvas.ParseSVG(strings.NewReader(svgStr))
+	document, err := svg.Parse([]byte(cleaned))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	origW, origH := icon.Size()
-	dpmmW := w / origW
-	dpmmH := h / origH
-	dpmm := math.Min(dpmmW, dpmmH)
-	img := rasterizer.Draw(icon, canvas.DPMM(dpmm), canvas.DefaultColorSpace)
-	return img, nil
+	document.RenderTo(dc, targetX, targetY, w, h)
+	return nil
 }
 
 func drawScaledImage(dc *gg.Context, imgBuf image.Image, targetX, targetY, targetW, targetH float64) {
@@ -255,11 +250,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respAttrFrame.Body.Close()
-	attrFrameImg, err := loadSVG(46, 46, respAttrFrame.Body)
+	err = loadSVG(dc, 132, 2, 46, 46, respAttrFrame.Body)
 	if err != nil {
 		return nil, err
 	}
-	drawScaledImage(dc, attrFrameImg, 132, 2, 46, 46)
 	reqStar, err := http.NewRequestWithContext(context, http.MethodGet, starImg, nil)
 	if err != nil {
 		return nil, err
@@ -286,11 +280,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 			return nil, err
 		}
 		defer respBandFrame.Body.Close()
-		bandFrameImg, err := loadSVG(50, 50, respBandFrame.Body)
+		err = loadSVG(dc, 0, 0, 50, 50, respBandFrame.Body)
 		if err != nil {
 			return nil, err
 		}
-		drawScaledImage(dc, bandFrameImg, 0, 0, 50, 50)
 	}
 	font, err := utils.GetFontsFile("NotoSans-Regular.ttf")
 	if err != nil {
@@ -312,16 +305,31 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	return dc.Image(), nil
 }
 
-func processNode(node XMLNode) *XMLNode {
+func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XMLNode {
 	tag := strings.ToLower(node.XMLName.Local)
 
 	// 过滤 oksvg 不需要或不支持的标签
-	if tag == "metadata" || tag == "image" || (tag == "defs" && len(node.Children) == 0) {
+	if tag == "metadata" || tag == "image" || tag == "style" || (tag == "defs" && len(node.Children) == 0) {
 		return nil
 	}
 
 	var newAttrs []xml.Attr
 	isDisplayNone := false
+	hasZeroStrokeWidth := false
+
+	for _, attr := range node.Attrs {
+		if attr.Name.Local != "class" {
+			continue
+		}
+		for _, className := range strings.Fields(attr.Value) {
+			for key, value := range cssRules[className] {
+				newAttrs = append(newAttrs, xml.Attr{
+					Name:  xml.Name{Local: key},
+					Value: value,
+				})
+			}
+		}
+	}
 
 	// 处理属性，将 style="key:val;" 转为标准的 SVG 属性
 	for _, attr := range node.Attrs {
@@ -340,6 +348,11 @@ func processNode(node XMLNode) *XMLNode {
 					if k == "display" && v == "none" {
 						isDisplayNone = true
 					} else if k != "display" {
+						if k == "stroke-width" {
+							if width, err := strconv.ParseFloat(v, 64); err == nil && width == 0 {
+								hasZeroStrokeWidth = true
+							}
+						}
 						newAttrs = append(newAttrs, xml.Attr{
 							Name:  xml.Name{Local: k},
 							Value: v,
@@ -347,11 +360,34 @@ func processNode(node XMLNode) *XMLNode {
 					}
 				}
 			}
+		} else if attr.Name.Local == "class" {
+			continue
 		} else if attr.Name.Local == "display" && attr.Value == "none" {
 			isDisplayNone = true
 		} else {
+			if attr.Name.Local == "stroke-width" {
+				if width, err := strconv.ParseFloat(attr.Value, 64); err == nil && width == 0 {
+					hasZeroStrokeWidth = true
+				}
+			}
 			newAttrs = append(newAttrs, attr)
 		}
+	}
+
+	for _, attr := range newAttrs {
+		if attr.Name.Local != "stroke-width" {
+			continue
+		}
+		if width, err := strconv.ParseFloat(attr.Value, 64); err == nil && width == 0 {
+			hasZeroStrokeWidth = true
+			break
+		}
+	}
+	if hasZeroStrokeWidth {
+		newAttrs = append(newAttrs, xml.Attr{
+			Name:  xml.Name{Local: "stroke"},
+			Value: "none",
+		})
 	}
 
 	// 如果当前图层设置了 display:none，直接丢弃该节点
@@ -364,13 +400,51 @@ func processNode(node XMLNode) *XMLNode {
 	// 递归处理子节点
 	var newChildren []XMLNode
 	for _, child := range node.Children {
-		if processed := processNode(child); processed != nil {
+		if processed := processNodeWithCSS(child, cssRules); processed != nil {
 			newChildren = append(newChildren, *processed)
 		}
 	}
 	node.Children = newChildren
 
 	return &node
+}
+
+func parseCSSRules(content string) map[string]map[string]string {
+	rules := make(map[string]map[string]string)
+	for _, rule := range strings.Split(content, "}") {
+		parts := strings.SplitN(rule, "{", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		declarations := make(map[string]string)
+		for declaration := range strings.SplitSeq(parts[1], ";") {
+			kv := strings.SplitN(declaration, ":", 2)
+			if len(kv) != 2 {
+				continue
+			}
+			key := strings.TrimSpace(kv[0])
+			value := strings.TrimSpace(kv[1])
+			if key != "" && value != "" {
+				declarations[key] = value
+			}
+		}
+		for selector := range strings.SplitSeq(parts[0], ",") {
+			selector = strings.TrimSpace(selector)
+			if after, ok := strings.CutPrefix(selector, "."); ok {
+				rules[after] = declarations
+			}
+		}
+	}
+	return rules
+}
+
+func collectCSSRules(node XMLNode, rules map[string]map[string]string) {
+	if strings.EqualFold(node.XMLName.Local, "style") {
+		maps.Copy(rules, parseCSSRules(string(node.Content)))
+	}
+	for _, child := range node.Children {
+		collectCSSRules(child, rules)
+	}
 }
 
 func isValidRemoteAssetURL(raw string) bool {
@@ -387,7 +461,9 @@ func cleanSVGXML(input string) (string, error) {
 		return "", err
 	}
 
-	cleanedRoot := processNode(root)
+	cssRules := make(map[string]map[string]string)
+	collectCSSRules(root, cssRules)
+	cleanedRoot := processNodeWithCSS(root, cssRules)
 	if cleanedRoot == nil {
 		return "", fmt.Errorf("清洗后 SVG 内容为空")
 	}
