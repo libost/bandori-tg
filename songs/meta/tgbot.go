@@ -278,12 +278,3 @@ func sendMetaMessage(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Contex
 	}
 	return err
 }
-
-func timeCalc(length float64) string {
-	for i := range 100 {
-		if length-60*float64(i) < 60 {
-			return fmt.Sprintf("%d:%04.1f", i, length-60*float64(i))
-		}
-	}
-	return "0:00"
-}
