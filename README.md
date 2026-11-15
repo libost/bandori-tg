@@ -37,7 +37,7 @@
 | 语言 | Go 1.27 |
 | 框架 | [gotgbot(自有分支)](https://github.com/libost/gotgbot) (v2) |
 | 数据库 | SQLite（[modernc.org/sqlite](https://modernc.org/sqlite)，纯 Go 实现，支持 `CGO_ENABLED=0` 交叉编译） |
-| 图片生成 | [gogpu/gg](https://github.com/gogpu/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
+| 图片生成 | [gogpu/gg](https://github.com/gogpu/gg) |
 | 定时任务 | [netresearch/go-cron](https://github.com/netresearch/go-cron) |
 | 日志 | [lumberjack](https://github.com/natefinch/lumberjack)（滚动日志） |
 | 配置 | YAML（[goccy/go-yaml](https://github.com/goccy/go-yaml)） |
