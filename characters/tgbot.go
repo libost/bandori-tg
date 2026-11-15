@@ -95,7 +95,6 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			}
 		}
 	}
-	qlangCode = utils.ReverseIndexHelper(qidx)
 	bandData, err := band.GetBand(fmt.Sprintf("%d", characterDetails.BandID))
 	if err != nil {
 		return fmt.Errorf("failed to get band data for %s: %w", characterId, err)

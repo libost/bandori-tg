@@ -11,7 +11,7 @@ func GetSkill(skillID string) (C.Skill, error) {
 	skillMap := utils.ReadSkills()
 	skill, exists := skillMap[skillID]
 	if !exists {
-		return C.Skill{}, fmt.Errorf("Skill with ID %s not found", skillID)
+		return C.Skill{}, fmt.Errorf("skill with ID %s not found", skillID)
 	}
 	return skill, nil
 }

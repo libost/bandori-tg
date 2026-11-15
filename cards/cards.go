@@ -297,6 +297,9 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	fontSrc, err := text.NewFontSource(font)
+	if err != nil {
+		return nil, err
+	}
 	dc.SetFont(fontSrc.Face(32))
 	dc.SetHexColor("#000000")
 	var inputStr string

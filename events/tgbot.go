@@ -303,6 +303,11 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 		return err
 	}
 	img2, err := generateEventBonusCards(eventDetailed)
+	if err != nil {
+		log.Printf("Error generating event bonus cards image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
 	var buf2 bytes.Buffer
 	err = png.Encode(&buf2, img2)
 	if err != nil {

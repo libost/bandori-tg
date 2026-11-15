@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 	"embed"
-	"fmt"
+	"errors"
 	"sync"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -138,13 +138,13 @@ func Init(request string, id int64, other map[string]any) (map[string]any, error
 	case "set_display_language":
 		langCode, ok := other["lang_code"].(string)
 		if !ok {
-			return nil, fmt.Errorf("Invalid lang_code type")
+			return nil, errors.New("invalid lang_code type")
 		}
 		return setDisplayLanguageCase(id, langCode, conn)
 	case "set_query_language":
 		langCode, ok := other["lang_code"].(string)
 		if !ok {
-			return nil, fmt.Errorf("Invalid lang_code type")
+			return nil, errors.New("invalid lang_code type")
 		}
 		return setQueryLanguageCase(id, langCode, conn)
 	case "setadmin":
@@ -152,6 +152,6 @@ func Init(request string, id int64, other map[string]any) (map[string]any, error
 	case "get_user_group":
 		return getUserGroupCase(id, conn)
 	default:
-		return nil, fmt.Errorf("Unknown request: %s", request)
+		return nil, errors.New("unknown request: " + request)
 	}
 }

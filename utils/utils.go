@@ -246,21 +246,21 @@ func InitLists() error {
 func fetchAndDecode(ctx context.Context, client *http.Client, url string, target any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return fmt.Errorf("Failed to create request [%s]: %w", url, err)
+		return fmt.Errorf("failed to create request [%s]: %w", url, err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to send request [%s]: %w", url, err)
+		return fmt.Errorf("failed to send request [%s]: %w", url, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
+		return fmt.Errorf("unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
 	}
 
 	if err := json.UnmarshalRead(resp.Body, target); err != nil {
-		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
+		return fmt.Errorf("failed to decode JSON [%s]: %w", url, err)
 	}
 
 	return nil
@@ -306,7 +306,7 @@ func InitHttpClient() error {
 				},
 			}
 		default:
-			return fmt.Errorf("Unsupported proxy type: %s", config.Proxy.Type)
+			return fmt.Errorf("unsupported proxy type: %s", config.Proxy.Type)
 		}
 	} else {
 		HttpClient = &http.Client{
@@ -433,11 +433,7 @@ func IsValidPNGUrl(url string) bool {
 	}
 
 	contentType := resp.Header.Get("Content-Type")
-	if contentType == "image/png" {
-		return true
-	}
-
-	return false
+	return contentType == "image/png"
 }
 
 // TimeCheck checks if the given timestamp is within the acceptable range defined by ApiTimeMaxInterval.

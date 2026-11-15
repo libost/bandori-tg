@@ -35,7 +35,7 @@ func setDisplayLanguageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		MessageId: ctx.CallbackQuery.Message.GetMessageId(),
 		Text:      I.GetLocalisedString("callback.setlang_success", langCode),
 	})
-	return nil
+	return err
 }
 
 func setQueryLanguageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
@@ -62,7 +62,7 @@ func setQueryLanguageHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		MessageId: ctx.CallbackQuery.Message.GetMessageId(),
 		Text:      I.GetLocalisedString("callback.setlang_success", displayLangCode),
 	})
-	return nil
+	return err
 }
 
 func setDisplayLanguageIdHandler(b *gotgbot.Bot, ctx *ext.Context) error {

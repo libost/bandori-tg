@@ -209,11 +209,11 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	userGroup, ok := data["user_group"].(string)
 	if !ok {
 		ctx.EffectiveMessage.Reply(b, "Error: Invalid user group type", nil)
-		return fmt.Errorf("Invalid user_group type")
+		return fmt.Errorf("invalid user_group type")
 	}
 	if userGroup != "admin" {
 		ctx.EffectiveMessage.Reply(b, "Error: You are not an admin", nil)
-		return fmt.Errorf("User is not an admin")
+		return fmt.Errorf("user is not an admin")
 	}
 	supportedLanguages, _, err := I.GetAllSupportedLanguages()
 	if err != nil {
