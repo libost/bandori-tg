@@ -194,6 +194,9 @@ go build ./...
 
 版本信息在构建时通过 `-ldflags` 注入（`version.Version` / `BuildTime` / `GitCommit` / `Branch`），可通过 `/about` 指令或 `bandori-tg version` 查看。
 
+> [!NOTE]
+> 自版本v1.5起，通过Github Releases发布的二进制文件已不再包含内置字体文件(i.e. 构建时使用标签 `fonts_detached`)，首次运行时会自动下载所需字体文件到 `res/fonts/` 目录。如需恢复原有的行为（即内置字体文件），请自行从源码构建。
+
 ## 开发路线
 
 - [x] 新闻页面
