@@ -268,7 +268,7 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 			httpClient = &http.Client{
 				Timeout: time.Second * 30,
 				Transport: &http.Transport{
-					Dial: dialer.Dial,
+					DialContext: dialer.(proxy.ContextDialer).DialContext,
 				},
 			}
 			log.Printf("using SOCKS5 proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)
@@ -277,7 +277,8 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 			httpClient = &http.Client{
 				Timeout: time.Second * 30,
 				Transport: &http.Transport{
-					Proxy: http.ProxyURL(proxyUrl),
+					DialContext: http.DefaultClient.Transport.(*http.Transport).DialContext,
+					Proxy:       http.ProxyURL(proxyUrl),
 				},
 			}
 			log.Printf("using HTTP proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)

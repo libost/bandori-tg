@@ -7,6 +7,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	C "github.com/libost/bandori-tg/constants"
@@ -27,11 +28,32 @@ func AddHandlers(dispatcher *ext.Dispatcher) {
 func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) < 2 {
-		ctx.EffectiveMessage.Reply(b, "Please provide a song ID. Usage: /meta <song_id>", nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("songs.meta.usage", langCode), nil)
 		return nil
 	}
-	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	ridx := utils.IndexHelper(regionCode)
 	songId := ctx.Args()[1]
@@ -47,7 +69,7 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		index := utils.NewSearchIndex(utils.ReadSongsKeys())
 		songs := index.Search(searchStr.String())
 		if len(songs) == 0 {
-			ctx.EffectiveMessage.Reply(b, fmt.Sprintf("No results found for '%s'.", searchStr.String()), nil)
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 			return nil
 		}
 		for _, song := range songs {
@@ -74,12 +96,34 @@ func metaCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 func metaCallback(b *gotgbot.Bot, ctx *ext.Context) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
+	stopAction := make(chan struct{})
+	var stopActionOnce sync.Once
+	stopActionLoop := func() {
+		stopActionOnce.Do(func() {
+			close(stopAction)
+		})
+	}
+	go func() {
+		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+		ticker := time.NewTicker(4 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
+			case <-stopAction:
+				return
+			}
+		}
+	}()
+	defer stopActionLoop()
 	data := ctx.CallbackQuery.Data
 	parts := strings.Split(data, "_")
 	if len(parts) < 3 {
 		ctx.CallbackQuery.Answer(b, &gotgbot.AnswerCallbackQueryOpts{
 			Text:      "Invalid callback data.",
 			ShowAlert: true,
+			CacheTime: 60,
 		})
 		return nil
 	}

@@ -84,11 +84,10 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("comic.comic_not_found", langCode), nil)
 		return err
 	}
-	comicTitle := comicData.Title[qidx]
-	if comicTitle == "" {
+
+	if comicData.Title[qidx] == "" {
 		for i, title := range comicData.Title {
 			if title != "" {
-				comicTitle = title
 				qidx = i
 				break
 			}

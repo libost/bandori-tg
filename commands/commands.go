@@ -215,7 +215,6 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, "Error: You are not an admin", nil)
 		return fmt.Errorf("User is not an admin")
 	}
-	// Do something with the admin privileges
 	supportedLanguages, _, err := I.GetAllSupportedLanguages()
 	if err != nil {
 		return err
@@ -242,6 +241,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "comic", Description: I.GetLocalisedString("commands.setcommands_desc_list[12]", code)},
 			{Command: "news", Description: I.GetLocalisedString("commands.setcommands_desc_list[13]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
+			{Command: "meta", Description: I.GetLocalisedString("commands.setcommands_desc_list[14]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "char", Description: I.GetLocalisedString("commands.setcommands_desc_list[11]", code)},
 			{Command: "gacha", Description: I.GetLocalisedString("commands.setcommands_desc_list[10]", code)},
@@ -267,6 +267,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "comic", Description: I.GetLocalisedString("commands.setcommands_desc_list[12]", code)},
 			{Command: "news", Description: I.GetLocalisedString("commands.setcommands_desc_list[13]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
+			{Command: "meta", Description: I.GetLocalisedString("commands.setcommands_desc_list[14]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "char", Description: I.GetLocalisedString("commands.setcommands_desc_list[11]", code)},
 			{Command: "gacha", Description: I.GetLocalisedString("commands.setcommands_desc_list[10]", code)},

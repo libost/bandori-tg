@@ -571,7 +571,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%s", lastStr)),
+							Text:  gotgbot.RichTextString(lastStr),
 							Align: "right",
 						},
 					},

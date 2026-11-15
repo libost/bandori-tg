@@ -277,6 +277,7 @@ func InitHttpClient() error {
 				Transport: &UATransport{
 					Base: &http.Transport{
 						MaxIdleConnsPerHost: 10,
+						DialContext:         http.DefaultClient.Transport.(*http.Transport).DialContext,
 						Proxy: http.ProxyURL(&url.URL{
 							Scheme: "http",
 							Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
@@ -299,7 +300,7 @@ func InitHttpClient() error {
 				Transport: &UATransport{
 					Base: &http.Transport{
 						MaxIdleConnsPerHost: 10,
-						Dial:                dialer.Dial,
+						DialContext:         dialer.(proxy.ContextDialer).DialContext,
 					},
 					UserAgent: ua,
 				},
@@ -432,11 +433,11 @@ func IsValidPNGUrl(url string) bool {
 	}
 
 	contentType := resp.Header.Get("Content-Type")
-	if contentType != "image/png" {
-		return false
+	if contentType == "image/png" {
+		return true
 	}
 
-	return true
+	return false
 }
 
 // TimeCheck checks if the given timestamp is within the acceptable range defined by ApiTimeMaxInterval.

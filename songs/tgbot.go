@@ -334,7 +334,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songId string, region, la
 			Align: "left",
 		},
 		{
-			Text:  gotgbot.RichTextString(fmt.Sprintf("%s", songId)),
+			Text:  gotgbot.RichTextString(songId),
 			Align: "right",
 		},
 	})

@@ -82,8 +82,6 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	dlangCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	if ctx.EffectiveChat.Type != "private" {
-	}
 	if len(ctx.Args()) == 1 {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", dlangCode), nil)
 		stopActionLoop()
