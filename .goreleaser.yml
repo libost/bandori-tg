@@ -17,6 +17,8 @@ builds:
       - arm64
     goamd64:
       - v3
+    tags:
+      - fonts_detached
     main: ./main.go
     ldflags: |
       -X github.com/libost/bandori-tg/version.Version={{ if eq .Env.RELEASE_CHANNEL "dev" }}{{ .ShortCommit }}{{ else }}{{ .Version }}{{ end }}
@@ -36,6 +38,8 @@ builds:
       - arm64
     goamd64:
       - v3
+    tags:
+      - fonts_detached
     main: ./main.go
     ldflags: |
       -X github.com/libost/bandori-tg/version.Version={{ if eq .Env.RELEASE_CHANNEL "dev" }}{{ .ShortCommit }}{{ else }}{{ .Version }}{{ end }}
@@ -55,6 +59,8 @@ builds:
       - arm64
     goamd64:
       - v3
+    tags:
+      - fonts_detached
     main: ./main.go
     ldflags: |
       -X github.com/libost/bandori-tg/version.Version={{ if eq .Env.RELEASE_CHANNEL "dev" }}{{ .ShortCommit }}{{ else }}{{ .Version }}{{ end }}

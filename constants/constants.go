@@ -606,6 +606,7 @@ type DifficultyDetailed struct {
 	ScoreA            int                              `json:"scoreA"`
 	ScoreS            int                              `json:"scoreS"`
 	ScoreSS           int                              `json:"scoreSS"`
+	PublishedAt       []string                         `json:"publishedAt"`
 }
 
 type MultiLiveScoreMapData struct {

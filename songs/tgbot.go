@@ -414,17 +414,40 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songId string, region, la
 				Align: "right",
 			},
 		},
-		{
-			{
-				Text:  gotgbot.RichTextString(I.GetLocalisedString("songs.how_to_get", langCode)),
-				Align: "left",
-			},
-			{
-				Text:  gotgbot.RichTextString(detailedSong.HowToGet[regionIndex]),
-				Align: "right",
-			},
-		},
 	}
+	if len(detailedSong.Difficulty) > 4 {
+		if detailedSong.Difficulty["4"].PublishedAt[regionIndex] != "" {
+			timePub, _ := strconv.ParseInt(detailedSong.Difficulty["4"].PublishedAt[regionIndex], 10, 64)
+			timePub = utils.TimeCheck(timePub / 1000)
+			loc, _ := time.LoadLocation(tz)
+			timeStr := time.Unix(timePub, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+
+			infoCells = append(infoCells, []gotgbot.RichBlockTableCell{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("songs.difficulty_4", langCode)),
+					Align: "left",
+				},
+				{
+					Text: gotgbot.RichTextDateTime{
+						Text:           gotgbot.RichTextString(timeStr),
+						UnixTime:       timePub,
+						DateTimeFormat: "DwT",
+					},
+					Align: "right",
+				},
+			})
+		}
+	}
+	infoCells = append(infoCells, []gotgbot.RichBlockTableCell{
+		{
+			Text:  gotgbot.RichTextString(I.GetLocalisedString("songs.how_to_get", langCode)),
+			Align: "left",
+		},
+		{
+			Text:  gotgbot.RichTextString(detailedSong.HowToGet[regionIndex]),
+			Align: "right",
+		},
+	})
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
