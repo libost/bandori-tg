@@ -32,40 +32,40 @@ type fetchTask struct {
 
 var dataMu sync.RWMutex
 
-var Band C.BandData
-var Cards C.CardData
-var Characters C.CharacterData
-var Events C.EventsData
+var Band C.BandsMap
+var Cards C.CardsMap
+var Characters C.CharactersMap
+var Events C.EventsMap
 var Recent C.Recent
-var Skills C.SkillData
-var Gacha C.GachaData
-var Rates C.RatesData
-var Songs C.SongsData
-var Comic C.ComicData
+var Skills C.SkillsMap
+var Gacha C.GachasMap
+var Rates C.RatesMap
+var Songs C.SongsMap
+var Comic C.ComicsMap
 var SongsMeta C.SongMeta
 var SongsKeys []*Item
 var REventsKeys []string
 var RGachaKeys []string
 
-func ReadBand() C.BandData {
+func ReadBand() C.BandsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Band
 }
 
-func ReadCards() C.CardData {
+func ReadCards() C.CardsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Cards
 }
 
-func ReadCharacters() C.CharacterData {
+func ReadCharacters() C.CharactersMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Characters
 }
 
-func ReadEvents() C.EventsData {
+func ReadEvents() C.EventsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Events
@@ -77,31 +77,31 @@ func ReadRecent() C.Recent {
 	return Recent
 }
 
-func ReadSkills() C.SkillData {
+func ReadSkills() C.SkillsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Skills
 }
 
-func ReadGacha() C.GachaData {
+func ReadGacha() C.GachasMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Gacha
 }
 
-func ReadRates() C.RatesData {
+func ReadRates() C.RatesMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Rates
 }
 
-func ReadSongs() C.SongsData {
+func ReadSongs() C.SongsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Songs
 }
 
-func ReadComic() C.ComicData {
+func ReadComic() C.ComicsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Comic
@@ -111,23 +111,24 @@ func ReadComic() C.ComicData {
 //
 // example usage:
 //
-//			  var songID = "1" // Yes! BanG_Dream! in this case
-//			  var difficulty = "3" // Expert in this case
-//			  var skilllength = "7" // 7 seconds skill length in this case
-//			  meta := utils.ReadSongsMeta()
-//			  factors, ok := meta[songID][difficulty][skilllength]
-//			  if !ok {
-//				   fmt.Println("Song meta not found for the given parameters")
-//			  }
-//			  fmt.Println("Factors:", factors)
-//			  fmt.Println("Score Factor without Fever:", factors.ScoreFactor(false, 1.0, 1.1))
-//			  fmt.Println("Score Factor with Fever:", factors.ScoreFactor(true, 1.0, 1.1))
-//			  fmt.Println("Skill Reliance without Fever:", factors.SkillReliance(false))
-//			  fmt.Println("Skill Reliance with Fever:", factors.SkillReliance(true))
-//			  length := 120.0 // Example song length in seconds, you should get the actual length from the song data
-//		      efficiency := factors.Efficiency(true, 1.0, 1.1, length)
-//		      fmt.Println("Efficiency with Fever:", efficiency)
-//	       // For a more "close to bestdori" result, you should turn every result into a percentage and round it to the nearest integer, as bestdori does.
+//	var songID = "1" // Yes! BanG_Dream! in this case
+//	var difficulty = "3" // Expert in this case
+//	var skilllength = "7" // 7 seconds skill length in this case
+//	meta := utils.ReadSongsMeta()
+//	factors, ok := meta[songID][difficulty][skilllength]
+//	if !ok {
+//		fmt.Println("Song meta not found for the given parameters")
+//	}
+//	fmt.Println("Factors:", factors)
+//	fmt.Println("Score Factor without Fever:", factors.ScoreFactor(false, 1.0, 1.1))
+//	fmt.Println("Score Factor with Fever:", factors.ScoreFactor(true, 1.0, 1.1))
+//	fmt.Println("Skill Reliance without Fever:", factors.SkillReliance(false))
+//	fmt.Println("Skill Reliance with Fever:", factors.SkillReliance(true))
+//	length := 120.0 // Example song length in seconds, you should get the actual length from the song data
+//	efficiency := factors.Efficiency(true, 1.0, 1.1, length)
+//	fmt.Println("Efficiency with Fever:", efficiency)
+//
+// For a more "close to bestdori" result, you should turn every result into a percentage and round it to the nearest integer, as bestdori does.
 func ReadSongsMeta() C.SongMeta {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
@@ -152,7 +153,7 @@ func ReadRGachasKeys() []string {
 	return append([]string(nil), RGachaKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData, snapshotSongsMeta C.SongMeta, snapshotComic C.ComicData) {
+func publishDataSnapshot(snapshotBand C.BandsMap, snapshotCards C.CardsMap, snapshotCharacters C.CharactersMap, snapshotEvents C.EventsMap, snapshotRecent C.Recent, snapshotSkills C.SkillsMap, snapshotGacha C.GachasMap, snapshotRates C.RatesMap, snapshotSongs C.SongsMap, snapshotSongsMeta C.SongMeta, snapshotComic C.ComicsMap) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
@@ -200,16 +201,16 @@ func InitLists() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var snapshotBand C.BandData
-	var snapshotCards C.CardData
-	var snapshotCharacters C.CharacterData
-	var snapshotEvents C.EventsData
+	var snapshotBand C.BandsMap
+	var snapshotCards C.CardsMap
+	var snapshotCharacters C.CharactersMap
+	var snapshotEvents C.EventsMap
 	var snapshotRecent C.Recent
-	var snapshotSkills C.SkillData
-	var snapshotGacha C.GachaData
-	var snapshotRates C.RatesData
-	var snapshotSongs C.SongsData
-	var snapshotComic C.ComicData
+	var snapshotSkills C.SkillsMap
+	var snapshotGacha C.GachasMap
+	var snapshotRates C.RatesMap
+	var snapshotSongs C.SongsMap
+	var snapshotComic C.ComicsMap
 	var snapshotSongsMeta C.SongMeta
 
 	data := []fetchTask{

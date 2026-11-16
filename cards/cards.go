@@ -24,7 +24,7 @@ import (
 	"golang.org/x/image/draw"
 )
 
-func regionCodeFromCard(card C.Card, preferCode string) string {
+func regionCodeFromCard(card C.Cards, preferCode string) string {
 	index := utils.IndexHelper(preferCode)
 	if index < len(card.ReleasedAt) && card.ReleasedAt[index] != "" && card.ReleasedAt[index] != "null" {
 		return preferCode
@@ -66,24 +66,24 @@ func GetCard(cardId string) (string, string, error) {
 	return normalPath, trainingPath, nil
 }
 
-func GetDetailedCard(cardId string) (C.CardDetailed, error) {
+func GetDetailedCard(cardId string) (C.Card, error) {
 	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/cards/"+cardId+".json", nil)
 	if err != nil {
-		return C.CardDetailed{}, err
+		return C.Card{}, err
 	}
 	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
-		return C.CardDetailed{}, err
+		return C.Card{}, err
 	}
 	defer resp.Body.Close()
-	var cardDetailed C.CardDetailed
-	err = json.UnmarshalRead(resp.Body, &cardDetailed)
+	var card C.Card
+	err = json.UnmarshalRead(resp.Body, &card)
 	if err != nil {
-		return C.CardDetailed{}, err
+		return C.Card{}, err
 	}
-	return cardDetailed, nil
+	return card, nil
 }
 
 func getThumbCard(cardId string) (string, error) {

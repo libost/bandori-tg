@@ -7,11 +7,11 @@ import (
 	"github.com/libost/bandori-tg/utils"
 )
 
-func GetBand(bandId string) (C.Band, error) {
+func GetBand(bandId string) (C.Bands, error) {
 	bandMap := utils.ReadBand()
 	band, exists := bandMap[bandId]
 	if !exists {
-		return C.Band{}, fmt.Errorf("band with ID %s not found", bandId)
+		return C.Bands{}, fmt.Errorf("band with ID %s not found", bandId)
 	}
 	return band, nil
 }

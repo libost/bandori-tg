@@ -171,7 +171,7 @@ func sendMetaMessage(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Contex
 		}
 		difficultyMap[idx].Note = note
 	}
-	factors := make([]C.MetaFactors, len(difficultyMap))
+	factors := make([]C.SongMetaFactors, len(difficultyMap))
 	for i := range difficultyMap {
 		difficultyMeta, ok := meta[songId][strconv.Itoa(i)][skilllength]
 		if !ok {

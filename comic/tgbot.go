@@ -108,7 +108,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, comic C.Comic, comicId, langCode, regionCode string) error {
+func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, comic C.Comics, comicId, langCode, regionCode string) error {
 	url, err := getComicUrl(comic, regionCode)
 	if err != nil {
 		return err

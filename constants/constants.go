@@ -1,3 +1,30 @@
+// Package constants contains all the constants used in the application, including file paths, error messages, and data structures for various entities like characters, cards, events, gacha, songs, comics, and login bonuses. It also defines configuration structures and provides utility functions for calculating score factors based on game mechanics.
+//
+// # READ THE FOLLOWING GUIDELINES BEFORE ADDING NEW DATA STRUCTURES OR CONSTANTS:
+//
+// # Naming Scheme for data structures:
+//
+// - Use Upper Camel Case for all data structures (e.g., Characters, Cards, Events).
+//
+// - For data structures that represent a collection of entities, use the plural form + "Map" (e.g., CharactersMap, CardsMap, EventsMap).
+//
+// - For data structures that represent a single entity inside a collection, use the plural form (e.g., Characters, Cards, Events).
+//
+// - For data structures that represent detailed information about an entity, use the singular form  (e.g., Character, Card, Event).
+//
+// - For data structures that represent a struct inside another struct, accumulate the names of the parent structs in the name (e.g., EventAttribute, EventCharacters, EventMembers, EventLimitBreaks).
+//
+// # Type Definitions:
+//
+// - For integers, use `int`.
+//
+// - For strings, use `string`.
+//
+// - For boolean values, use `bool`.
+//
+// - For floating-point numbers, use `float64`.
+//
+// - For fields that can have multiple types (e.g., int or string), use `any` BUT comment on what type it can be(`Field Name` can be int or string).
 package constants
 
 import (
@@ -162,7 +189,7 @@ type Config struct {
 	} `yaml:"webhook"`
 }
 
-type Character struct {
+type Characters struct {
 	CharacterType string    `json:"characterType"`
 	CharacterName []string  `json:"characterName"`
 	FirstName     []string  `json:"firstName"`
@@ -172,9 +199,9 @@ type Character struct {
 	ColorCode     string    `json:"colorCode"`
 }
 
-type CharacterData map[string]Character
+type CharactersMap map[string]Characters
 
-type CharacterDetailed struct {
+type Character struct {
 	CharacterType        string   `json:"characterType"`
 	CharacterName        []string `json:"characterName"`
 	FirstName            []string `json:"firstName"`
@@ -225,7 +252,7 @@ type CharacterSeasonCostume struct {
 	SeasonType            string `json:"seasonType"`
 }
 
-type Card struct {
+type Cards struct {
 	CharacterID     int      `json:"characterId"`
 	Rarity          int      `json:"rarity"`
 	Attribute       string   `json:"attribute"`
@@ -249,9 +276,9 @@ type CardStat struct {
 	Episodes []CardStatValue          `json:"episodes"`
 }
 
-type CardData map[string]Card
+type CardsMap map[string]Cards
 
-type Skill struct {
+type Skills struct {
 	SimpleDescription []string  `json:"simpleDescription"`
 	Description       []string  `json:"description"`
 	Duration          []float64 `json:"duration"`
@@ -274,39 +301,39 @@ type SkillActivationEffectTypesValue struct {
 	ActivateCondition       string `json:"activateCondition"`
 }
 
-type SkillData map[string]Skill
+type SkillsMap map[string]Skills
 
-type Band struct {
+type Bands struct {
 	BandName []string `json:"bandName"`
 }
 
-type BandData map[string]Band
+type BandsMap map[string]Bands
 
 type Recent struct {
-	Songs      map[string]RSongsData      `json:"songs"`
-	Events     map[string]EventData       `json:"events"`
-	Gacha      map[string]RGachaData      `json:"gacha"`
-	LoginBonus map[string]RLoginBonusData `json:"loginBonus"`
+	Songs      map[string]RecentSongs      `json:"songs"`
+	Events     map[string]RecentEvents     `json:"events"`
+	Gacha      map[string]RecentGachas     `json:"gacha"`
+	LoginBonus map[string]RecentLoginBonus `json:"loginBonus"`
 }
 
-type RSongsData struct {
+type RecentSongs struct {
 	MusicTitle  []string `json:"musicTitle"`
 	PublishedAt []string `json:"publishedAt"`
 }
 
-type EventData struct {
+type RecentEvents struct {
 	EventName []string `json:"eventName"`
 	StartAt   []string `json:"startAt"`
 	EndAt     []string `json:"endAt"`
 }
 
-type RGachaData struct {
+type RecentGachas struct {
 	GachaName   []string `json:"gachaName"`
 	PublishedAt []string `json:"publishedAt"`
 	ClosedAt    []string `json:"closedAt"`
 }
 
-type RLoginBonusData struct {
+type RecentLoginBonus struct {
 	Caption     []string `json:"caption"`
 	PublishedAt []string `json:"publishedAt"`
 	ClosedAt    []string `json:"closedAt"`
@@ -337,9 +364,9 @@ type EventsCharacters struct {
 	Percent     int `json:"percent"`
 }
 
-type EventsData map[string]Events
+type EventsMap map[string]Events
 
-type CardDetailed struct {
+type Card struct {
 	CharacterID     int    `json:"characterId"`
 	Rarity          int    `json:"rarity"`
 	Attribute       string `json:"attribute"`
@@ -387,7 +414,7 @@ type CardDetailed struct {
 	Stats map[string]CardStatValue `json:"stats"`
 }
 
-type EventDetailed struct {
+type Event struct {
 	EventType             string   `json:"eventType"`
 	EventName             []string `json:"eventName"`
 	AssetBundleName       string   `json:"assetBundleName"`
@@ -473,7 +500,7 @@ type EventLimitBreaks struct {
 	Percent float64 `json:"percent"`
 }
 
-type Gacha struct {
+type Gachas struct {
 	ResourceName          string   `json:"resourceName"`
 	BannerAssetBundleName string   `json:"bannerAssetBundleName"`
 	GachaName             []string `json:"gachaName"`
@@ -483,23 +510,23 @@ type Gacha struct {
 	NewCards              []int    `json:"newCards"`
 }
 
-type GachaData map[string]Gacha
+type GachasMap map[string]Gachas
 
-type GachaDetailed struct {
-	Details               []GachaDetailedData `json:"details"`
-	Rates                 []GachaRatesData    `json:"rates"`
-	PaymentMethods        []PaymentMethods    `json:"paymentMethods"`
-	ResourceName          string              `json:"resourceName"`
-	BannerAssetBundleName string              `json:"bannerAssetBundleName"`
-	GachaName             []string            `json:"gachaName"`
-	PublishedAt           []string            `json:"publishedAt"`
-	ClosedAt              []string            `json:"closedAt"`
-	Description           []string            `json:"description"`
-	Annotation            []string            `json:"annotation"`
-	GachaPeriod           []string            `json:"gachaPeriod"`
-	GachaType             string              `json:"gachaType"`
-	Type                  string              `json:"type"`
-	NewCards              []int               `json:"newCards"`
+type Gacha struct {
+	Details               []GachaDetailsMap     `json:"details"`
+	Rates                 []GachaRatesMap       `json:"rates"`
+	PaymentMethods        []GachaPaymentMethods `json:"paymentMethods"`
+	ResourceName          string                `json:"resourceName"`
+	BannerAssetBundleName string                `json:"bannerAssetBundleName"`
+	GachaName             []string              `json:"gachaName"`
+	PublishedAt           []string              `json:"publishedAt"`
+	ClosedAt              []string              `json:"closedAt"`
+	Description           []string              `json:"description"`
+	Annotation            []string              `json:"annotation"`
+	GachaPeriod           []string              `json:"gachaPeriod"`
+	GachaType             string                `json:"gachaType"`
+	Type                  string                `json:"type"`
+	NewCards              []int                 `json:"newCards"`
 	Information           struct {
 		Description   []string `json:"description"`
 		Term          []string `json:"term"`
@@ -508,22 +535,22 @@ type GachaDetailed struct {
 	} `json:"information"`
 }
 
-type DetailsGacha struct {
+type GachaDetails struct {
 	RarityIndex int  `json:"rarityIndex"`
 	Weight      int  `json:"weight"`
 	Pickup      bool `json:"pickup"`
 }
 
-type GachaDetailedData map[string]DetailsGacha
+type GachaDetailsMap map[string]GachaDetails
 
 type GachaRates struct {
 	Rate        float64 `json:"rate"`
 	WeightTotal int     `json:"weightTotal"`
 }
 
-type GachaRatesData map[string]GachaRates
+type GachaRatesMap map[string]GachaRates
 
-type PaymentMethods struct {
+type GachaPaymentMethods struct {
 	GachaID          int    `json:"gachaId"`
 	PaymentMethod    string `json:"paymentMethod"`
 	Quantity         int    `json:"quantity"`
@@ -552,48 +579,48 @@ type Rates struct {
 	Rate   float64 `json:"rate"`
 }
 
-type RatesData []Rates
+type RatesMap []Rates
 
 type Songs struct {
 	// `normal` for og, `anime` for covers and `tie-up` for extras
-	Tag         string                    `json:"tag"`
-	BandID      int                       `json:"bandId"`
-	JacketImage []string                  `json:"jacketImage"`
-	MusicTitle  []string                  `json:"musicTitle"`
-	PublishedAt []string                  `json:"publishedAt"`
-	ClosedAt    []string                  `json:"closedAt"`
-	Difficulty  map[string]DifficultyData `json:"difficulty"`
+	Tag         string                         `json:"tag"`
+	BandID      int                            `json:"bandId"`
+	JacketImage []string                       `json:"jacketImage"`
+	MusicTitle  []string                       `json:"musicTitle"`
+	PublishedAt []string                       `json:"publishedAt"`
+	ClosedAt    []string                       `json:"closedAt"`
+	Difficulty  map[string]SongsDifficultyData `json:"difficulty"`
 }
 
-type DifficultyData struct {
+type SongsDifficultyData struct {
 	PlayLevel   int      `json:"playLevel"`
 	PublishedAt []string `json:"publishedAt"`
 }
 
-type SongsData map[string]Songs
+type SongsMap map[string]Songs
 
-type SongsDetailed struct {
-	BgmID        string                        `json:"bgmId"`
-	BgmFile      string                        `json:"bgmFile"`
-	Tag          string                        `json:"tag"`
-	BandID       int                           `json:"bandId"`
-	Achievements []AchievementsData            `json:"achievements"`
-	JacketImage  []string                      `json:"jacketImage"`
-	Seq          int                           `json:"seq"`
-	MusicTitle   []string                      `json:"musicTitle"`
-	Ruby         []string                      `json:"ruby"`
-	Phonetic     []string                      `json:"phonetic"`
-	Lyricist     []string                      `json:"lyricist"`
-	Composer     []string                      `json:"composer"`
-	Arranger     []string                      `json:"arranger"`
-	HowToGet     []string                      `json:"howToGet"`
-	PublishedAt  []string                      `json:"publishedAt"`
-	ClosedAt     []string                      `json:"closedAt"`
-	Description  []string                      `json:"description"`
-	Difficulty   map[string]DifficultyDetailed `json:"difficulty"`
-	Length       float64                       `json:"length"`
-	Notes        map[string]int                `json:"notes"`
-	Bpm          map[string]BpmData            `json:"bpm"`
+type Song struct {
+	BgmID        string                    `json:"bgmId"`
+	BgmFile      string                    `json:"bgmFile"`
+	Tag          string                    `json:"tag"`
+	BandID       int                       `json:"bandId"`
+	Achievements []AchievementsData        `json:"achievements"`
+	JacketImage  []string                  `json:"jacketImage"`
+	Seq          int                       `json:"seq"`
+	MusicTitle   []string                  `json:"musicTitle"`
+	Ruby         []string                  `json:"ruby"`
+	Phonetic     []string                  `json:"phonetic"`
+	Lyricist     []string                  `json:"lyricist"`
+	Composer     []string                  `json:"composer"`
+	Arranger     []string                  `json:"arranger"`
+	HowToGet     []string                  `json:"howToGet"`
+	PublishedAt  []string                  `json:"publishedAt"`
+	ClosedAt     []string                  `json:"closedAt"`
+	Description  []string                  `json:"description"`
+	Difficulty   map[string]SongDifficulty `json:"difficulty"`
+	Length       float64                   `json:"length"`
+	Notes        map[string]int            `json:"notes"`
+	Bpm          map[string]SongBpm        `json:"bpm"`
 }
 
 type AchievementsData struct {
@@ -603,19 +630,19 @@ type AchievementsData struct {
 	Quantity        int    `json:"quantity"`
 }
 
-type DifficultyDetailed struct {
-	PlayLevel         int                              `json:"playLevel"`
-	MultiLiveScoreMap map[string]MultiLiveScoreMapData `json:"multiLiveScoreMap"`
-	NotesQuantity     int                              `json:"notesQuantity"`
-	ScoreC            int                              `json:"scoreC"`
-	ScoreB            int                              `json:"scoreB"`
-	ScoreA            int                              `json:"scoreA"`
-	ScoreS            int                              `json:"scoreS"`
-	ScoreSS           int                              `json:"scoreSS"`
-	PublishedAt       []string                         `json:"publishedAt"`
+type SongDifficulty struct {
+	PlayLevel         int                                            `json:"playLevel"`
+	MultiLiveScoreMap map[string]SongDifficultyMultiLiveScoreMapData `json:"multiLiveScoreMap"`
+	NotesQuantity     int                                            `json:"notesQuantity"`
+	ScoreC            int                                            `json:"scoreC"`
+	ScoreB            int                                            `json:"scoreB"`
+	ScoreA            int                                            `json:"scoreA"`
+	ScoreS            int                                            `json:"scoreS"`
+	ScoreSS           int                                            `json:"scoreSS"`
+	PublishedAt       []string                                       `json:"publishedAt"`
 }
 
-type MultiLiveScoreMapData struct {
+type SongDifficultyMultiLiveScoreMapData struct {
 	MusicID                 int    `json:"musicId"`
 	MusicDifficulty         string `json:"musicDifficulty"`
 	MusicLiveDifficultyID   int    `json:"musicLiveDifficultyId"`
@@ -628,15 +655,15 @@ type MultiLiveScoreMapData struct {
 	ScoreSSS                int    `json:"scoreSSS"`
 }
 
-type BpmData []struct {
+type SongBpm []struct {
 	Bpm   int     `json:"bpm"`
 	Start float64 `json:"start"`
 	End   float64 `json:"end"`
 }
 
-type ComicData map[string]Comic
+type ComicsMap map[string]Comics
 
-type Comic struct {
+type Comics struct {
 	AssetBundleName string   `json:"assetBundleName"`
 	Title           []string `json:"title"`
 	SubTitle        []string `json:"subTitle"`
@@ -645,7 +672,7 @@ type Comic struct {
 	CharacterId   []int `json:"characterId"`
 }
 
-type LoginBonusDetail struct {
+type LoginBonus struct {
 	LoginBonusType  string   `json:"loginBonusType"`
 	AssetBundleName []string `json:"assetBundleName"`
 	AssetMap        struct {
@@ -672,24 +699,24 @@ type DetailItem struct {
 	ResourceId   *int   `json:"resourceId,omitempty"`
 }
 
-type SongMeta map[string]map[string]map[string]MetaFactors
+type SongMeta map[string]map[string]map[string]SongMetaFactors
 
-type MetaFactors [4]float64
+type SongMetaFactors [4]float64
 
 // NoFeverOut gives you the value of a, which is the factor for no Fever and outside of skill.
-func (m MetaFactors) NoFeverOut() float64 { return m[0] }
+func (m SongMetaFactors) NoFeverOut() float64 { return m[0] }
 
 // NoFeverIn gives you the value of b, which is the factor for no Fever and inside of skill.
-func (m MetaFactors) NoFeverIn() float64 { return m[1] }
+func (m SongMetaFactors) NoFeverIn() float64 { return m[1] }
 
 // FeverOut gives you the value of c, which is the factor for Fever and outside of skill.
-func (m MetaFactors) FeverOut() float64 { return m[2] }
+func (m SongMetaFactors) FeverOut() float64 { return m[2] }
 
 // FeverIn gives you the value of d, which is the factor for Fever and inside of skill.
-func (m MetaFactors) FeverIn() float64 { return m[3] }
+func (m SongMetaFactors) FeverIn() float64 { return m[3] }
 
 // ScoreFactor calculates the score factor based on whether Fever is active, the skill boost(default: 1.0), and the accuracy(default: 1.1).
-func (m MetaFactors) ScoreFactor(fever bool, skillBoost, accuracy float64) float64 {
+func (m SongMetaFactors) ScoreFactor(fever bool, skillBoost, accuracy float64) float64 {
 	if fever {
 		return accuracy * (m.FeverOut() + m.FeverIn()*(1+skillBoost))
 	}
@@ -697,7 +724,7 @@ func (m MetaFactors) ScoreFactor(fever bool, skillBoost, accuracy float64) float
 }
 
 // SkillReliance calculates the skill reliance based on whether Fever is active. It returns a value between 0 and 1, where 0 means no reliance on skill and 1 means full reliance on skill.
-func (m MetaFactors) SkillReliance(fever bool) float64 {
+func (m SongMetaFactors) SkillReliance(fever bool) float64 {
 	if fever {
 		return m.FeverIn() / (m.FeverOut() + m.FeverIn())
 	}
@@ -707,7 +734,7 @@ func (m MetaFactors) SkillReliance(fever bool) float64 {
 // Efficiency calculates the efficiency based on whether Fever is active, the skill boost(default: 1.0), the accuracy(default: 1.1), and the length of the song in seconds.
 //
 // length is the length of the song in seconds, and the formula is: efficiency = score factor * 60 / (length + 30). The +30 is a constant that represents the time it takes to start and end the song, which is not affected by Fever or skill boost.
-func (m MetaFactors) Efficiency(fever bool, skillBoost, accuracy, length float64) float64 {
+func (m SongMetaFactors) Efficiency(fever bool, skillBoost, accuracy, length float64) float64 {
 	score := m.ScoreFactor(fever, skillBoost, accuracy)
 	eff := score * 60 / (length + 30)
 	return eff

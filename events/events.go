@@ -27,27 +27,27 @@ import (
 	"gonum.org/v1/plot/vg/vgimg"
 )
 
-func GetDetailedEvents(eventID string) (C.EventDetailed, error) {
+func GetDetailedEvents(eventID string) (C.Event, error) {
 	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/events/"+eventID+".json", nil)
 	if err != nil {
-		return C.EventDetailed{}, err
+		return C.Event{}, err
 	}
 	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
-		return C.EventDetailed{}, err
+		return C.Event{}, err
 	}
 	defer resp.Body.Close()
-	var event C.EventDetailed
+	var event C.Event
 	err = json.UnmarshalRead(resp.Body, &event)
 	if err != nil {
-		return C.EventDetailed{}, err
+		return C.Event{}, err
 	}
 	return event, nil
 }
 
-func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
+func regionCodeFromEvent(event C.Event, preferCode string) string {
 	index := utils.IndexHelper(preferCode)
 	if index < len(event.EndAt) && event.EndAt[index] != "" && event.EndAt[index] != "null" {
 		return preferCode
@@ -61,7 +61,7 @@ func regionCodeFromEvent(event C.EventDetailed, preferCode string) string {
 	return "jp"
 }
 
-func generateEventMembers(event C.EventDetailed) (image.Image, error) {
+func generateEventMembers(event C.Event) (image.Image, error) {
 	members := event.Members
 	width := len(members)*180 + 20*len(members) + 20
 	length := 300
@@ -85,7 +85,7 @@ func generateEventMembers(event C.EventDetailed) (image.Image, error) {
 	return dc.Image(), nil
 }
 
-func generateEventBonusCards(event C.EventDetailed) (image.Image, error) {
+func generateEventBonusCards(event C.Event) (image.Image, error) {
 	bonusCards := event.RewardCards
 	width := len(bonusCards)*180 + 20*len(bonusCards) + 20
 	length := 300

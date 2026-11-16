@@ -89,7 +89,7 @@ func normalizeCharacterID(value any) string {
 	}
 }
 
-func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *time.Location) (int64, string) {
+func getTimeHelper(eventDetailed C.Event, field string, index int, tz *time.Location) (int64, string) {
 	if field == "start" {
 		timeR := eventDetailed.StartAt[index]
 		timeInt, _ := strconv.ParseInt(timeR, 10, 64)
