@@ -14,5 +14,5 @@ func timeCalc(length float64) string {
 			return fmt.Sprintf("%d:%04.1f", i, length-60*float64(i))
 		}
 	}
-	return "0:00"
+	return "0:00.0"
 }

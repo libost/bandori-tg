@@ -155,32 +155,14 @@ func scaleImagePNG(src image.Image, targetWidth, targetHeight int) image.Image {
 
 func frameHelper(rarity int, attribute string) string {
 	if rarity == -1 {
-		idx := utils.IndexHelper(attribute)
-		return C.AttributeFrames[idx]
+		return C.AttributeFrames[utils.IndexHelper(attribute)]
 	} else {
-		switch rarity {
-		case 1:
-			switch attribute {
-			case "powerful":
-				return C.Card1PowerfulFrame
-			case "cool":
-				return C.Card1CoolFrame
-			case "happy":
-				return C.Card1HappyFrame
-			case "pure":
-				return C.Card1PureFrame
-			}
-		case 2:
-			return C.Card2Frame
-		case 3:
-			return C.Card3Frame
-		case 4:
-			return C.Card4Frame
-		case 5:
-			return C.Card5Frame
+		if rarity == 1 {
+			return C.Card1Frames[utils.IndexHelper(attribute)]
+		} else {
+			return C.CardFrames[rarity-2]
 		}
 	}
-	return ""
 }
 
 func ThumbGenerate(cardId string, percent int) (image.Image, error) {
