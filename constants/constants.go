@@ -206,11 +206,12 @@ type CharacterDetailed struct {
 		SelfIntroduction []string `json:"selfIntroduction"`
 		School           []string `json:"school"`
 		SchoolCls        []string `json:"schoolCls"`
-		SchoolYear       []any    `json:"schoolYear"` // It can be int or string, what a dumb design
-		Part             string   `json:"part"`
-		Birthday         string   `json:"birthday"`
-		Constellation    string   `json:"constellation"`
-		Height           int      `json:"height"`
+		// SchoolYear can be int or string
+		SchoolYear    []any  `json:"schoolYear"`
+		Part          string `json:"part"`
+		Birthday      string `json:"birthday"`
+		Constellation string `json:"constellation"`
+		Height        int    `json:"height"`
 	} `json:"profile"`
 }
 
@@ -331,6 +332,7 @@ type Attributes struct {
 }
 
 type EventsCharacters struct {
+	// CharacterID can be int or string
 	CharacterID any `json:"characterId"`
 	Percent     int `json:"percent"`
 }
@@ -402,7 +404,8 @@ type EventDetailed struct {
 	AggregateEndAt        []string `json:"aggregateEndAt"`
 	ExchangeEndAt         []string `json:"exchangeEndAt"`
 	PointRewards          [][]struct {
-		Point          string `json:"point"`
+		// Point can be int or string
+		Point          any    `json:"point"`
 		RewardType     string `json:"rewardType"`
 		RewardId       int    `json:"rewardId"`
 		RewardQuantity int    `json:"rewardQuantity"`
@@ -427,8 +430,9 @@ type EventDetailed struct {
 		ScenarioId      string `json:"scenarioId"`
 		CoverImage      string `json:"coverImage"`
 		BackgroundImage string `json:"backgroundImage"`
-		ReleasePt       string `json:"releasePt"`
-		Rewards         []struct {
+		// ReleasePt can be int or string
+		ReleasePt any `json:"releasePt"`
+		Rewards   []struct {
 			RewardType     string `json:"rewardType"`
 			RewardId       int    `json:"rewardId"`
 			RewardQuantity int    `json:"rewardQuantity"`
@@ -448,7 +452,8 @@ type EventAttribute struct {
 }
 
 type EventCharacters struct {
-	EventID     int `json:"eventId"`
+	EventID int `json:"eventId"`
+	// CharacterID can be int or string
 	CharacterID any `json:"characterId"`
 	Percent     int `json:"percent"`
 	Seq         int `json:"seq"`
@@ -550,7 +555,8 @@ type Rates struct {
 type RatesData []Rates
 
 type Songs struct {
-	Tag         string                    `json:"tag"` // `normal` for og, `anime` for covers and `tie-up` for extras
+	// `normal` for og, `anime` for covers and `tie-up` for extras
+	Tag         string                    `json:"tag"`
 	BandID      int                       `json:"bandId"`
 	JacketImage []string                  `json:"jacketImage"`
 	MusicTitle  []string                  `json:"musicTitle"`
@@ -634,8 +640,9 @@ type Comic struct {
 	AssetBundleName string   `json:"assetBundleName"`
 	Title           []string `json:"title"`
 	SubTitle        []string `json:"subTitle"`
-	PublicStartAt   []any    `json:"publicStartAt"`
-	CharacterId     []int    `json:"characterId"`
+	// PublicStartAt can be string or int
+	PublicStartAt []any `json:"publicStartAt"`
+	CharacterId   []int `json:"characterId"`
 }
 
 type LoginBonusDetail struct {
