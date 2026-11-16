@@ -155,16 +155,8 @@ func scaleImagePNG(src image.Image, targetWidth, targetHeight int) image.Image {
 
 func frameHelper(rarity int, attribute string) string {
 	if rarity == -1 {
-		switch attribute {
-		case "powerful":
-			return C.AttributeFrames[0]
-		case "cool":
-			return C.AttributeFrames[1]
-		case "happy":
-			return C.AttributeFrames[2]
-		case "pure":
-			return C.AttributeFrames[3]
-		}
+		idx := utils.IndexHelper(attribute)
+		return C.AttributeFrames[idx]
 	} else {
 		switch rarity {
 		case 1:
