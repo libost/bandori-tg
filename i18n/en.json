@@ -3,7 +3,9 @@
     "lang_code_alt": "en",
     "lang_name": "English",
     "callback": {
-        "setlang_success": "Language updated successfully."
+        "setlang_success": "Language updated successfully.",
+        "invalid_callback_data": "Invalid callback data. Please re-use the command.",
+        "user_mismatch": "This action can only be performed by the user who initiated it."
     },
     "commands": {
         "start_desc": "Welcome to the Bandori Bot! Use /help to view the help message. \n\nIf the current language is not your preferred language, use /lang to set your preferred language.",

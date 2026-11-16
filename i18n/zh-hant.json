@@ -3,7 +3,9 @@
     "lang_code_alt": "",
     "lang_name": "繁體中文",
     "callback": {
-        "setlang_success": "語言設置成功。"
+        "setlang_success": "語言設置成功。",
+        "invalid_callback_data": "無效的回調數據。請重新使用命令。",
+        "user_mismatch": "此操作只能由發起者執行。"
     },
     "commands": {
         "start_desc": "歡迎使用 Bandori Bot！使用 /help 查看幫助信息。\n\n當前語言不是您的首選語言？使用 /lang 設置您喜歡的語言。\n\nIf the current language is not your preferred language, use /lang to set your preferred language.",

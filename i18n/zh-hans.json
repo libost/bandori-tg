@@ -4,7 +4,9 @@
     "lang_name": "简体中文",
     
     "callback": {
-        "setlang_success": "语言设置成功。"
+        "setlang_success": "语言设置成功。",
+        "invalid_callback_data": "无效的回调数据。请重新使用命令。",
+        "user_mismatch": "此操作只能由发起者执行。"
     },
     "commands": {
         "start_desc": "欢迎使用 Bandori Bot！使用 /help 查看帮助信息。\n\n当前语言不是您的首选语言？使用 /lang 设置您喜欢的语言。\n\nIf the current language is not your preferred language, use /lang to set your preferred language.",

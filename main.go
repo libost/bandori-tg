@@ -283,7 +283,7 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 			}
 			log.Printf("using HTTP proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)
 		default:
-			panic("unsupported proxy type" + cfg.Proxy.Type)
+			panic("unsupported proxy type: " + cfg.Proxy.Type)
 		}
 	}
 	return httpClient
