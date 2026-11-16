@@ -334,34 +334,7 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	loc, _ := time.LoadLocation(tz)
 	startTimeStr := time.Unix(publishedAt/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	endTimeStr := time.Unix(endAt/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
-	var buttons []gotgbot.InputRichBlock
-	if len(gachaDetailed.PaymentMethods) > 0 {
-		for i, method := range gachaDetailed.PaymentMethods {
-			if method.PaymentMethod == "free" {
-				buttons = append(buttons, gotgbot.InputRichBlockButtons{
-					Buttons: []gotgbot.RichMessageButton{
-						{
-							Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button_free", langCode), method.Count)),
-							Style:        "primary",
-							CallbackData: "gachaPay_" + gachaId + "_" + strconv.Itoa(i) + "_" + regionCode,
-						},
-					},
-					Align: "center",
-				})
-				continue
-			}
-			buttons = append(buttons, gotgbot.InputRichBlockButtons{
-				Buttons: []gotgbot.RichMessageButton{
-					{
-						Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button", langCode), method.CostItemQuantity, I.GetLocalisedString(fmt.Sprintf("gacha.%s", method.PaymentMethod), langCode), method.Count)),
-						Style:        "primary",
-						CallbackData: "gachaPay_" + gachaId + "_" + strconv.Itoa(i) + "_" + regionCode,
-					},
-				},
-				Align: "center",
-			})
-		}
-	}
+
 	var pickupCards []string
 	for i, cards := range gachaDetailed.Details[qindex] {
 		if cards.Pickup {
@@ -534,6 +507,34 @@ func sendGachaDetails(b *gotgbot.Bot, ctx *ext.Context, context context.Context,
 	}
 	if len(gachaDetailed.Rates) >= qindex {
 		if gachaDetailed.Rates[qindex] != nil {
+			var buttons []gotgbot.InputRichBlock
+			if len(gachaDetailed.PaymentMethods) > 0 {
+				for i, method := range gachaDetailed.PaymentMethods {
+					if method.PaymentMethod == "free" {
+						buttons = append(buttons, gotgbot.InputRichBlockButtons{
+							Buttons: []gotgbot.RichMessageButton{
+								{
+									Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button_free", langCode), method.Count)),
+									Style:        "primary",
+									CallbackData: "gachaPay_" + gachaId + "_" + strconv.Itoa(i) + "_" + regionCode,
+								},
+							},
+							Align: "center",
+						})
+						continue
+					}
+					buttons = append(buttons, gotgbot.InputRichBlockButtons{
+						Buttons: []gotgbot.RichMessageButton{
+							{
+								Text:         gotgbot.RichTextString(fmt.Sprintf(I.GetLocalisedString("gacha.payment_button", langCode), method.CostItemQuantity, I.GetLocalisedString(fmt.Sprintf("gacha.%s", method.PaymentMethod), langCode), method.Count)),
+								Style:        "primary",
+								CallbackData: "gachaPay_" + gachaId + "_" + strconv.Itoa(i) + "_" + regionCode,
+							},
+						},
+						Align: "center",
+					})
+				}
+			}
 			richMessage.Blocks = append(richMessage.Blocks, buttons...)
 		}
 	}
