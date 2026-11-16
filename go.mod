@@ -8,7 +8,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gogpu/gg v0.52.7
 	github.com/libost/gotgbot/v2 v2.0.0-rc.37-rm
-	github.com/libost/kanjiconv v0.0.0-20261115080405-93a9b0ab31da
+	github.com/libost/kanjiconv v0.0.0-20261115102814-e8dd38a59e9f
 	github.com/netresearch/go-cron v0.19.0
 	github.com/sahilm/fuzzy v0.1.3
 	golang.org/x/image v0.48.0
@@ -26,7 +26,7 @@ require (
 	git.sr.ht/~sbinet/gg v0.8.0 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/gogpu/gpucontext v0.32.0 // indirect
-	github.com/gogpu/gputypes v0.8.2 // indirect
+	github.com/gogpu/gputypes v0.9.1 // indirect
 	github.com/gojp/kana v0.1.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
-	modernc.org/libc v1.81.1 // indirect
+	modernc.org/libc v1.81.2 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.12.1 // indirect
+	modernc.org/memory v1.13.0 // indirect
 )
