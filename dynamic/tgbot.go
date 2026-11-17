@@ -59,7 +59,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			regionCode = ctx.Args()[1]
 		}
 	}
-	idx := utils.IndexHelper(regionCode)
+	ridx := utils.IndexHelper(regionCode)
 	recentMap := utils.ReadRecent()
 	richMessage := &gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
@@ -73,7 +73,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	// Songs Section
 	var recentSongs []string
 	for songId, song := range recentMap.Songs {
-		if shouldCollectSong(song.PublishedAt, idx) {
+		if shouldCollectSong(song.PublishedAt, ridx) {
 			recentSongs = append(recentSongs, songId)
 		}
 	}
@@ -86,7 +86,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		var richMessageSongsSections []gotgbot.InputRichBlock
 		for _, songId := range recentSongs {
 			song := songMap[songId]
-			pubTime, err := strconv.ParseInt(song.PublishedAt[idx], 10, 64)
+			pubTime, err := strconv.ParseInt(song.PublishedAt[ridx], 10, 64)
 			if err != nil {
 				log.Printf("Error parsing published time for song %s: %v", songId, err)
 				continue
@@ -100,7 +100,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Align: "left",
 					},
 					{
-						Text:  gotgbot.RichTextString(song.MusicTitle[idx]),
+						Text:  gotgbot.RichTextString(song.MusicTitle[ridx]),
 						Align: "center",
 					},
 				},
@@ -161,15 +161,15 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		Size: 4,
 	})
 	recentEvents := recent.GetOngoingEventsID()
-	if len(recentEvents) <= idx {
+	if len(recentEvents) <= ridx {
 		richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
 			Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsNone", langCode)),
 		})
 	} else {
-		if recentEvents[idx] != "" {
+		if recentEvents[ridx] != "" {
 			eventsMap := utils.ReadEvents()
-			event := eventsMap[recentEvents[idx]]
-			endTime, err := strconv.ParseInt(event.EndAt[idx], 10, 64)
+			event := eventsMap[recentEvents[ridx]]
+			endTime, err := strconv.ParseInt(event.EndAt[ridx], 10, 64)
 			if err != nil {
 				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), "Error parsing event end time: "+err.Error()), &gotgbot.SendMessageOpts{
 					ParseMode: "HTML",
@@ -192,7 +192,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 								Align: "left",
 							},
 							{
-								Text:  gotgbot.RichTextString(event.EventName[idx]),
+								Text:  gotgbot.RichTextString(event.EventName[ridx]),
 								Align: "center",
 							},
 						},
@@ -216,7 +216,7 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					Buttons: []gotgbot.RichMessageButton{
 						{
 							Text:         gotgbot.RichTextString(I.GetLocalisedString("dynamic.eventsButton", langCode)),
-							CallbackData: "events_" + recentEvents[idx] + "_" + regionCode + "_" + strconv.FormatInt(time.Now().Unix(), 10),
+							CallbackData: "events_" + recentEvents[ridx] + "_" + regionCode + "_" + strconv.FormatInt(time.Now().Unix(), 10),
 							Style:        "primary",
 						},
 					},
@@ -240,21 +240,21 @@ func dynamicHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	})
 
 	recentGachas := recent.GetOngoingGachas()
-	if len(recentGachas) <= idx {
+	if len(recentGachas) <= ridx {
 		richMessage.Blocks = append(richMessage.Blocks, gotgbot.InputRichBlockParagraph{
 			Text: gotgbot.RichTextString(I.GetLocalisedString("dynamic.gachasNone", langCode)),
 		})
 	} else {
-		if len(recentGachas[idx].Gacha) > 0 {
+		if len(recentGachas[ridx].Gacha) > 0 {
 			gachaMap := utils.ReadGacha()
 			var richMessageGachaSections []gotgbot.InputRichBlock
-			for _, gacha := range recentGachas[idx].Gacha {
+			for _, gacha := range recentGachas[ridx].Gacha {
 				gachaDetails := gachaMap[gacha]
 				richMessageGachaSections = append(richMessageGachaSections, gotgbot.InputRichBlockButtons{
 					Buttons: []gotgbot.RichMessageButton{
 						{
-							Text:         gotgbot.RichTextString(gachaDetails.GachaName[idx]),
-							CallbackData: fmt.Sprintf("gacha_%s_%d", gacha, idx),
+							Text:         gotgbot.RichTextString(gachaDetails.GachaName[ridx]),
+							CallbackData: fmt.Sprintf("gacha_%s_%d", gacha, ridx),
 							Style:        "primary",
 						},
 					},

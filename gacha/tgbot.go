@@ -56,7 +56,7 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	defer stopActionLoop()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	qindex := utils.IndexHelper(regionCode)
+	ridx := utils.IndexHelper(regionCode)
 	if len(ctx.Args()) == 1 {
 		ongoingGachas := recent.GetOngoingGachas()
 		if len(ongoingGachas) == 0 {
@@ -123,17 +123,17 @@ func gachaHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	}
 
-	if gacha.GachaName[qindex] == "" {
+	if gacha.GachaName[ridx] == "" {
 		for index, name := range gacha.GachaName {
 			if name != "" {
-				qindex = index
+				ridx = index
 				break
 			}
 		}
-		region := utils.ReverseIndexHelper(qindex)
+		region := utils.ReverseIndexHelper(ridx)
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("gacha.not_in_specified_region", langCode), regionCode, region), nil)
 		b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
-		regionCode = utils.ReverseIndexHelper(qindex)
+		regionCode = region
 	}
 
 	err := sendGachaDetails(b, ctx, context, gachaId, regionCode, langCode)

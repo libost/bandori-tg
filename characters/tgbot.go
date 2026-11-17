@@ -81,16 +81,16 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return fmt.Errorf("character ID invalid, expected to be between 1 and 40, got %d", idNum)
 	}
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	qidx := utils.IndexHelper(qlangCode)
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	ridx := utils.IndexHelper(regionCode)
 	characterDetails, err := getCharacterDetails(characterId)
 	if err != nil {
 		return fmt.Errorf("failed to get character details for %s: %w", characterId, err)
 	}
-	if characterDetails.CharacterName[qidx] == "" {
+	if characterDetails.CharacterName[ridx] == "" {
 		for i, name := range characterDetails.CharacterName {
 			if name != "" {
-				qidx = i
+				ridx = i
 				break
 			}
 		}
@@ -99,7 +99,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get band data for %s: %w", characterId, err)
 	}
-	schoolYear := convertAnyToString(characterDetails.Profile.SchoolYear[qidx])
+	schoolYear := convertAnyToString(characterDetails.Profile.SchoolYear[ridx])
 	birthdayInt, err := strconv.Atoi(characterDetails.Profile.Birthday)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("character.error_occurred", langCode), nil)
@@ -147,7 +147,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
-				Text: gotgbot.RichTextString(characterDetails.CharacterName[qidx]),
+				Text: gotgbot.RichTextString(characterDetails.CharacterName[ridx]),
 				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{
@@ -164,7 +164,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						},
 						{
 							Text: gotgbot.RichTextArray{
-								gotgbot.RichTextString(characterDetails.CharacterName[qidx] + " "),
+								gotgbot.RichTextString(characterDetails.CharacterName[ridx] + " "),
 								gotgbot.RichTextCustomEmoji{
 									CustomEmojiId:   fmt.Sprintf("%d", C.CharaEmoji[idNum-1]),
 									AlternativeText: "",
@@ -179,7 +179,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.Profile.CharacterVoice[qidx]),
+							Text:  gotgbot.RichTextString(characterDetails.Profile.CharacterVoice[ridx]),
 							Align: "right",
 						},
 					},
@@ -200,7 +200,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 						},
 						{
 							Text: gotgbot.RichTextArray{
-								gotgbot.RichTextString(bandData.BandName[qidx] + " "),
+								gotgbot.RichTextString(bandData.BandName[ridx] + " "),
 								gotgbot.RichTextCustomEmoji{
 									CustomEmojiId:   fmt.Sprintf("%d", C.BandEmoji[characterDetails.BandID-1]),
 									AlternativeText: "",
@@ -255,7 +255,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.Profile.School[qidx]),
+							Text:  gotgbot.RichTextString(characterDetails.Profile.School[ridx]),
 							Align: "right",
 						},
 					},
@@ -265,7 +265,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(schoolYear + " - " + characterDetails.Profile.SchoolCls[qidx]),
+							Text:  gotgbot.RichTextString(schoolYear + " - " + characterDetails.Profile.SchoolCls[ridx]),
 							Align: "right",
 						},
 					},
@@ -275,7 +275,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.Profile.FavoriteFood[qidx]),
+							Text:  gotgbot.RichTextString(characterDetails.Profile.FavoriteFood[ridx]),
 							Align: "right",
 						},
 					},
@@ -285,7 +285,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.Profile.HatedFood[qidx]),
+							Text:  gotgbot.RichTextString(characterDetails.Profile.HatedFood[ridx]),
 							Align: "right",
 						},
 					},
@@ -295,7 +295,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.Profile.Hobby[qidx]),
+							Text:  gotgbot.RichTextString(characterDetails.Profile.Hobby[ridx]),
 							Align: "right",
 						},
 					},
@@ -305,7 +305,7 @@ func characterCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(characterDetails.Profile.SelfIntroduction[qidx]),
+							Text:  gotgbot.RichTextString(characterDetails.Profile.SelfIntroduction[ridx]),
 							Align: "right",
 						},
 					},

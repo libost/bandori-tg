@@ -446,8 +446,8 @@ func IsValidPNGUrl(url string) bool {
 // timestamp: The timestamp to be checked, in seconds since the Unix epoch.
 func TimeCheck(timestamp int64) int64 {
 	now := time.Now().Unix()
-	if timestamp > now+C.ApiTimeMaxInterval {
-		return C.DefaultTimeStamp
+	if timestamp > now+C.ApiTimeMaxIntervalSec {
+		return C.DefaultTimeStampSec
 	}
 	return timestamp
 }

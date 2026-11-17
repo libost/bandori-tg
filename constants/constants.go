@@ -880,9 +880,9 @@ const (
 	// If the interval is larger than this, the API will return an error. If not too large, it will return `Bad Request: RICH_MESSAGE_DATE_INVALID`. If too large, it will return `Bad Request: can't parse InputRichBlock: Can't parse PageBlockTableCell: Field "unix_time" must be a valid Number`.
 	//
 	// I also call this "the Durov Constant", XD.
-	ApiTimeMaxInterval = 94867200
+	ApiTimeMaxIntervalSec = 94867200
 	// The default timestamp if the time is beyond the maximum interval that the API can accept.
 	//
 	// This is the timestamp of 2029-10-01 00:00:00 UTC.
-	DefaultTimeStamp = 1885507200
+	DefaultTimeStampSec = 1885507200
 )

@@ -63,38 +63,38 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			searchStr.WriteString(" ")
 		}
 	}
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	index := utils.NewSearchIndex(utils.ReadSongsKeys())
 	songs := index.Search(searchStr.String())
 	if len(songs) == 0 {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
-	qidx := utils.IndexHelper(qlangCode)
+	ridx := utils.IndexHelper(regionCode)
 	var results strings.Builder
 	var validCount int
 	for i, song := range songs {
 		if validCount >= 5 {
 			break
 		}
-		if qidx == 0 {
+		if ridx == 0 {
 			if song.Item.Name == "" {
 				continue
 			}
 			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Name)
 		} else {
-			if song.Item.Aliases[qidx] == "" {
+			if song.Item.Aliases[ridx] == "" {
 				continue
 			}
-			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Aliases[qidx])
+			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Aliases[ridx])
 		}
 		validCount++
 	}
 	if validCount == 0 {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
-	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(qlangCode))+results.String(), nil)
+	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(regionCode))+results.String(), nil)
 	if err != nil {
 		if ctx.EffectiveChat.Type == "private" {
 			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
@@ -148,34 +148,34 @@ func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			searchStr.WriteString(" ")
 		}
 	}
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	qidx := utils.IndexHelper(qlangCode)
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	ridx := utils.IndexHelper(regionCode)
 	index := utils.NewSearchIndex(utils.ReadSongsKeys())
 	songs := index.Search(searchStr.String())
 
 	if len(songs) == 0 {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
 	var matchedSong string
 	for _, song := range songs {
-		if qidx == 0 {
+		if ridx == 0 {
 			if song.Item.Name != "" {
 				matchedSong = strconv.Itoa(song.Item.ID)
 				break
 			}
 		} else {
-			if song.Item.Aliases[qidx] != "" {
+			if song.Item.Aliases[ridx] != "" {
 				matchedSong = strconv.Itoa(song.Item.ID)
 				break
 			}
 		}
 	}
 	if matchedSong == "" {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
-	err := sendSongDetails(b, ctx, matchedSong, qlangCode, langCode)
+	err := sendSongDetails(b, ctx, matchedSong, regionCode, langCode)
 	return err
 }
 

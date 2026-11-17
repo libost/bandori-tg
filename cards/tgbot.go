@@ -80,20 +80,20 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}()
 	defer stopActionLoop()
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	dlangCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.no_card_id", langCode), nil)
 		stopActionLoop()
 		log.Printf("User %d did not provide a card ID for query command.", ctx.EffectiveUser.Id)
 		return nil
 	}
 	param := ctx.Args()[1]
 	if len(ctx.Args()) > 2 {
-		qlangCode = ctx.Args()[2]
-		if !slices.Contains(C.AcceptedRegions, qlangCode) {
-			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", dlangCode), nil)
-			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, qlangCode)
+		regionCode = ctx.Args()[2]
+		if !slices.Contains(C.AcceptedRegions, regionCode) {
+			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.invalid_region", langCode), nil)
+			log.Printf("User %d provided an invalid region code: %s.", ctx.EffectiveUser.Id, regionCode)
 			return nil
 		}
 	}
@@ -101,44 +101,45 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	cardMap := utils.ReadCards()
 	card, exists := cardMap[param]
 	if !exists {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.card_not_found", langCode), nil)
 		log.Printf("User %d queried a non-existent card with ID %s.", ctx.EffectiveUser.Id, param)
 		return nil
 	}
 	// Process the card and send the response
-	index := utils.IndexHelper(qlangCode)
-	regionCode := regionCodeFromCard(card, qlangCode)
-	if regionCode != qlangCode {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("cards.region_no_data", dlangCode), qlangCode, regionCode), nil)
+	ridx := utils.IndexHelper(regionCode)
+	regionCodeRetrieved := regionCodeFromCard(card, regionCode)
+	if regionCode != regionCodeRetrieved {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("cards.region_no_data", langCode), regionCode, regionCodeRetrieved), nil)
 		_, _ = b.SendChatAction(ctx.EffectiveChat.Id, "typing", nil)
 	}
+	regionCode = regionCodeRetrieved
 	cardDetailed, err := GetDetailedCard(param)
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", langCode), nil)
 		log.Printf("Error fetching detailed card data for card ID %s: %v", param, err)
 		return nil
 	}
-	gachaText := strings.ReplaceAll(selectLocaleString(cardDetailed.GachaText, index), "\n", "")
-	cardType := I.GetLocalisedString("cards."+card.Type, dlangCode)
-	name := selectLocaleString(card.Prefix, index)
+	gachaText := strings.ReplaceAll(selectLocaleString(cardDetailed.GachaText, ridx), "\n", "")
+	cardType := I.GetLocalisedString("cards."+card.Type, langCode)
+	name := selectLocaleString(card.Prefix, ridx)
 
 	char, err := characters.GetCharacter(fmt.Sprint(card.CharacterID))
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", langCode), nil)
 		log.Printf("Error fetching character data for card ID %s: %v", param, err)
 		return nil
 	}
-	characterName := selectLocaleString(char.CharacterName, index)
+	characterName := selectLocaleString(char.CharacterName, ridx)
 	band, err := band.GetBand(fmt.Sprint(char.BandID))
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", langCode), nil)
 		log.Printf("Error fetching band data for character ID %d: %v", card.CharacterID, err)
 		return nil
 	}
-	bandName := selectLocaleString(band.BandName, index)
+	bandName := selectLocaleString(band.BandName, ridx)
 	normalPath, trainingPath, err := GetCard(param)
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", langCode), nil)
 		log.Printf("Error fetching card data for card ID %s: %v", param, err)
 		return nil
 	}
@@ -155,20 +156,20 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	skill, err := skills.GetSkill(fmt.Sprint(card.SkillID))
 	if err != nil {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.error_occurred", langCode), nil)
 		log.Printf("Error fetching skill data for card ID %s: %v", param, err)
 		return nil
 	}
-	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, index), "\n", "")
+	skillName := strings.ReplaceAll(selectLocaleString(skill.SimpleDescription, ridx), "\n", "")
 	attribute := card.Attribute
-	aindex := utils.IndexHelper(attribute)
+	aidx := utils.IndexHelper(attribute)
 	attribute = strings.ToUpper(attribute)
-	releasedAt := selectLocaleString(card.ReleasedAt, index)
-	releasedAtInt, _ := strconv.Atoi(releasedAt)
-	releasedAtInt64 := utils.TimeCheck(int64(releasedAtInt)/1000) * 1000 // Convert to milliseconds and check
-	tz := utils.TzHelper(qlangCode)
+	releasedAt := selectLocaleString(card.ReleasedAt, ridx)
+	releasedAtInt, _ := strconv.ParseInt(releasedAt, 10, 64)
+	releasedAtInt = utils.TimeCheck(releasedAtInt/1000) * 1000 // Convert to milliseconds and check
+	tz := utils.TzHelper(regionCode)
 	loc, _ := time.LoadLocation(tz)
-	releasedAtTime := time.Unix(releasedAtInt64/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+	releasedAtTime := time.Unix(releasedAtInt/1000, 0).In(loc).Format("2006-01-02 15:04:05 MST")
 	log.Printf("User %d queried card ID %s", ctx.EffectiveUser.Id, param)
 	cemojiID := C.CharaEmoji[card.CharacterID-1]
 	bemojiID := C.BandEmoji[char.BandID-1]
@@ -180,7 +181,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	cells := []tableCell{
 		{
 			Type: "region",
-			Str:  gotgbot.RichTextString(I.GetLocalisedString(fmt.Sprintf("cards.%s", regionCode), dlangCode)),
+			Str:  gotgbot.RichTextString(I.GetLocalisedString(fmt.Sprintf("cards.%s", regionCode), langCode)),
 		},
 		{
 			Type: "card_info_title",
@@ -215,7 +216,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			Str: gotgbot.RichTextArray{
 				gotgbot.RichTextString(attribute + " "),
 				gotgbot.RichTextCustomEmoji{
-					CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
+					CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aidx]),
 					AlternativeText: "😐",
 				},
 			},
@@ -233,7 +234,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	for i, cell := range cells {
 		richCell[i] = []gotgbot.RichBlockTableCell{
 			{
-				Text:  gotgbot.RichTextString(I.GetLocalisedString("cards."+cell.Type, dlangCode)),
+				Text:  gotgbot.RichTextString(I.GetLocalisedString("cards."+cell.Type, langCode)),
 				Align: "left",
 			},
 			{
@@ -249,7 +250,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	if gachaText != "" {
 		richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
 			{
-				Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_gacha_text", dlangCode)),
+				Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_gacha_text", langCode)),
 				Align: "left",
 			},
 			{
@@ -260,13 +261,13 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	}
 	richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
 		{
-			Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_released_at", dlangCode)),
+			Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_released_at", langCode)),
 			Align: "left",
 		},
 		{
 			Text: gotgbot.RichTextDateTime{
 				Text:           gotgbot.RichTextString(releasedAtTime),
-				UnixTime:       releasedAtInt64 / 1000,
+				UnixTime:       releasedAtInt / 1000,
 				DateTimeFormat: "DwT",
 			},
 			Align: "right",
@@ -274,7 +275,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	})
 	richTable.Cells = append(richTable.Cells, []gotgbot.RichBlockTableCell{
 		{
-			Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_id", dlangCode)),
+			Text:  gotgbot.RichTextString(I.GetLocalisedString("cards.card_info_id", langCode)),
 			Align: "left",
 		},
 		{
@@ -295,7 +296,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Media: gotgbot.InputFileByURL(trainingPath),
 					},
 					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", langCode)),
 					},
 				},
 			},
@@ -312,7 +313,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Media: gotgbot.InputFileByURL(normalPath),
 					},
 					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", langCode)),
 					},
 				},
 			},
@@ -329,7 +330,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Media: gotgbot.InputFileByURL(normalPath),
 					},
 					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", langCode)),
 					},
 				},
 				gotgbot.InputRichBlockPhoto{
@@ -337,7 +338,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 						Media: gotgbot.InputFileByURL(trainingPath),
 					},
 					Caption: &gotgbot.RichBlockCaption{
-						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+						Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", langCode)),
 					},
 				},
 			},
@@ -366,26 +367,26 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			req, errReq := http.NewRequestWithContext(ctxTimeout, http.MethodGet, trainingPath, nil)
 			if errReq != nil {
 				log.Printf("Error creating request for training path: %v", errReq)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReq.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errReq.Error()), nil)
 				return errReq
 			}
 			resp, errResp := http.DefaultClient.Do(req)
 			if errResp != nil {
 				log.Printf("Error fetching training path: %v", errResp)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errResp.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errResp.Error()), nil)
 				return errResp
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
 				log.Printf("Training path returned non-OK status: %d", resp.StatusCode)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Training path returned non-OK status: %d", resp.StatusCode)), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), fmt.Sprintf("Training path returned non-OK status: %d", resp.StatusCode)), nil)
 				return fmt.Errorf("training path returned non-OK status: %d", resp.StatusCode)
 			}
 			var trainingPNG bytes.Buffer
 			_, errCopy := io.Copy(&trainingPNG, resp.Body)
 			if errCopy != nil {
 				log.Printf("Error copying training PNG: %v", errCopy)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopy.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errCopy.Error()), nil)
 				return errCopy
 			}
 
@@ -394,7 +395,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					Media: gotgbot.InputFileByReader("training.png", &trainingPNG),
 				},
 				Caption: &gotgbot.RichBlockCaption{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", langCode)),
 				},
 			})
 
@@ -402,26 +403,26 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			req, errReq := http.NewRequestWithContext(ctxTimeout, http.MethodGet, normalPath, nil)
 			if errReq != nil {
 				log.Printf("Error creating request for normal path: %v", errReq)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReq.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errReq.Error()), nil)
 				return errReq
 			}
 			resp, errResp := http.DefaultClient.Do(req)
 			if errResp != nil {
 				log.Printf("Error fetching normal path: %v", errResp)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errResp.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errResp.Error()), nil)
 				return errResp
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
 				log.Printf("Normal path returned non-OK status: %d", resp.StatusCode)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Normal path returned non-OK status: %d", resp.StatusCode)), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), fmt.Sprintf("Normal path returned non-OK status: %d", resp.StatusCode)), nil)
 				return fmt.Errorf("normal path returned non-OK status: %d", resp.StatusCode)
 			}
 			var normalPNG bytes.Buffer
 			_, errCopy := io.Copy(&normalPNG, resp.Body)
 			if errCopy != nil {
 				log.Printf("Error copying normal PNG: %v", errCopy)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopy.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errCopy.Error()), nil)
 				return errCopy
 			}
 			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
@@ -429,58 +430,58 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					Media: gotgbot.InputFileByReader("normal.png", &normalPNG),
 				},
 				Caption: &gotgbot.RichBlockCaption{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", langCode)),
 				},
 			})
 		} else {
 			reqTraining, errReqTraining := http.NewRequestWithContext(ctxTimeout, http.MethodGet, trainingPath, nil)
 			if errReqTraining != nil {
 				log.Printf("Error creating request for training path: %v", errReqTraining)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReqTraining.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errReqTraining.Error()), nil)
 				return errReqTraining
 			}
 			respTraining, errRespTraining := http.DefaultClient.Do(reqTraining)
 			if errRespTraining != nil {
 				log.Printf("Error fetching training path: %v", errRespTraining)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errRespTraining.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errRespTraining.Error()), nil)
 				return errRespTraining
 			}
 			defer respTraining.Body.Close()
 			if respTraining.StatusCode != http.StatusOK {
 				log.Printf("Training path returned non-OK status: %d", respTraining.StatusCode)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Training path returned non-OK status: %d", respTraining.StatusCode)), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), fmt.Sprintf("Training path returned non-OK status: %d", respTraining.StatusCode)), nil)
 				return fmt.Errorf("training path returned non-OK status: %d", respTraining.StatusCode)
 			}
 			var trainingPNG bytes.Buffer
 			_, errCopyTraining := io.Copy(&trainingPNG, respTraining.Body)
 			if errCopyTraining != nil {
 				log.Printf("Error copying training PNG: %v", errCopyTraining)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopyTraining.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errCopyTraining.Error()), nil)
 				return errCopyTraining
 			}
 			reqNormal, errReqNormal := http.NewRequestWithContext(ctxTimeout, http.MethodGet, normalPath, nil)
 			if errReqNormal != nil {
 				log.Printf("Error creating request for normal path: %v", errReqNormal)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errReqNormal.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errReqNormal.Error()), nil)
 				return errReqNormal
 			}
 			respNormal, errRespNormal := http.DefaultClient.Do(reqNormal)
 			if errRespNormal != nil {
 				log.Printf("Error fetching normal path: %v", errRespNormal)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errRespNormal.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errRespNormal.Error()), nil)
 				return errRespNormal
 			}
 			defer respNormal.Body.Close()
 			if respNormal.StatusCode != http.StatusOK {
 				log.Printf("Normal path returned non-OK status: %d", respNormal.StatusCode)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), fmt.Sprintf("Normal path returned non-OK status: %d", respNormal.StatusCode)), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), fmt.Sprintf("Normal path returned non-OK status: %d", respNormal.StatusCode)), nil)
 				return fmt.Errorf("normal path returned non-OK status: %d", respNormal.StatusCode)
 			}
 			var normalPNG bytes.Buffer
 			_, errCopyNormal := io.Copy(&normalPNG, respNormal.Body)
 			if errCopyNormal != nil {
 				log.Printf("Error copying normal PNG: %v", errCopyNormal)
-				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errCopyNormal.Error()), nil)
+				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errCopyNormal.Error()), nil)
 				return errCopyNormal
 			}
 			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
@@ -488,7 +489,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					Media: gotgbot.InputFileByReader("normal.png", &normalPNG),
 				},
 				Caption: &gotgbot.RichBlockCaption{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", dlangCode)),
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.NormalCard", langCode)),
 				},
 			})
 			richMessageErrPhotos = append(richMessageErrPhotos, gotgbot.InputRichBlockPhoto{
@@ -496,7 +497,7 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 					Media: gotgbot.InputFileByReader("training.png", &trainingPNG),
 				},
 				Caption: &gotgbot.RichBlockCaption{
-					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", dlangCode)),
+					Text: gotgbot.RichTextString(I.GetLocalisedString("cards.TrainingCard", langCode)),
 				},
 			})
 		}
@@ -511,16 +512,16 @@ func QueryHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		})
 		if errErr != nil {
 			log.Printf("Failed to send rich message with card details after handling error: %v", errErr)
-			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), errErr.Error()), nil)
+			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), errErr.Error()), nil)
 		}
 		return errErr
 	}
 
 	if err != nil && errors.Is(err, context.DeadlineExceeded) {
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.request_timeout", dlangCode), nil)
+		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("cards.request_timeout", langCode), nil)
 		log.Printf("Request timed out while sending card details to user %d", ctx.EffectiveUser.Id)
 	} else if err != nil {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", dlangCode), err.Error()), &gotgbot.SendMessageOpts{
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
 			ParseMode: "HTML",
 		})
 	}
