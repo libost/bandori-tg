@@ -73,7 +73,7 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	ridx := utils.IndexHelper(regionCode)
 	var results strings.Builder
 	var validCount int
-	for i, song := range songs {
+	for _, song := range songs {
 		if validCount >= 5 {
 			break
 		}
@@ -81,12 +81,12 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			if song.Item.Name == "" {
 				continue
 			}
-			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Name)
+			fmt.Fprintf(&results, "%d. <code>%s</code>\n", validCount+1, song.Item.Name)
 		} else {
 			if song.Item.Aliases[ridx] == "" {
 				continue
 			}
-			fmt.Fprintf(&results, "%d. %s\n", i+1, song.Item.Aliases[ridx])
+			fmt.Fprintf(&results, "%d. <code>%s</code>\n", validCount+1, song.Item.Aliases[ridx])
 		}
 		validCount++
 	}
@@ -94,7 +94,9 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
-	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(regionCode))+results.String(), nil)
+	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(regionCode))+results.String(), &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 	if err != nil {
 		if ctx.EffectiveChat.Type == "private" {
 			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
