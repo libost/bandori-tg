@@ -604,7 +604,7 @@ type Song struct {
 	BgmFile      string                    `json:"bgmFile"`
 	Tag          string                    `json:"tag"`
 	BandID       int                       `json:"bandId"`
-	Achievements []AchievementsData        `json:"achievements"`
+	Achievements []SongAchievementsData    `json:"achievements"`
 	JacketImage  []string                  `json:"jacketImage"`
 	Seq          int                       `json:"seq"`
 	MusicTitle   []string                  `json:"musicTitle"`
@@ -623,7 +623,7 @@ type Song struct {
 	Bpm          map[string]SongBpm        `json:"bpm"`
 }
 
-type AchievementsData struct {
+type SongAchievementsData struct {
 	MusicID         int    `json:"musicId"`
 	AchievementType string `json:"achievementType"`
 	RewardType      string `json:"rewardType"`
@@ -631,18 +631,18 @@ type AchievementsData struct {
 }
 
 type SongDifficulty struct {
-	PlayLevel         int                                            `json:"playLevel"`
-	MultiLiveScoreMap map[string]SongDifficultyMultiLiveScoreMapData `json:"multiLiveScoreMap"`
-	NotesQuantity     int                                            `json:"notesQuantity"`
-	ScoreC            int                                            `json:"scoreC"`
-	ScoreB            int                                            `json:"scoreB"`
-	ScoreA            int                                            `json:"scoreA"`
-	ScoreS            int                                            `json:"scoreS"`
-	ScoreSS           int                                            `json:"scoreSS"`
-	PublishedAt       []string                                       `json:"publishedAt"`
+	PlayLevel         int                                        `json:"playLevel"`
+	MultiLiveScoreMap map[string]SongDifficultyMultiLiveScoreMap `json:"multiLiveScoreMap"`
+	NotesQuantity     int                                        `json:"notesQuantity"`
+	ScoreC            int                                        `json:"scoreC"`
+	ScoreB            int                                        `json:"scoreB"`
+	ScoreA            int                                        `json:"scoreA"`
+	ScoreS            int                                        `json:"scoreS"`
+	ScoreSS           int                                        `json:"scoreSS"`
+	PublishedAt       []string                                   `json:"publishedAt"`
 }
 
-type SongDifficultyMultiLiveScoreMapData struct {
+type SongDifficultyMultiLiveScoreMap struct {
 	MusicID                 int    `json:"musicId"`
 	MusicDifficulty         string `json:"musicDifficulty"`
 	MusicLiveDifficultyID   int    `json:"musicLiveDifficultyId"`
@@ -683,13 +683,13 @@ type LoginBonus struct {
 			VoiceId      string `json:"voiceId"`
 		} `json:"entries"`
 	} `json:"assetMap"`
-	Caption     []string        `json:"caption"`
-	PublishedAt []string        `json:"publishedAt"`
-	ClosedAt    []string        `json:"closedAt"`
-	Details     [][]*DetailItem `json:"details"`
+	Caption     []string               `json:"caption"`
+	PublishedAt []string               `json:"publishedAt"`
+	ClosedAt    []string               `json:"closedAt"`
+	Details     [][]*LoginBonusDetails `json:"details"`
 }
 
-type DetailItem struct {
+type LoginBonusDetails struct {
 	LoginBonusId int    `json:"loginBonusId"`
 	Days         int    `json:"days"`
 	ResourceType string `json:"resourceType"`
