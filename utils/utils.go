@@ -30,6 +30,22 @@ type fetchTask struct {
 	Target any
 }
 
+const (
+	dataBand = iota
+	dataCards
+	dataCharacters
+	dataEvents
+	dataRecent
+	dataSkills
+	dataGacha
+	dataRates
+	dataSongs
+	dataComic
+	dataSongsMeta
+)
+
+var etags = make([]string, 11)
+
 var dataMu sync.RWMutex
 
 var Band C.BandsMap
@@ -153,48 +169,68 @@ func ReadRGachasKeys() []string {
 	return append([]string(nil), RGachaKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandsMap, snapshotCards C.CardsMap, snapshotCharacters C.CharactersMap, snapshotEvents C.EventsMap, snapshotRecent C.Recent, snapshotSkills C.SkillsMap, snapshotGacha C.GachasMap, snapshotRates C.RatesMap, snapshotSongs C.SongsMap, snapshotSongsMeta C.SongMeta, snapshotComic C.ComicsMap) {
+func publishDataSnapshot(changed []bool, snapshotBand C.BandsMap, snapshotCards C.CardsMap, snapshotCharacters C.CharactersMap, snapshotEvents C.EventsMap, snapshotRecent C.Recent, snapshotSkills C.SkillsMap, snapshotGacha C.GachasMap, snapshotRates C.RatesMap, snapshotSongs C.SongsMap, snapshotSongsMeta C.SongMeta, snapshotComic C.ComicsMap) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
-	Band = snapshotBand
-	Cards = snapshotCards
-	Characters = snapshotCharacters
-	Events = snapshotEvents
-	Recent = snapshotRecent
-	Skills = snapshotSkills
-	Gacha = snapshotGacha
-	Rates = snapshotRates
-	Songs = snapshotSongs
-	SongsMeta = snapshotSongsMeta
-	Comic = snapshotComic
-
-	REventsKeys = make([]string, 0, len(Recent.Events))
-	for k := range Recent.Events {
-		REventsKeys = append(REventsKeys, k)
+	if changed[dataBand] {
+		Band = snapshotBand
 	}
-	sort.Strings(REventsKeys)
-
-	RGachaKeys = make([]string, 0, len(Recent.Gacha))
-	for k := range Recent.Gacha {
-		RGachaKeys = append(RGachaKeys, k)
+	if changed[dataCards] {
+		Cards = snapshotCards
 	}
-	sort.Strings(RGachaKeys)
+	if changed[dataCharacters] {
+		Characters = snapshotCharacters
+	}
+	if changed[dataEvents] {
+		Events = snapshotEvents
+	}
+	if changed[dataRecent] {
+		Recent = snapshotRecent
+		REventsKeys = make([]string, 0, len(Recent.Events))
+		for k := range Recent.Events {
+			REventsKeys = append(REventsKeys, k)
+		}
+		sort.Strings(REventsKeys)
 
-	SongsKeys = make([]*Item, 0, len(Songs))
-	t := kanjiconv.InitTokenizer()
-	for i, k := range Songs {
-		idx, _ := strconv.Atoi(i)
-		romanizedTitle := kanjiconv.ConvertJapaneseToRoman(t, k.MusicTitle[0], &kanjiconv.ConvertOptions{
-			CleanNN: true,
-		})
-		SongsKeys = append(SongsKeys, &Item{
-			ID:      idx,
-			Name:    k.MusicTitle[0],
-			Aliases: append([]string{romanizedTitle}, k.MusicTitle[1:]...),
-		})
+		RGachaKeys = make([]string, 0, len(Recent.Gacha))
+		for k := range Recent.Gacha {
+			RGachaKeys = append(RGachaKeys, k)
+		}
+		sort.Strings(RGachaKeys)
 	}
 
+	if changed[dataSkills] {
+		Skills = snapshotSkills
+	}
+	if changed[dataGacha] {
+		Gacha = snapshotGacha
+	}
+	if changed[dataRates] {
+		Rates = snapshotRates
+	}
+	if changed[dataSongs] {
+		Songs = snapshotSongs
+		SongsKeys = make([]*Item, 0, len(Songs))
+		t := kanjiconv.InitTokenizer()
+		for i, k := range Songs {
+			idx, _ := strconv.Atoi(i)
+			romanizedTitle := kanjiconv.ConvertJapaneseToRoman(t, k.MusicTitle[0], &kanjiconv.ConvertOptions{
+				CleanNN: true,
+			})
+			SongsKeys = append(SongsKeys, &Item{
+				ID:      idx,
+				Name:    k.MusicTitle[0],
+				Aliases: append([]string{romanizedTitle}, k.MusicTitle[1:]...),
+			})
+		}
+	}
+	if changed[dataComic] {
+		Comic = snapshotComic
+	}
+	if changed[dataSongsMeta] {
+		SongsMeta = snapshotSongsMeta
+	}
 }
 
 func InitLists() error {
@@ -213,7 +249,7 @@ func InitLists() error {
 	var snapshotComic C.ComicsMap
 	var snapshotSongsMeta C.SongMeta
 
-	data := []fetchTask{
+	var data = []fetchTask{
 		{URL: "https://bestdori.com/api/bands/all.1.json", Target: &snapshotBand},
 		{URL: "https://bestdori.com/api/cards/all.5.json", Target: &snapshotCards},
 		{URL: "https://bestdori.com/api/characters/main.3.json", Target: &snapshotCharacters},
@@ -228,43 +264,66 @@ func InitLists() error {
 	}
 
 	eg, gCtx := errgroup.WithContext(ctx)
-	for _, task := range data {
-		t := task
+	changed := make([]bool, len(data))
+	for i := range data {
+		taskIndex := i
+		task := &data[i]
 		eg.Go(func() error {
-			return fetchAndDecode(gCtx, HttpClient, t.URL, t.Target)
+			notModified, etag, err := fetchAndDecode(gCtx, HttpClient, *task, taskIndex)
+			if err != nil {
+				return err
+			}
+			if etag != "" {
+				etags[taskIndex] = etag
+			}
+			if !notModified {
+				changed[taskIndex] = true
+			}
+			return err
 		})
 	}
 	if err := eg.Wait(); err != nil {
 		log.Printf("Error occurred while fetching and decoding data: %v", err)
 		return err
 	}
-
-	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotSongsMeta, snapshotComic)
+	for _, sourceChanged := range changed {
+		if sourceChanged {
+			publishDataSnapshot(changed, snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotSongsMeta, snapshotComic)
+			break
+		}
+	}
 	log.Printf("All lists initialized successfully.")
 	return nil
 }
 
-func fetchAndDecode(ctx context.Context, client *http.Client, url string, target any) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+func fetchAndDecode(ctx context.Context, client *http.Client, fetchTask fetchTask, etagIndex int) (bool, string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchTask.URL, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request [%s]: %w", url, err)
+		return false, "", fmt.Errorf("failed to create request [%s]: %w", fetchTask.URL, err)
+	}
+	if etags[etagIndex] != "" {
+		req.Header.Set("If-None-Match", etags[etagIndex])
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send request [%s]: %w", url, err)
+		return false, "", fmt.Errorf("failed to send request [%s]: %w", fetchTask.URL, err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusNotModified {
+		return true, "", nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
+		return false, "", fmt.Errorf("unexpected HTTP status code [%s]: %d", fetchTask.URL, resp.StatusCode)
 	}
 
-	if err := json.UnmarshalRead(resp.Body, target); err != nil {
-		return fmt.Errorf("failed to decode JSON [%s]: %w", url, err)
+	if err := json.UnmarshalRead(resp.Body, fetchTask.Target); err != nil {
+		return false, "", fmt.Errorf("failed to decode JSON [%s]: %w", fetchTask.URL, err)
 	}
 
-	return nil
+	return false, resp.Header.Get("ETag"), nil
 }
 
 func InitHttpClient() error {
