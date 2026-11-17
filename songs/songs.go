@@ -24,29 +24,29 @@ func GetSongs(songId string) (C.Songs, error) {
 	return song, nil
 }
 
-func GetDetailedSong(songId string) (C.SongsDetailed, error) {
+func GetDetailedSong(songId string) (C.Song, error) {
 	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	songsMap := utils.ReadSongs()
 	_, exists := songsMap[songId]
 	if !exists {
-		return C.SongsDetailed{}, nil
+		return C.Song{}, nil
 	}
 	url := "https://bestdori.com/api/songs/" + songId + ".json"
 	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 	if err != nil {
-		return C.SongsDetailed{}, err
+		return C.Song{}, err
 	}
 	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
-		return C.SongsDetailed{}, err
+		return C.Song{}, err
 	}
 	defer resp.Body.Close()
 
-	var detailedSong C.SongsDetailed
+	var detailedSong C.Song
 
 	if err = json.UnmarshalRead(resp.Body, &detailedSong); err != nil {
-		return C.SongsDetailed{}, err
+		return C.Song{}, err
 	}
 	return detailedSong, nil
 }

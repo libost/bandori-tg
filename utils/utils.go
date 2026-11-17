@@ -9,13 +9,16 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/libost/bandori-tg/config"
 	C "github.com/libost/bandori-tg/constants"
+	"github.com/libost/bandori-tg/version"
 	"github.com/libost/gotgbot/v2"
+	"github.com/libost/kanjiconv"
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 )
@@ -29,43 +32,40 @@ type fetchTask struct {
 
 var dataMu sync.RWMutex
 
-var Band C.BandData
-var Cards C.CardData
-var Characters C.CharacterData
-var Events C.EventsData
+var Band C.BandsMap
+var Cards C.CardsMap
+var Characters C.CharactersMap
+var Events C.EventsMap
 var Recent C.Recent
-var Skills C.SkillData
-var Gacha C.GachaData
-var Rates C.RatesData
-var Songs C.SongsData
-var Comic C.ComicData
+var Skills C.SkillsMap
+var Gacha C.GachasMap
+var Rates C.RatesMap
+var Songs C.SongsMap
+var Comic C.ComicsMap
+var SongsMeta C.SongMeta
+var SongsKeys []*Item
 var REventsKeys []string
 var RGachaKeys []string
-var SongsKeysJP []string
-var SongsKeysEN []string
-var SongsKeysCN []string
-var SongsKeysKR []string
-var SongsKeysTW []string
 
-func ReadBand() C.BandData {
+func ReadBand() C.BandsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Band
 }
 
-func ReadCards() C.CardData {
+func ReadCards() C.CardsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Cards
 }
 
-func ReadCharacters() C.CharacterData {
+func ReadCharacters() C.CharactersMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Characters
 }
 
-func ReadEvents() C.EventsData {
+func ReadEvents() C.EventsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Events
@@ -77,34 +77,68 @@ func ReadRecent() C.Recent {
 	return Recent
 }
 
-func ReadSkills() C.SkillData {
+func ReadSkills() C.SkillsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Skills
 }
 
-func ReadGacha() C.GachaData {
+func ReadGacha() C.GachasMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Gacha
 }
 
-func ReadRates() C.RatesData {
+func ReadRates() C.RatesMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Rates
 }
 
-func ReadSongs() C.SongsData {
+func ReadSongs() C.SongsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Songs
 }
 
-func ReadComic() C.ComicData {
+func ReadComic() C.ComicsMap {
 	dataMu.RLock()
 	defer dataMu.RUnlock()
 	return Comic
+}
+
+// ReadSongsMeta returns a copy of the SongsMeta data structure.
+//
+// example usage:
+//
+//	var songID = "1" // Yes! BanG_Dream! in this case
+//	var difficulty = "3" // Expert in this case
+//	var skilllength = "7" // 7 seconds skill length in this case
+//	meta := utils.ReadSongsMeta()
+//	factors, ok := meta[songID][difficulty][skilllength]
+//	if !ok {
+//		fmt.Println("Song meta not found for the given parameters")
+//	}
+//	fmt.Println("Factors:", factors)
+//	fmt.Println("Score Factor without Fever:", factors.ScoreFactor(false, 1.0, 1.1))
+//	fmt.Println("Score Factor with Fever:", factors.ScoreFactor(true, 1.0, 1.1))
+//	fmt.Println("Skill Reliance without Fever:", factors.SkillReliance(false))
+//	fmt.Println("Skill Reliance with Fever:", factors.SkillReliance(true))
+//	length := 120.0 // Example song length in seconds, you should get the actual length from the song data
+//	efficiency := factors.Efficiency(true, 1.0, 1.1, length)
+//	fmt.Println("Efficiency with Fever:", efficiency)
+//
+// For a more "close to bestdori" result, you should turn every result into a percentage and round it to the nearest integer, as bestdori does.
+func ReadSongsMeta() C.SongMeta {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return SongsMeta
+}
+
+func ReadSongsKeys() []*Item {
+	dataMu.RLock()
+	defer dataMu.RUnlock()
+	return append([]*Item(nil), SongsKeys...)
 }
 
 func ReadREventsKeys() []string {
@@ -119,7 +153,7 @@ func ReadRGachasKeys() []string {
 	return append([]string(nil), RGachaKeys...)
 }
 
-func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snapshotCharacters C.CharacterData, snapshotEvents C.EventsData, snapshotRecent C.Recent, snapshotSkills C.SkillData, snapshotGacha C.GachaData, snapshotRates C.RatesData, snapshotSongs C.SongsData, snapshotComic C.ComicData) {
+func publishDataSnapshot(snapshotBand C.BandsMap, snapshotCards C.CardsMap, snapshotCharacters C.CharactersMap, snapshotEvents C.EventsMap, snapshotRecent C.Recent, snapshotSkills C.SkillsMap, snapshotGacha C.GachasMap, snapshotRates C.RatesMap, snapshotSongs C.SongsMap, snapshotSongsMeta C.SongMeta, snapshotComic C.ComicsMap) {
 	dataMu.Lock()
 	defer dataMu.Unlock()
 
@@ -132,6 +166,7 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	Gacha = snapshotGacha
 	Rates = snapshotRates
 	Songs = snapshotSongs
+	SongsMeta = snapshotSongsMeta
 	Comic = snapshotComic
 
 	REventsKeys = make([]string, 0, len(Recent.Events))
@@ -146,27 +181,19 @@ func publishDataSnapshot(snapshotBand C.BandData, snapshotCards C.CardData, snap
 	}
 	sort.Strings(RGachaKeys)
 
-	SongsKeysJP = make([]string, 0, len(Songs))
-	SongsKeysCN = make([]string, 0, len(Songs))
-	SongsKeysEN = make([]string, 0, len(Songs))
-	SongsKeysKR = make([]string, 0, len(Songs))
-	SongsKeysTW = make([]string, 0, len(Songs))
-	for k := range Songs {
-		SongsKeysJP = append(SongsKeysJP, Songs[k].MusicTitle[0])
-		SongsKeysEN = append(SongsKeysEN, Songs[k].MusicTitle[1])
-		SongsKeysTW = append(SongsKeysTW, Songs[k].MusicTitle[2])
-		SongsKeysCN = append(SongsKeysCN, Songs[k].MusicTitle[3])
-		SongsKeysKR = append(SongsKeysKR, Songs[k].MusicTitle[4])
+	SongsKeys = make([]*Item, 0, len(Songs))
+	t := kanjiconv.InitTokenizer()
+	for i, k := range Songs {
+		idx, _ := strconv.Atoi(i)
+		romanizedTitle := kanjiconv.ConvertJapaneseToRoman(t, k.MusicTitle[0], &kanjiconv.ConvertOptions{
+			CleanNN: true,
+		})
+		SongsKeys = append(SongsKeys, &Item{
+			ID:      idx,
+			Name:    k.MusicTitle[0],
+			Aliases: append([]string{romanizedTitle}, k.MusicTitle[1:]...),
+		})
 	}
-	sort.Strings(SongsKeysJP)
-
-	sort.Strings(SongsKeysEN)
-
-	sort.Strings(SongsKeysCN)
-
-	sort.Strings(SongsKeysKR)
-
-	sort.Strings(SongsKeysTW)
 
 }
 
@@ -174,16 +201,17 @@ func InitLists() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var snapshotBand C.BandData
-	var snapshotCards C.CardData
-	var snapshotCharacters C.CharacterData
-	var snapshotEvents C.EventsData
+	var snapshotBand C.BandsMap
+	var snapshotCards C.CardsMap
+	var snapshotCharacters C.CharactersMap
+	var snapshotEvents C.EventsMap
 	var snapshotRecent C.Recent
-	var snapshotSkills C.SkillData
-	var snapshotGacha C.GachaData
-	var snapshotRates C.RatesData
-	var snapshotSongs C.SongsData
-	var snapshotComic C.ComicData
+	var snapshotSkills C.SkillsMap
+	var snapshotGacha C.GachasMap
+	var snapshotRates C.RatesMap
+	var snapshotSongs C.SongsMap
+	var snapshotComic C.ComicsMap
+	var snapshotSongsMeta C.SongMeta
 
 	data := []fetchTask{
 		{URL: "https://bestdori.com/api/bands/all.1.json", Target: &snapshotBand},
@@ -196,6 +224,7 @@ func InitLists() error {
 		{URL: "https://bestdori.com/api/tracker/rates.json", Target: &snapshotRates},
 		{URL: "https://bestdori.com/api/songs/all.5.json", Target: &snapshotSongs},
 		{URL: "https://bestdori.com/api/comics/all.5.json", Target: &snapshotComic},
+		{URL: "https://bestdori.com/api/songs/meta/all.5.json", Target: &snapshotSongsMeta},
 	}
 
 	eg, gCtx := errgroup.WithContext(ctx)
@@ -210,7 +239,7 @@ func InitLists() error {
 		return err
 	}
 
-	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotComic)
+	publishDataSnapshot(snapshotBand, snapshotCards, snapshotCharacters, snapshotEvents, snapshotRecent, snapshotSkills, snapshotGacha, snapshotRates, snapshotSongs, snapshotSongsMeta, snapshotComic)
 	log.Printf("All lists initialized successfully.")
 	return nil
 }
@@ -218,29 +247,29 @@ func InitLists() error {
 func fetchAndDecode(ctx context.Context, client *http.Client, url string, target any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return fmt.Errorf("Failed to create request [%s]: %w", url, err)
+		return fmt.Errorf("failed to create request [%s]: %w", url, err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to send request [%s]: %w", url, err)
+		return fmt.Errorf("failed to send request [%s]: %w", url, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
+		return fmt.Errorf("unexpected HTTP status code [%s]: %d", url, resp.StatusCode)
 	}
 
 	if err := json.UnmarshalRead(resp.Body, target); err != nil {
-		return fmt.Errorf("Failed to decode JSON [%s]: %w", url, err)
+		return fmt.Errorf("failed to decode JSON [%s]: %w", url, err)
 	}
 
 	return nil
 }
 
 func InitHttpClient() error {
+	ua := generateUserAgent()
 	config := config.AppConfig
-
 	if config.Proxy.Enabled {
 		switch config.Proxy.Type {
 		case "http":
@@ -249,13 +278,14 @@ func InitHttpClient() error {
 				Transport: &UATransport{
 					Base: &http.Transport{
 						MaxIdleConnsPerHost: 10,
+						DialContext:         http.DefaultClient.Transport.(*http.Transport).DialContext,
 						Proxy: http.ProxyURL(&url.URL{
 							Scheme: "http",
 							Host:   fmt.Sprintf("%s:%d", config.Proxy.Host, config.Proxy.Port),
 							User:   url.UserPassword(config.Proxy.Username, config.Proxy.Password),
 						}),
 					},
-					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+					UserAgent: ua,
 				},
 			}
 		case "socks5":
@@ -271,13 +301,13 @@ func InitHttpClient() error {
 				Transport: &UATransport{
 					Base: &http.Transport{
 						MaxIdleConnsPerHost: 10,
-						Dial:                dialer.Dial,
+						DialContext:         dialer.(proxy.ContextDialer).DialContext,
 					},
-					UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+					UserAgent: ua,
 				},
 			}
 		default:
-			return fmt.Errorf("Unsupported proxy type: %s", config.Proxy.Type)
+			return fmt.Errorf("unsupported proxy type: %s", config.Proxy.Type)
 		}
 	} else {
 		HttpClient = &http.Client{
@@ -286,7 +316,7 @@ func InitHttpClient() error {
 				Base: &http.Transport{
 					MaxIdleConnsPerHost: 10,
 				},
-				UserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+				UserAgent: ua,
 			},
 		}
 	}
@@ -404,11 +434,7 @@ func IsValidPNGUrl(url string) bool {
 	}
 
 	contentType := resp.Header.Get("Content-Type")
-	if contentType != "image/png" {
-		return false
-	}
-
-	return true
+	return contentType == "image/png"
 }
 
 // TimeCheck checks if the given timestamp is within the acceptable range defined by ApiTimeMaxInterval.
@@ -420,8 +446,8 @@ func IsValidPNGUrl(url string) bool {
 // timestamp: The timestamp to be checked, in seconds since the Unix epoch.
 func TimeCheck(timestamp int64) int64 {
 	now := time.Now().Unix()
-	if timestamp > now+C.ApiTimeMaxInterval {
-		return C.DefaultTimeStamp
+	if timestamp > now+C.ApiTimeMaxIntervalSec {
+		return C.DefaultTimeStampSec
 	}
 	return timestamp
 }
@@ -438,4 +464,13 @@ func IsSpecifiedError(err error, targetDescription string) bool {
 		}
 	}
 	return false
+}
+
+func generateUserAgent() string {
+	version := strings.TrimPrefix(version.Version, "v")
+	if version == "dev" {
+		loc, _ := time.LoadLocation("UTC")
+		version = "0.0.0-" + time.Now().In(loc).Format("20060102150405")
+	}
+	return fmt.Sprintf("bandori-tg/%s (https://github.com/libost/bandori-tg)", version)
 }

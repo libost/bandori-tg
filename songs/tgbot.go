@@ -19,20 +19,7 @@ import (
 	"github.com/libost/gotgbot/v2/ext"
 	"github.com/libost/gotgbot/v2/ext/handlers"
 	"github.com/libost/gotgbot/v2/ext/handlers/filters/callbackquery"
-	"github.com/sahilm/fuzzy"
 )
-
-func fuzzySearch(query string, songs []string) []string {
-	fuzzyResults := fuzzy.Find(query, songs)
-	var results []string
-	for _, result := range fuzzyResults {
-		results = append(results, result.Str)
-	}
-	if len(results) > 5 {
-		results = results[:5]
-	}
-	return results
-}
 
 func AddHandlers(dispatcher *ext.Dispatcher) {
 	dispatcher.AddHandler(handlers.NewCommand("search", searchCommand))
@@ -76,24 +63,40 @@ func searchCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			searchStr.WriteString(" ")
 		}
 	}
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	var songs []string
-	switch qlangCode {
-	case "jp":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysJP)
-	case "en":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysEN)
-	case "cn":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysCN)
-	case "kr":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysKR)
-	case "tw":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysTW)
-	default:
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("songs.search_invalid_region", langCode), nil)
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	index := utils.NewSearchIndex(utils.ReadSongsKeys())
+	songs := index.Search(searchStr.String())
+	if len(songs) == 0 {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
-	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(qlangCode))+strings.Join(songs, "\n"), nil)
+	ridx := utils.IndexHelper(regionCode)
+	var results strings.Builder
+	var validCount int
+	for _, song := range songs {
+		if validCount >= 5 {
+			break
+		}
+		if ridx == 0 {
+			if song.Item.Name == "" {
+				continue
+			}
+			fmt.Fprintf(&results, "%d. <code>%s</code>\n", validCount+1, song.Item.Name)
+		} else {
+			if song.Item.Aliases[ridx] == "" {
+				continue
+			}
+			fmt.Fprintf(&results, "%d. <code>%s</code>\n", validCount+1, song.Item.Aliases[ridx])
+		}
+		validCount++
+	}
+	if validCount == 0 {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
+		return nil
+	}
+	_, err := ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_results", langCode), searchStr.String(), strings.ToUpper(regionCode))+results.String(), &gotgbot.SendMessageOpts{
+		ParseMode: "HTML",
+	})
 	if err != nil {
 		if ctx.EffectiveChat.Type == "private" {
 			ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
@@ -147,28 +150,34 @@ func SongCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			searchStr.WriteString(" ")
 		}
 	}
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	var songs []string
-	switch qlangCode {
-	case "jp":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysJP)
-	case "en":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysEN)
-	case "cn":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysCN)
-	case "kr":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysKR)
-	case "tw":
-		songs = fuzzySearch(searchStr.String(), utils.SongsKeysTW)
-	default:
-		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("songs.search_invalid_region", langCode), nil)
-		return nil
-	}
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	ridx := utils.IndexHelper(regionCode)
+	index := utils.NewSearchIndex(utils.ReadSongsKeys())
+	songs := index.Search(searchStr.String())
+
 	if len(songs) == 0 {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(qlangCode)), nil)
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
 		return nil
 	}
-	err := sendSongDetails(b, ctx, songs, qlangCode, langCode)
+	var matchedSong string
+	for _, song := range songs {
+		if ridx == 0 {
+			if song.Item.Name != "" {
+				matchedSong = strconv.Itoa(song.Item.ID)
+				break
+			}
+		} else {
+			if song.Item.Aliases[ridx] != "" {
+				matchedSong = strconv.Itoa(song.Item.ID)
+				break
+			}
+		}
+	}
+	if matchedSong == "" {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("songs.search_no_results", langCode), searchStr.String(), strings.ToUpper(regionCode)), nil)
+		return nil
+	}
+	err := sendSongDetails(b, ctx, matchedSong, regionCode, langCode)
 	return err
 }
 
@@ -210,30 +219,15 @@ func songCallbackHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		ShowAlert: false,
 	})
 	songId := parts[1]
-	region := parts[2]
-	songMap := utils.ReadSongs()
-	song := songMap[songId]
-	songTitle := song.MusicTitle[utils.IndexHelper(region)]
-	return sendSongDetails(b, ctx, []string{songTitle}, region, langCode)
+	return sendSongDetails(b, ctx, songId, parts[2], langCode)
 }
 
-func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, langCode string) error {
+func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songId string, region, langCode string) error {
 	ctxTimeout, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	tz := utils.TzHelper(region)
 	regionIndex := utils.IndexHelper(region)
-	songMap := utils.ReadSongs()
-	var songId string
-	for id, song := range songMap {
-		if song.MusicTitle[regionIndex] == songs[0] {
-			songId = id
-			break
-		}
-	}
-	if songId == "" {
-		ctx.EffectiveMessage.Reply(b, "No song ID found for \""+songs[0]+"\" ("+region+")", nil)
-		return nil
-	}
+
 	detailedSong, err := GetDetailedSong(songId)
 	if err != nil {
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), &gotgbot.SendMessageOpts{
@@ -342,7 +336,7 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 			Align: "left",
 		},
 		{
-			Text:  gotgbot.RichTextString(fmt.Sprintf("%s", songId)),
+			Text:  gotgbot.RichTextString(songId),
 			Align: "right",
 		},
 	})
@@ -422,17 +416,40 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 				Align: "right",
 			},
 		},
-		{
-			{
-				Text:  gotgbot.RichTextString(I.GetLocalisedString("songs.how_to_get", langCode)),
-				Align: "left",
-			},
-			{
-				Text:  gotgbot.RichTextString(detailedSong.HowToGet[regionIndex]),
-				Align: "right",
-			},
-		},
 	}
+	if len(detailedSong.Difficulty) > 4 {
+		if detailedSong.Difficulty["4"].PublishedAt[regionIndex] != "" {
+			timePub, _ := strconv.ParseInt(detailedSong.Difficulty["4"].PublishedAt[regionIndex], 10, 64)
+			timePub = utils.TimeCheck(timePub / 1000)
+			loc, _ := time.LoadLocation(tz)
+			timeStr := time.Unix(timePub, 0).In(loc).Format("2006-01-02 15:04:05 MST")
+
+			infoCells = append(infoCells, []gotgbot.RichBlockTableCell{
+				{
+					Text:  gotgbot.RichTextString(I.GetLocalisedString("songs.difficulty_4", langCode)),
+					Align: "left",
+				},
+				{
+					Text: gotgbot.RichTextDateTime{
+						Text:           gotgbot.RichTextString(timeStr),
+						UnixTime:       timePub,
+						DateTimeFormat: "DwT",
+					},
+					Align: "right",
+				},
+			})
+		}
+	}
+	infoCells = append(infoCells, []gotgbot.RichBlockTableCell{
+		{
+			Text:  gotgbot.RichTextString(I.GetLocalisedString("songs.how_to_get", langCode)),
+			Align: "left",
+		},
+		{
+			Text:  gotgbot.RichTextString(detailedSong.HowToGet[regionIndex]),
+			Align: "right",
+		},
+	})
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
@@ -460,6 +477,16 @@ func sendSongDetails(b *gotgbot.Bot, ctx *ext.Context, songs []string, region, l
 			},
 			gotgbot.InputRichBlockTable{
 				Cells: infoCells,
+			},
+			gotgbot.InputRichBlockDivider{},
+			gotgbot.InputRichBlockButtons{
+				Buttons: []gotgbot.RichMessageButton{
+					{
+						Text:         gotgbot.RichTextString(I.GetLocalisedString("songs.get_song_meta", langCode)),
+						Style:        "primary",
+						CallbackData: "meta_" + songId + "_" + region,
+					},
+				},
 			},
 		},
 	}

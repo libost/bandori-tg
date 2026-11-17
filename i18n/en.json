@@ -3,11 +3,13 @@
     "lang_code_alt": "en",
     "lang_name": "English",
     "callback": {
-        "setlang_success": "Language updated successfully."
+        "setlang_success": "Language updated successfully.",
+        "invalid_callback_data": "Invalid callback data. Please re-use the command.",
+        "user_mismatch": "This action can only be performed by the user who initiated it."
     },
     "commands": {
         "start_desc": "Welcome to the Bandori Bot! Use /help to view the help message. \n\nIf the current language is not your preferred language, use /lang to set your preferred language.",
-        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.\n/cutoff <event_id> - Query the predicted cutoff for a specific event by its ID.\n/cutoff <event_id> <tier> <region> - Query the predicted cutoff for a specific event by its ID, tier, and server code.\n/comic - Get a random comic.\n/song <song_name> - Query information about a specific song by its name.\n/search <keyword> - Search for songs by keyword.\n/song <song_name> - Query information about a specific song by its name.\n/char <char_id> - Query information about a specific character by her ID.\n/char <char_name> - Query information about a specific character by her name.\n/gacha - Query ongoing gacha.\n/gacha <gacha_id> - Query information about a specific gacha by its ID.",
+        "help_desc": "Available commands:\n/start - Start the bot and get a welcome message.\n/help - Show this help message.\n/lang - Set the language.\n/cards <card_id> - Query information about a specific card by its ID.\n/cards <card_id> <region> - Query information about a specific card by its ID and server code.\n/events - Query ongoing events.\n/events <event_id> - Query information about a specific event by its ID.\n/events <event_id> <region> - Query information about a specific event by its ID and server code.\n/cutoff <event_id> - Query the predicted cutoff for a specific event by its ID.\n/cutoff <event_id> <tier> <region> - Query the predicted cutoff for a specific event by its ID, tier, and server code.\n/comic - Get a random comic.\n/song <song_name> - Query information about a specific song by its name.\n/meta <song_name> - Query metadata about a specific song by its name.\n/search <keyword> - Search for songs by keyword.\n/song <song_name> - Query information about a specific song by its name.\n/char <char_id> - Query information about a specific character by her ID.\n/char <char_name> - Query information about a specific character by her name.\n/gacha - Query ongoing gacha.\n/gacha <gacha_id> - Query information about a specific gacha by its ID.",
         "lang_desc": "Select the language you want to set.",
         "lang_desc_group": "Please use the /lang command in a private chat to set the language.",
         "lang_dlang": "Set Display Language",
@@ -33,7 +35,8 @@
             "Query ongoing gacha.",
             "Query information about a specific character by her ID or name.",
             "Get a random comic.",
-            "Query recently updated content."
+            "Query recently updated content.",
+            "Query song metadata by song name."
         ]
     },
     "cards": {
@@ -151,13 +154,28 @@
         "length": "Length: ",
         "countdown": "Countdown: ",
         "published_at": "Release Date: ",
+        "difficulty_4": "Release Date (SPECIAL): ",
         "how_to_get": "How to Get: ",
         "normal": "Original",
         "anime": "Cover",
         "tie_up": "Extra",
         "countdown_end": "Released",
         "countdown_not_end": "Releases in %[1]d day(s) %[2]d hour(s) %[3]d minute(s) %[4]d second(s)",
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "get_song_meta": "Get Song Metadata",
+        "meta": {
+            "usage": "Please provide a song name to query. Usage: /meta <song_name>.",
+            "bpm": "BPM",
+            "note": "N",
+            "nps": "NPS",
+            "length": "Time",
+            "efficiency": "Eff",
+            "score_factor": "Score",
+            "difficulty": "Metric",
+            "skill_reliance": "SR",
+            "get_song_info_button": "Get Song Info",
+            "processing": "Processing..."
+        }
     },
     "generic": {
         "error": "An error occurred. Please try again later. Error message: \n<code>%[1]s</code>"

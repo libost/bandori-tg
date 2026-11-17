@@ -37,10 +37,11 @@
 | 语言 | Go 1.27 |
 | 框架 | [gotgbot(自有分支)](https://github.com/libost/gotgbot) (v2) |
 | 数据库 | SQLite（[modernc.org/sqlite](https://modernc.org/sqlite)，纯 Go 实现，支持 `CGO_ENABLED=0` 交叉编译） |
-| 图片生成 | [gogpu/gg](https://github.com/gogpu/gg) + [tdewolff/canvas](https://github.com/tdewolff/canvas) |
+| 图片生成 | [gogpu/gg](https://github.com/gogpu/gg) |
 | 定时任务 | [netresearch/go-cron](https://github.com/netresearch/go-cron) |
 | 日志 | [lumberjack](https://github.com/natefinch/lumberjack)（滚动日志） |
 | 配置 | YAML（[goccy/go-yaml](https://github.com/goccy/go-yaml)） |
+| 日文转罗马字 | [libost/kanjiconv](https://github.com/libost/kanjiconv) |
 
 ## 📁 目录结构
 
@@ -55,6 +56,7 @@ bandori-tg/
 ├── comic/               # 漫画数据处理
 ├── events/              # 活动详情 + 档线预测（/cutoff）
 ├── songs/               # 歌曲数据处理
+|     └── meta/          # 歌曲元数据处理
 ├── gacha/               # 卡池数据处理
 ├── skills/              # 技能数据处理
 ├── recent/              # 最新资讯数据处理
@@ -139,8 +141,9 @@ go build -o bandori-tg .
 | `/cutoff <活动ID>` | 所有人 | 查看活动档线预测图 |
 | `/news` | 所有人 | 查看最新资讯 |
 | `/gacha` | 所有人 | 查看卡池信息 |
-| `/songs` | 所有人 | 查看歌曲信息 |
-| `/search` | 所有人 | 搜索歌曲 |
+| `/songs <歌曲ID/歌曲名/关键词>` | 所有人 | 查看歌曲信息 |
+| `/meta <歌曲ID/歌曲名/关键词>` | 所有人 | 查看歌曲元信息 |
+| `/search <关键词>` | 所有人 | 搜索歌曲 |
 | `/lang` | 所有人 | 语言设置（界面语言 / 查询语言） |
 | `/dlang` | 所有人 | 设置界面语言 |
 | `/qlang` | 所有人 | 设置查询语言（数据服务区） |
@@ -192,10 +195,15 @@ go build ./...
 
 版本信息在构建时通过 `-ldflags` 注入（`version.Version` / `BuildTime` / `GitCommit` / `Branch`），可通过 `/about` 指令或 `bandori-tg version` 查看。
 
+> [!NOTE]
+> 自版本v1.5起，通过Github Releases发布的二进制文件已不再包含内置字体文件(i.e. 构建时使用标签 `fonts_detached`)，首次运行时会自动下载所需字体文件到 `res/fonts/` 目录。如需恢复原有的行为（即内置字体文件），请自行从源码构建。
+
 ## 开发路线
 
 - [x] 新闻页面
 - [x] 招募信息查询
+- [x] 歌曲信息查询
+- [x] 歌曲元信息查询
 - [ ] 更多语言支持（需要帮助！）
 
 ## 📄 许可证

@@ -89,7 +89,7 @@ func normalizeCharacterID(value any) string {
 	}
 }
 
-func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *time.Location) (int64, string) {
+func getTimeHelper(eventDetailed C.Event, field string, index int, tz *time.Location) (int64, string) {
 	if field == "start" {
 		timeR := eventDetailed.StartAt[index]
 		timeInt, _ := strconv.ParseInt(timeR, 10, 64)
@@ -107,7 +107,7 @@ func getTimeHelper(eventDetailed C.EventDetailed, field string, index int, tz *t
 	return 0, ""
 }
 
-func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlangCode string) error {
+func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, regionCode string) error {
 	stopAction := make(chan struct{})
 	var stopActionOnce sync.Once
 	stopActionLoop := func() {
@@ -143,38 +143,38 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_fetch_error", langCode), nil)
 		return err
 	}
-	if qlangCode == "" {
-		qlangCode = I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	if regionCode == "" {
+		regionCode = I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 	}
 	eventType := eventDetailed.EventType
-	qindex := utils.IndexHelper(qlangCode)
-	eventName := selectLocaleString(eventDetailed.EventName, qindex)
-	regionCode := regionCodeFromEvent(eventDetailed, qlangCode)
-	if regionCode != qlangCode {
-		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("events.region_no_data", langCode), qlangCode, regionCode), nil)
+	ridx := utils.IndexHelper(regionCode)
+	eventName := selectLocaleString(eventDetailed.EventName, ridx)
+	regionCodeRetreved := regionCodeFromEvent(eventDetailed, regionCode)
+	if regionCode != regionCodeRetreved {
+		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("events.region_no_data", langCode), regionCode, regionCodeRetreved), nil)
 	}
-	rindex := utils.IndexHelper(regionCode)
+	regionCode = regionCodeRetreved
+	ridx = utils.IndexHelper(regionCode)
 	bannerUrl := "https://bestdori.com/assets/" + regionCode + "/event/" + eventDetailed.AssetBundleName + "/images_rip/banner.png"
 	attribute := eventDetailed.Attributes[0].Attribute
-	aindex := utils.IndexHelper(attribute)
+	aidx := utils.IndexHelper(attribute)
 	attribute = strings.ToUpper(attribute)
 
 	tz := utils.TzHelper(regionCode)
 	loc, _ := time.LoadLocation(tz)
-	startAtUnix, startAtTime := getTimeHelper(eventDetailed, "start", rindex, loc)
-	endAtUnix, endAtTime := getTimeHelper(eventDetailed, "end", rindex, loc)
+	startAtUnix, startAtTime := getTimeHelper(eventDetailed, "start", ridx, loc)
+	endAtUnix, endAtTime := getTimeHelper(eventDetailed, "end", ridx, loc)
 
-	var secs, mins, hrs, days int64
 	var remainingTimeText string
 	now := time.Now().Unix()
 	if startAtUnix > now {
 		// The event hasn't started yet
 		remainingTime := startAtUnix - now
-		secs, mins, hrs, days = TimeCalc(remainingTime)
+		secs, mins, hrs, days := TimeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.not_started", langCode), days, hrs, mins, secs)
 	} else if endAtUnix > now && startAtUnix < now {
 		remainingTime := endAtUnix - now
-		secs, mins, hrs, days = TimeCalc(remainingTime)
+		secs, mins, hrs, days := TimeCalc(remainingTime)
 		remainingTimeText = fmt.Sprintf(I.GetLocalisedString("events.remaining_time", langCode), days, hrs, mins, secs)
 	} else {
 		// The event has ended
@@ -259,7 +259,7 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 			Str: &gotgbot.RichTextArray{
 				gotgbot.RichTextString(attribute + " "),
 				gotgbot.RichTextCustomEmoji{
-					CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aindex]),
+					CustomEmojiId:   fmt.Sprint(C.AttributeEmoji[aidx]),
 					AlternativeText: "😐",
 				},
 				gotgbot.RichTextString("   +" + fmt.Sprint(eventDetailed.Attributes[0].Percent) + "%"),
@@ -303,6 +303,11 @@ func SendDetailedEvent(b *gotgbot.Bot, ctx *ext.Context, eventID, langCode, qlan
 		return err
 	}
 	img2, err := generateEventBonusCards(eventDetailed)
+	if err != nil {
+		log.Printf("Error generating event bonus cards image for event ID %s: %v", eventID, err)
+		_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_image_error", langCode), nil)
+		return err
+	}
 	var buf2 bytes.Buffer
 	err = png.Encode(&buf2, img2)
 	if err != nil {
@@ -461,7 +466,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.fsx_usage", I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)), nil)
 		return nil
 	}
-	qlangCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
+	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
 
 	tier := 0
 	if len(ctx.Args()) > 2 {
@@ -473,20 +478,19 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		tier = t
 	}
 	if len(ctx.Args()) > 3 {
-		region := ctx.Args()[3]
-		if !slices.Contains(C.AcceptedRegions, region) {
+		if !slices.Contains(C.AcceptedRegions, ctx.Args()[3]) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.invalid_region", langCode), nil)
 			return nil
 		}
-		qlangCode = region
+		regionCode = ctx.Args()[3]
 	}
 	eventID := ctx.Args()[1]
-	regionCode := utils.IndexHelper(qlangCode)
+	ridx := utils.IndexHelper(regionCode)
 	if eventID == "now" || eventID == "当前" {
 		ongoingEvents := recent.GetOngoingEventsID()
-		eventID = ongoingEvents[regionCode]
+		eventID = ongoingEvents[ridx]
 	}
-	img, last, predicted, latestTime, speed, allTimeSpeed, err := getEventTracker(qlangCode, eventID, tier)
+	img, last, predicted, latestTime, speed, allTimeSpeed, err := getEventTracker(regionCode, eventID, tier)
 	if err != nil {
 		if errors.Is(err, C.ErrNoSuchEvent) {
 			ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.event_not_found", langCode), nil)
@@ -516,13 +520,13 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return nil
 	}
 	now := time.Now().Unix() * 1000
-	startAt, err := strconv.ParseInt(event.StartAt[regionCode], 10, 64)
+	startAt, err := strconv.ParseInt(event.StartAt[ridx], 10, 64)
 	if err != nil {
 		log.Printf("Error parsing start time for event ID %s: %v", eventID, err)
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 		return err
 	}
-	endAt, err := strconv.ParseInt(event.EndAt[regionCode], 10, 64)
+	endAt, err := strconv.ParseInt(event.EndAt[ridx], 10, 64)
 	if err != nil {
 		log.Printf("Error parsing end time for event ID %s: %v", eventID, err)
 		ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
@@ -541,7 +545,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	if predicted == 0 {
 		predictedStr = I.GetLocalisedString("events.not_enough_data", langCode)
 	}
-	tz := utils.TzHelper(qlangCode)
+	tz := utils.TzHelper(regionCode)
 	loc, _ := time.LoadLocation(tz)
 	lastTimeStr := time.UnixMilli(int64(latestTime)).In(loc).Format("2006-01-02 15:04:05 MST")
 	allTimeSpeedStr := humanize.Comma(int64(allTimeSpeed))
@@ -571,7 +575,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 							Align: "left",
 						},
 						{
-							Text:  gotgbot.RichTextString(fmt.Sprintf("%s", lastStr)),
+							Text:  gotgbot.RichTextString(lastStr),
 							Align: "right",
 						},
 					},
@@ -653,7 +657,7 @@ func FsxCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 			Buttons: []gotgbot.RichMessageButton{{
 				Text:         gotgbot.RichTextString(I.GetLocalisedString("events.event_detailsClick", langCode)),
 				Style:        "primary",
-				CallbackData: "events_" + eventID + "_" + qlangCode + "_" + fmt.Sprint(now/1000),
+				CallbackData: "events_" + eventID + "_" + regionCode + "_" + fmt.Sprint(now/1000),
 			}},
 			Align: "center",
 		},
@@ -807,16 +811,16 @@ func eventsCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		return err
 	} else {
 		param := ctx.Args()[1]
-		qlangCode := ""
+		regionCode := ""
 		if len(ctx.Args()) > 2 {
 			if slices.Contains(C.AcceptedRegions, ctx.Args()[2]) {
-				qlangCode = ctx.Args()[2]
+				regionCode = ctx.Args()[2]
 			} else {
 				_, err := ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("events.invalid_region", langCode), nil)
 				return err
 			}
 		}
-		return SendDetailedEvent(b, ctx, param, langCode, qlangCode)
+		return SendDetailedEvent(b, ctx, param, langCode, regionCode)
 	}
 }
 

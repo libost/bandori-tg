@@ -51,7 +51,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	args := ctx.Args()
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	regionCode := I.QueryLangCodePrefer(ctx.EffectiveUser.Id, "jp")
-	qidx := utils.IndexHelper(regionCode)
+	ridx := utils.IndexHelper(regionCode)
 	if len(args) == 1 {
 		comicKeys := getAllComicIDsForSpecifiedRegion(regionCode)
 		if len(comicKeys) == 0 {
@@ -65,7 +65,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 				ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
 				return err
 			}
-			if comicData.Title[qidx] != "" {
+			if comicData.Title[ridx] != "" {
 				err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
 				if err != nil {
 					ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("generic.error", langCode), err.Error()), nil)
@@ -84,23 +84,22 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 		ctx.EffectiveMessage.Reply(b, I.GetLocalisedString("comic.comic_not_found", langCode), nil)
 		return err
 	}
-	comicTitle := comicData.Title[qidx]
-	if comicTitle == "" {
+
+	if comicData.Title[ridx] == "" {
 		for i, title := range comicData.Title {
 			if title != "" {
-				comicTitle = title
-				qidx = i
+				ridx = i
 				break
 			}
 		}
-		_, err = ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("comic.not_in_specified_region", langCode), regionCode, utils.ReverseIndexHelper(qidx)), nil)
+		_, err = ctx.EffectiveMessage.Reply(b, fmt.Sprintf(I.GetLocalisedString("comic.not_in_specified_region", langCode), regionCode, utils.ReverseIndexHelper(ridx)), nil)
 		if err != nil {
 			log.Printf("Comic: Failed to send reply message: %v", err)
 			return err
 		}
 	}
 
-	regionCode = utils.ReverseIndexHelper(qidx)
+	regionCode = utils.ReverseIndexHelper(ridx)
 
 	err = sendComic(b, ctx, ctxTimeout, comicData, comicId, langCode, regionCode)
 	if err != nil {
@@ -109,7 +108,7 @@ func comicCommand(b *gotgbot.Bot, ctx *ext.Context) error {
 	return err
 }
 
-func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, comic C.Comic, comicId, langCode, regionCode string) error {
+func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, comic C.Comics, comicId, langCode, regionCode string) error {
 	url, err := getComicUrl(comic, regionCode)
 	if err != nil {
 		return err
@@ -126,7 +125,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 		}
 	}
 
-	idx := utils.IndexHelper(regionCode)
+	ridx := utils.IndexHelper(regionCode)
 	cells := [][]gotgbot.RichBlockTableCell{
 		{
 			{
@@ -134,7 +133,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 				Align: "left",
 			},
 			{
-				Text:  gotgbot.RichTextString(comic.Title[idx]),
+				Text:  gotgbot.RichTextString(comic.Title[ridx]),
 				Align: "right",
 			},
 		},
@@ -144,7 +143,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 				Align: "left",
 			},
 			{
-				Text:  gotgbot.RichTextString(comic.SubTitle[idx]),
+				Text:  gotgbot.RichTextString(comic.SubTitle[ridx]),
 				Align: "right",
 			},
 		},
@@ -169,7 +168,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 			},
 		},
 	}
-	publicStartAt := convertAnyToInt(comic.PublicStartAt[idx])
+	publicStartAt := convertAnyToInt(comic.PublicStartAt[ridx])
 	if publicStartAt != 1 {
 		timestamp := int64(publicStartAt) / 1000
 		timestamp = utils.TimeCheck(timestamp)
@@ -204,7 +203,7 @@ func sendComic(b *gotgbot.Bot, ctx *ext.Context, ctxTimeout context.Context, com
 	richMessage := gotgbot.InputRichMessage{
 		Blocks: []gotgbot.InputRichBlock{
 			gotgbot.InputRichBlockSectionHeading{
-				Text: gotgbot.RichTextString(comic.Title[idx]),
+				Text: gotgbot.RichTextString(comic.Title[ridx]),
 				Size: 3,
 			},
 			gotgbot.InputRichBlockPhoto{

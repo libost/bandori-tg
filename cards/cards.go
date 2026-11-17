@@ -10,22 +10,21 @@ import (
 	"image"
 	"image/png"
 	"io"
-	"math"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gogpu/gg"
+	"github.com/gogpu/gg/svg"
 	"github.com/gogpu/gg/text"
 	C "github.com/libost/bandori-tg/constants"
 	"github.com/libost/bandori-tg/utils"
-	"github.com/tdewolff/canvas"
-	"github.com/tdewolff/canvas/renderers/rasterizer"
 	"golang.org/x/image/draw"
 )
 
-func regionCodeFromCard(card C.Card, preferCode string) string {
+func regionCodeFromCard(card C.Cards, preferCode string) string {
 	index := utils.IndexHelper(preferCode)
 	if index < len(card.ReleasedAt) && card.ReleasedAt[index] != "" && card.ReleasedAt[index] != "null" {
 		return preferCode
@@ -67,24 +66,24 @@ func GetCard(cardId string) (string, string, error) {
 	return normalPath, trainingPath, nil
 }
 
-func GetDetailedCard(cardId string) (C.CardDetailed, error) {
+func GetDetailedCard(cardId string) (C.Card, error) {
 	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/cards/"+cardId+".json", nil)
 	if err != nil {
-		return C.CardDetailed{}, err
+		return C.Card{}, err
 	}
 	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
-		return C.CardDetailed{}, err
+		return C.Card{}, err
 	}
 	defer resp.Body.Close()
-	var cardDetailed C.CardDetailed
-	err = json.UnmarshalRead(resp.Body, &cardDetailed)
+	var card C.Card
+	err = json.UnmarshalRead(resp.Body, &card)
 	if err != nil {
-		return C.CardDetailed{}, err
+		return C.Card{}, err
 	}
-	return cardDetailed, nil
+	return card, nil
 }
 
 func getThumbCard(cardId string) (string, error) {
@@ -108,25 +107,21 @@ func getThumbCard(cardId string) (string, error) {
 	return "", fmt.Errorf("no valid thumbnail found for card ID %s", cardId)
 }
 
-func loadSVG(w, h float64, stream io.Reader) (image.Image, error) {
-	svgData, err := io.ReadAll(stream)
+func loadSVG(dc *gg.Context, targetX, targetY, w, h float64, stream io.Reader) error {
+	bytes, err := io.ReadAll(stream)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	svgStr, err := cleanSVGXML(string(svgData))
+	cleaned, err := cleanSVGXML(string(bytes))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	icon, err := canvas.ParseSVG(strings.NewReader(svgStr))
+	document, err := svg.Parse([]byte(cleaned))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	origW, origH := icon.Size()
-	dpmmW := w / origW
-	dpmmH := h / origH
-	dpmm := math.Min(dpmmW, dpmmH)
-	img := rasterizer.Draw(icon, canvas.DPMM(dpmm), canvas.DefaultColorSpace)
-	return img, nil
+	document.RenderTo(dc, targetX, targetY, w, h)
+	return nil
 }
 
 func drawScaledImage(dc *gg.Context, imgBuf image.Image, targetX, targetY, targetW, targetH float64) {
@@ -160,40 +155,14 @@ func scaleImagePNG(src image.Image, targetWidth, targetHeight int) image.Image {
 
 func frameHelper(rarity int, attribute string) string {
 	if rarity == -1 {
-		switch attribute {
-		case "powerful":
-			return C.AttributeFrames[0]
-		case "cool":
-			return C.AttributeFrames[1]
-		case "happy":
-			return C.AttributeFrames[2]
-		case "pure":
-			return C.AttributeFrames[3]
-		}
+		return C.AttributeFrames[utils.IndexHelper(attribute)]
 	} else {
-		switch rarity {
-		case 1:
-			switch attribute {
-			case "powerful":
-				return C.Card1PowerfulFrame
-			case "cool":
-				return C.Card1CoolFrame
-			case "happy":
-				return C.Card1HappyFrame
-			case "pure":
-				return C.Card1PureFrame
-			}
-		case 2:
-			return C.Card2Frame
-		case 3:
-			return C.Card3Frame
-		case 4:
-			return C.Card4Frame
-		case 5:
-			return C.Card5Frame
+		if rarity == 1 {
+			return C.Card1Frames[utils.IndexHelper(attribute)]
+		} else {
+			return C.CardFrames[rarity-2]
 		}
 	}
-	return ""
 }
 
 func ThumbGenerate(cardId string, percent int) (image.Image, error) {
@@ -255,11 +224,10 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 		return nil, err
 	}
 	defer respAttrFrame.Body.Close()
-	attrFrameImg, err := loadSVG(46, 46, respAttrFrame.Body)
+	err = loadSVG(dc, 132, 2, 46, 46, respAttrFrame.Body)
 	if err != nil {
 		return nil, err
 	}
-	drawScaledImage(dc, attrFrameImg, 132, 2, 46, 46)
 	reqStar, err := http.NewRequestWithContext(context, http.MethodGet, starImg, nil)
 	if err != nil {
 		return nil, err
@@ -286,17 +254,19 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 			return nil, err
 		}
 		defer respBandFrame.Body.Close()
-		bandFrameImg, err := loadSVG(50, 50, respBandFrame.Body)
+		err = loadSVG(dc, 0, 0, 50, 50, respBandFrame.Body)
 		if err != nil {
 			return nil, err
 		}
-		drawScaledImage(dc, bandFrameImg, 0, 0, 50, 50)
 	}
 	font, err := utils.GetFontsFile("NotoSans-Regular.ttf")
 	if err != nil {
 		return nil, err
 	}
 	fontSrc, err := text.NewFontSource(font)
+	if err != nil {
+		return nil, err
+	}
 	dc.SetFont(fontSrc.Face(32))
 	dc.SetHexColor("#000000")
 	var inputStr string
@@ -309,18 +279,31 @@ func ThumbGenerate(cardId string, percent int) (image.Image, error) {
 	return dc.Image(), nil
 }
 
-func processNode(node XMLNode) *XMLNode {
+func processNodeWithCSS(node XMLNode, cssRules map[string]map[string]string) *XMLNode {
 	tag := strings.ToLower(node.XMLName.Local)
 
-	// 过滤 oksvg 不需要或不支持的标签
-	if tag == "metadata" || tag == "image" || (tag == "defs" && len(node.Children) == 0) {
+	if tag == "metadata" || tag == "image" || tag == "style" || (tag == "defs" && len(node.Children) == 0) {
 		return nil
 	}
 
 	var newAttrs []xml.Attr
 	isDisplayNone := false
+	hasZeroStrokeWidth := false
 
-	// 处理属性，将 style="key:val;" 转为标准的 SVG 属性
+	for _, attr := range node.Attrs {
+		if attr.Name.Local != "class" {
+			continue
+		}
+		for className := range strings.FieldsSeq(attr.Value) {
+			for key, value := range cssRules[className] {
+				newAttrs = append(newAttrs, xml.Attr{
+					Name:  xml.Name{Local: key},
+					Value: value,
+				})
+			}
+		}
+	}
+
 	for _, attr := range node.Attrs {
 		if attr.Name.Local == "style" {
 			styles := strings.SplitSeq(attr.Value, ";")
@@ -337,6 +320,11 @@ func processNode(node XMLNode) *XMLNode {
 					if k == "display" && v == "none" {
 						isDisplayNone = true
 					} else if k != "display" {
+						if k == "stroke-width" {
+							if width, err := strconv.ParseFloat(v, 64); err == nil && width == 0 {
+								hasZeroStrokeWidth = true
+							}
+						}
 						newAttrs = append(newAttrs, xml.Attr{
 							Name:  xml.Name{Local: k},
 							Value: v,
@@ -344,30 +332,89 @@ func processNode(node XMLNode) *XMLNode {
 					}
 				}
 			}
+		} else if attr.Name.Local == "class" {
+			continue
 		} else if attr.Name.Local == "display" && attr.Value == "none" {
 			isDisplayNone = true
 		} else {
+			if attr.Name.Local == "stroke-width" {
+				if width, err := strconv.ParseFloat(attr.Value, 64); err == nil && width == 0 {
+					hasZeroStrokeWidth = true
+				}
+			}
 			newAttrs = append(newAttrs, attr)
 		}
 	}
 
-	// 如果当前图层设置了 display:none，直接丢弃该节点
+	for _, attr := range newAttrs {
+		if attr.Name.Local != "stroke-width" {
+			continue
+		}
+		if width, err := strconv.ParseFloat(attr.Value, 64); err == nil && width == 0 {
+			hasZeroStrokeWidth = true
+			break
+		}
+	}
+	if hasZeroStrokeWidth {
+		newAttrs = append(newAttrs, xml.Attr{
+			Name:  xml.Name{Local: "stroke"},
+			Value: "none",
+		})
+	}
+
 	if isDisplayNone {
 		return nil
 	}
 
 	node.Attrs = newAttrs
 
-	// 递归处理子节点
 	var newChildren []XMLNode
 	for _, child := range node.Children {
-		if processed := processNode(child); processed != nil {
+		if processed := processNodeWithCSS(child, cssRules); processed != nil {
 			newChildren = append(newChildren, *processed)
 		}
 	}
 	node.Children = newChildren
 
 	return &node
+}
+
+func parseCSSRules(content string) map[string]map[string]string {
+	rules := make(map[string]map[string]string)
+	for rule := range strings.SplitSeq(content, "}") {
+		parts := strings.SplitN(rule, "{", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		declarations := make(map[string]string)
+		for declaration := range strings.SplitSeq(parts[1], ";") {
+			kv := strings.SplitN(declaration, ":", 2)
+			if len(kv) != 2 {
+				continue
+			}
+			key := strings.TrimSpace(kv[0])
+			value := strings.TrimSpace(kv[1])
+			if key != "" && value != "" {
+				declarations[key] = value
+			}
+		}
+		for selector := range strings.SplitSeq(parts[0], ",") {
+			selector = strings.TrimSpace(selector)
+			if after, ok := strings.CutPrefix(selector, "."); ok {
+				rules[after] = declarations
+			}
+		}
+	}
+	return rules
+}
+
+func collectCSSRules(node XMLNode, rules map[string]map[string]string) {
+	if strings.EqualFold(node.XMLName.Local, "style") {
+		maps.Copy(rules, parseCSSRules(string(node.Content)))
+	}
+	for _, child := range node.Children {
+		collectCSSRules(child, rules)
+	}
 }
 
 func isValidRemoteAssetURL(raw string) bool {
@@ -384,9 +431,11 @@ func cleanSVGXML(input string) (string, error) {
 		return "", err
 	}
 
-	cleanedRoot := processNode(root)
+	cssRules := make(map[string]map[string]string)
+	collectCSSRules(root, cssRules)
+	cleanedRoot := processNodeWithCSS(root, cssRules)
 	if cleanedRoot == nil {
-		return "", fmt.Errorf("清洗后 SVG 内容为空")
+		return "", fmt.Errorf("all nodes were filtered out, resulting in an empty SVG")
 	}
 
 	var buf bytes.Buffer

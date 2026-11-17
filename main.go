@@ -24,6 +24,7 @@ import (
 	"github.com/libost/bandori-tg/events"
 	"github.com/libost/bandori-tg/gacha"
 	"github.com/libost/bandori-tg/songs"
+	"github.com/libost/bandori-tg/songs/meta"
 	"github.com/libost/bandori-tg/text"
 	"github.com/libost/bandori-tg/utils"
 	"github.com/libost/bandori-tg/version"
@@ -125,6 +126,7 @@ func main() {
 	events.AddHandlers(dispatcher)
 	cards.AddHandlers(dispatcher)
 	songs.AddHandlers(dispatcher)
+	meta.AddHandlers(dispatcher)
 	gacha.AddHandlers(dispatcher)
 	comic.AddHandlers(dispatcher)
 	characters.AddHandlers(dispatcher)
@@ -266,7 +268,7 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 			httpClient = &http.Client{
 				Timeout: time.Second * 30,
 				Transport: &http.Transport{
-					Dial: dialer.Dial,
+					DialContext: dialer.(proxy.ContextDialer).DialContext,
 				},
 			}
 			log.Printf("using SOCKS5 proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)
@@ -275,13 +277,13 @@ func httpClientWithProxy(cfg *C.Config) *http.Client {
 			httpClient = &http.Client{
 				Timeout: time.Second * 30,
 				Transport: &http.Transport{
-					Proxy: http.ProxyURL(proxyUrl),
+					DialContext: http.DefaultClient.Transport.(*http.Transport).DialContext,
+					Proxy:       http.ProxyURL(proxyUrl),
 				},
 			}
 			log.Printf("using HTTP proxy at %s:%d", cfg.Proxy.Host, cfg.Proxy.Port)
 		default:
-			log.Printf("unsupported proxy type: %s", cfg.Proxy.Type)
-			panic("unsupported proxy type")
+			panic("unsupported proxy type: " + cfg.Proxy.Type)
 		}
 	}
 	return httpClient

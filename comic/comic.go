@@ -8,12 +8,12 @@ import (
 	"github.com/libost/bandori-tg/utils"
 )
 
-func getComicData(comicID string) (C.Comic, error) {
+func getComicData(comicID string) (C.Comics, error) {
 	comicData := utils.ReadComic()
 	if comic, exists := comicData[comicID]; exists {
 		return comic, nil
 	}
-	return C.Comic{}, fmt.Errorf("comic not found: %s", comicID)
+	return C.Comics{}, fmt.Errorf("comic not found: %s", comicID)
 }
 
 func getAllComicIDsForSpecifiedRegion(region string) []string {
@@ -29,7 +29,7 @@ func getAllComicIDsForSpecifiedRegion(region string) []string {
 	return comicIDs
 }
 
-func getComicUrl(comic C.Comic, region string) (string, error) {
+func getComicUrl(comic C.Comics, region string) (string, error) {
 	idx := utils.IndexHelper(region)
 	if comic.PublicStartAt[idx] == 0 || comic.Title[idx] == "" {
 		return "", fmt.Errorf("comic not available in the specified region: %s", region)

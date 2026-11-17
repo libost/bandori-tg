@@ -55,11 +55,6 @@ func helpHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 func langHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
-	if ctx.EffectiveChat.Type != "private" {
-		displayText := I.GetLocalisedString("commands.lang_desc_group", langCode)
-		ctx.EffectiveMessage.Reply(b, displayText, nil)
-		return nil
-	}
 	displayText := I.GetLocalisedString("commands.lang_desc", langCode)
 	inlineKeyboard := &gotgbot.InlineKeyboardMarkup{
 		InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
@@ -128,27 +123,27 @@ func qlangHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		InlineKeyboard: [][]gotgbot.InlineKeyboardButton{
 			{{
 				Text:         "International 🌐 (EN)",
-				CallbackData: "setqlang_en",
+				CallbackData: fmt.Sprintf("setqlang_en_%d", ctx.EffectiveUser.Id),
 				Style:        "primary",
 			}},
 			{{
 				Text:         "日本 🇯🇵 (JP)",
-				CallbackData: "setqlang_jp",
+				CallbackData: fmt.Sprintf("setqlang_jp_%d", ctx.EffectiveUser.Id),
 				Style:        "primary",
 			}},
 			{{
 				Text:         "中国 🇨🇳 (CN)",
-				CallbackData: "setqlang_cn",
+				CallbackData: fmt.Sprintf("setqlang_cn_%d", ctx.EffectiveUser.Id),
 				Style:        "primary",
 			}},
 			{{
 				Text:         "台灣 🇹🇼 (TW)",
-				CallbackData: "setqlang_tw",
+				CallbackData: fmt.Sprintf("setqlang_tw_%d", ctx.EffectiveUser.Id),
 				Style:        "primary",
 			}},
 			{{
 				Text:         "한국 🇰🇷 (KR)",
-				CallbackData: "setqlang_kr",
+				CallbackData: fmt.Sprintf("setqlang_kr_%d", ctx.EffectiveUser.Id),
 				Style:        "primary",
 			}},
 		},
@@ -177,6 +172,10 @@ func aboutHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 
 func setAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	DB.Init("create", ctx.EffectiveUser.Id, nil)
+	if ctx.EffectiveChat.Type != "private" {
+		log.Printf("Ignoring /setadmin command in non-private chat (chat ID: %d, chat type: %s, initiator: %d)", ctx.EffectiveChat.Id, ctx.EffectiveChat.Type, ctx.EffectiveUser.Id)
+		return nil
+	}
 	langCode := I.LangCodePrefer(ctx.EffectiveUser.Id, ctx.EffectiveUser.LanguageCode)
 	if len(ctx.Args()) == 1 {
 		displayText := I.GetLocalisedString("commands.setadmin_no_token", langCode)
@@ -202,6 +201,10 @@ func setAdminHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 }
 
 func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
+	if ctx.EffectiveChat.Type != "private" {
+		log.Printf("Ignoring /setcommands command in non-private chat (chat ID: %d, chat type: %s, initiator: %d)", ctx.EffectiveChat.Id, ctx.EffectiveChat.Type, ctx.EffectiveUser.Id)
+		return nil
+	}
 	data, err := DB.Init("get_user_group", ctx.EffectiveUser.Id, nil)
 	if err != nil {
 		return err
@@ -209,13 +212,14 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 	userGroup, ok := data["user_group"].(string)
 	if !ok {
 		ctx.EffectiveMessage.Reply(b, "Error: Invalid user group type", nil)
-		return fmt.Errorf("Invalid user_group type")
+		log.Printf("Error: Invalid user group type for user %d", ctx.EffectiveUser.Id)
+		return nil
 	}
 	if userGroup != "admin" {
 		ctx.EffectiveMessage.Reply(b, "Error: You are not an admin", nil)
-		return fmt.Errorf("User is not an admin")
+		log.Printf("User %d attempted to set commands but is not an admin", ctx.EffectiveUser.Id)
+		return nil
 	}
-	// Do something with the admin privileges
 	supportedLanguages, _, err := I.GetAllSupportedLanguages()
 	if err != nil {
 		return err
@@ -242,6 +246,7 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 			{Command: "comic", Description: I.GetLocalisedString("commands.setcommands_desc_list[12]", code)},
 			{Command: "news", Description: I.GetLocalisedString("commands.setcommands_desc_list[13]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
+			{Command: "meta", Description: I.GetLocalisedString("commands.setcommands_desc_list[14]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "char", Description: I.GetLocalisedString("commands.setcommands_desc_list[11]", code)},
 			{Command: "gacha", Description: I.GetLocalisedString("commands.setcommands_desc_list[10]", code)},
@@ -261,16 +266,18 @@ func setCommandsHandler(b *gotgbot.Bot, ctx *ext.Context) error {
 		}
 		groupCommands := []gotgbot.BotCommand{
 			{Command: "start", Description: I.GetLocalisedString("commands.setcommands_desc_list[6]", code)},
+			{Command: "help", Description: I.GetLocalisedString("commands.setcommands_desc_list[1]", code)},
 			{Command: "card", Description: I.GetLocalisedString("commands.setcommands_desc_list[2]", code)},
 			{Command: "event", Description: I.GetLocalisedString("commands.setcommands_desc_list[3]", code)},
 			{Command: "cutoff", Description: I.GetLocalisedString("commands.setcommands_desc_list[7]", code)},
 			{Command: "comic", Description: I.GetLocalisedString("commands.setcommands_desc_list[12]", code)},
 			{Command: "news", Description: I.GetLocalisedString("commands.setcommands_desc_list[13]", code)},
 			{Command: "song", Description: I.GetLocalisedString("commands.setcommands_desc_list[8]", code)},
+			{Command: "meta", Description: I.GetLocalisedString("commands.setcommands_desc_list[14]", code)},
 			{Command: "search", Description: I.GetLocalisedString("commands.setcommands_desc_list[9]", code)},
 			{Command: "char", Description: I.GetLocalisedString("commands.setcommands_desc_list[11]", code)},
 			{Command: "gacha", Description: I.GetLocalisedString("commands.setcommands_desc_list[10]", code)},
-			{Command: "help", Description: I.GetLocalisedString("commands.setcommands_desc_list[1]", code)},
+			{Command: "lang", Description: I.GetLocalisedString("commands.setcommands_desc_list[4]", code)},
 			{Command: "about", Description: I.GetLocalisedString("commands.setcommands_desc_list[5]", code)},
 		}
 		groupOpts := gotgbot.SetMyCommandsOpts{

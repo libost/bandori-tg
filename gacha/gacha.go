@@ -23,36 +23,36 @@ type gachaMap struct {
 	Rarity      int
 }
 
-func GetGacha(gachaId string) (C.Gacha, error) {
+func GetGacha(gachaId string) (C.Gachas, error) {
 	gachaMap := utils.ReadGacha()
 	gacha, exists := gachaMap[gachaId]
 	if !exists {
-		return C.Gacha{}, fmt.Errorf("gacha with ID %s not found", gachaId)
+		return C.Gachas{}, fmt.Errorf("gacha with ID %s not found", gachaId)
 	}
 	return gacha, nil
 }
 
-func GetGachaDetails(gachaId string) (C.GachaDetailed, error) {
+func GetGachaDetails(gachaId string) (C.Gacha, error) {
 	context, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	gachaMap := utils.ReadGacha()
 	_, exists := gachaMap[gachaId]
 	if !exists {
-		return C.GachaDetailed{}, fmt.Errorf("gacha with ID %s not found", gachaId)
+		return C.Gacha{}, fmt.Errorf("gacha with ID %s not found", gachaId)
 	}
 	req, err := http.NewRequestWithContext(context, http.MethodGet, "https://bestdori.com/api/gacha/"+gachaId+".json", nil)
 	if err != nil {
-		return C.GachaDetailed{}, err
+		return C.Gacha{}, err
 	}
 	resp, err := utils.HttpClient.Do(req)
 	if err != nil {
-		return C.GachaDetailed{}, err
+		return C.Gacha{}, err
 	}
 	defer resp.Body.Close()
-	var gachaDetailed C.GachaDetailed
+	var gachaDetailed C.Gacha
 
 	if err := json.UnmarshalRead(resp.Body, &gachaDetailed); err != nil {
-		return C.GachaDetailed{}, err
+		return C.Gacha{}, err
 	}
 	return gachaDetailed, nil
 }
@@ -169,7 +169,7 @@ func randomNumGen(min, max int) (int, error) {
 	return rand.N(max-min+1) + min, nil
 }
 
-func gachaHelper(gachaDetailed C.GachaDetailed, regionCode string, paymentMethods C.PaymentMethods) ([]string, error) {
+func gachaHelper(gachaDetailed C.Gacha, regionCode string, paymentMethods C.GachaPaymentMethods) ([]string, error) {
 	pull := paymentMethods.Count
 	if pull <= 0 {
 		return nil, fmt.Errorf("pull count must be greater than zero")
