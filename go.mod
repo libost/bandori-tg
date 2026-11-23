@@ -12,7 +12,7 @@ require (
 	github.com/netresearch/go-cron v0.19.0
 	github.com/sahilm/fuzzy v0.1.3
 	golang.org/x/image v0.48.0
-	golang.org/x/net v0.62.0
+	golang.org/x/net v0.63.0
 	golang.org/x/sync v0.25.0
 	gonum.org/v1/plot v0.17.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
